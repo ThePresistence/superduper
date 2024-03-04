@@ -19,7 +19,16 @@ cd ~ && cd .oh-my-zsh/plugins
 # Go to the .zshrc folder (step1: do this)
 vim ~/.zshrc 
 ## change ZSH_THEME="bira"
-
-
-
+```
+#### enable and disable plugins 
+* Go to the .zshrc folder 
+```
+cd ~
+vim .zshrc 
+```
+* Search all the plugins plugins folder and add those in the plugins 
+```
+cd ~
+vim .zshrc 
+plugins=(git web-search <add-more-here>)
 ```
