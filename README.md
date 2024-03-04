@@ -30,5 +30,5 @@ vim .zshrc
 ```
 cd ~
 vim .zshrc 
-plugins=(git web-search python pyenv virtualenv pip zsh-autosuggestions) 
+plugins=(git web-search python pyenv virtualenv pip zsh-autosuggestions zsh-syntax-highlighting) 
 ```
