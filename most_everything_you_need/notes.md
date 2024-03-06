@@ -32,6 +32,7 @@
 
 * Black is a python package it works in CLI.
 * Black modifies the files in place until unless you're specifically telling to the black.
+* This is one of the best tool to use in the teams for formatting a code for production use case. 
 
 ### 3.2 VS code Format document
 
@@ -46,16 +47,15 @@
 
 * same as a black formatter. 
 
-
-## 4.Rulers 
+## 4.Rulers
 
 * For single line, you should write only 79 characters according to the pep 8 standards.
 * To see visually you can activate the ruler in vs code by go the setting and type for ruler and click the "edit in settings" and paste this dicionary inside the "editor.rulers": [ {"color": "lightblue", column: 79}]
-* 
+* Sometimes it's ok to increase the 79 to 99 characters or sometimes you can go to 119 characters in single line.
+* You might notice that all the numbers are ending at "9" this is because everything will be divisible by 4. 
 
 ---
 
 ## [Resources](https://github.com/phitoduck/python-software-development-course)
 
 1. [clean python code](https://testdriven.io/blog/clean-code-python/)
-2. 
