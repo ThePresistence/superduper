@@ -24,3 +24,4 @@
 * Then you type "shift + ctrl + space" for awesome auto completion. 
 * INstall "Pylance". Pylance is a language server, which is basically a program that running all the time when we run the vs code. And the language server constantly scans our code as we make changes and it identifies the various tokens and then uses the result of that analysis to decide how syntax highlighting should happen and auto completion. 
 * If you want to rename only the function and the function reference use **rename symbol (F2)** by right clicking the function name, it just changes all the function references. 
+

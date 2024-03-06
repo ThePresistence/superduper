@@ -23,6 +23,35 @@
 * Refractoring is a skill it needs repeated practice to master. 
 * Please read this [😌<-click](https://testdriven.io/blog/clean-code-python/) for how to write a clean python code. 
 
+## 3 Auto Formatters 
+
+* It will be automatically format the code what you have written.
+* The first tool is [**BLACK**](https://github.com/psf/black)
+
+### 3.1 Black
+
+* Black is a python package it works in CLI.
+* Black modifies the files in place until unless you're specifically telling to the black.
+
+### 3.2 VS code Format document
+
+* You can type "ctrl+shift+p" and type "Format Document" to do the formatting. If you're doing first time you need to set up your formatter.
+* You can install you're favourite formatter like black and type "ctrl+shift+p" and type "format document". now it will work. 
+
+### 3.3 yapf
+
+* Same as black formatter.
+
+### 3.4 auto pep8 
+
+* same as a black formatter. 
+
+
+## 4.Rulers 
+
+* For single line, you should write only 79 characters according to the pep 8 standards.
+* To see visually you can activate the ruler in vs code by go the setting and type for ruler and click the "edit in settings" and paste this dicionary inside the "editor.rulers": [ {"color": "lightblue", column: 79}]
+* 
 
 ---
 
