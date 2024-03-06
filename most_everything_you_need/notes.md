@@ -32,7 +32,7 @@
 
 * Black is a python package it works in CLI.
 * Black modifies the files in place until unless you're specifically telling to the black.
-* This is one of the best tool to use in the teams for formatting a code for production use case. 
+* This is one of the best tool to use in the teams for formatting a code for production use case. It contains lot of functionalities for formatting the code, best tool for pythonic way of formatting. 
 
 ### 3.2 VS code Format document
 
