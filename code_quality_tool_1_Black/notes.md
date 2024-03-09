@@ -21,16 +21,16 @@
 
 * which is basically means incremental changes to make code more redable than it was when you first started.
 * Refractoring is a skill it needs repeated practice to master. 
-* Please read this [😌<-click](https://testdriven.io/blog/clean-code-python/) for how to write a clean python code. 
+* Please read this [😌<-click](https://testdriven.io/blog/clean-code-python/) for how to write a clean python code.
 
-## 3 Auto Formatters 
+## 3 Auto Formatters
 
 * It will be automatically format the code what you have written.
 * The first tool is [**BLACK**](https://github.com/psf/black)
 
 ### 3.1 Black
 
-* Black is a python package it works in CLI.
+* Black is a CLI code used to format the code using cli.
 * Black modifies the files in place until unless you're specifically telling to the black.
 * This is one of the best tool to use in the teams for formatting a code for production use case. It contains lot of functionalities for formatting the code, best tool for pythonic way of formatting. 
 
