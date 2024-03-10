@@ -1,0 +1,5 @@
+DSC ETHENE, MNDO MRSD-CI for closed-shell singlet.
+DSC Active space: 3 MOs, 3 VOs - defined by symmetry.
+DSC Automatic selection of references (mciref=3).
+DSC Geometry optimization for first excited state.
+PRP finalheat=94.90380

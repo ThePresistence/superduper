@@ -1,0 +1,11 @@
+DSC MNDO (G)ROHF gradient computation for triplet C2 at a non-optimal 
+DSC geometry. Packed in-core MO solution using stabilized locally orthogonal
+DSC ortres solver with bi-linear conditioner.
+DAT C2.dat
+OPT iprint=1
+OPT imix=3 idens=4 iqswap=-1 inrhs=1 iprect=5 ihlst=1 ihlwrp=2 ikmode=2 isolve=5 ikrsav=2
+PRP heat=234.01301
+PRP freqmem=1799 freqdisk=0 respvec=2
+PRP cartgrda=1  cartgrdaX=-69.59652 cartgrdaY=0.00000 cartgrdaZ=0.00000
+PRP cartgrdb=2  cartgrdbX=69.59652  cartgrdbY=0.00000 cartgrdbZ=0.00000
+PRP intgrda=1 intgrdaX=69.59652

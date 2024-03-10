@@ -1,0 +1,89 @@
+This directory contains test jobs to validate the HDLCOPT module in MNDO99.
+===========================================================================
+
+Status: 17 April 2003
+
+Input files hdlc*.inp are processed as listed below.
+Corresponding output files hdlc*.out are generated.
+The standard Makefile handles hdlc1a-hdlc6a.
+
+SCF geometry optimizations and transition state searches
+
+
+job      system              method  fragments   coordinates
+
+hdlc1a   ethylene C2H4        MNDO      none     Cartesian
+hdlc1b   tetracene C18H12     MNDO      none     Cartesian
+hdlc1c   triplet oxgen O2     MNDO      none     Cartesian
+hdlc1d   TS H2CO->HCHO        MNDO      none     Cartesian
+hdlc2a   ethylene C2H4        MNDO      none     HDLC primitive
+hdlc2b   tetracene C18H12     MNDO      none     HDLC primitive
+hdlc2c   triplet oxgen O2     MNDO      none     HDLC primitive
+hdlc2d   ethylene C2H4        MNDO      none     DLC primitive
+hdlc2e   tetracene C18H12     MNDO      none     DLC primitive 
+hdlc3a   caffeine C8N4O2H10    PM3      none     HDLC primitive 
+hdlc3b   caffeine C8N4O2H10    PM3      none     Cartesian
+hdlc3c   caffeine C8N4O2H10    PM3      none     DLC primitive
+hdlc4a   water dimer linear    OM2        2      HDLC primitive
+hdlc5a   Diels-Alder TS small  AM1    core+env   HDLC connection
+hdlc5b   Diels-Alder TS big    AM1    core+4env  HDLC connection
+hdlc6a   cluster of 10 water   AM1       10      HDLC primitive
+
+hdlc6b   cluster of 20 water   AM1       20      HDLC primitive
+hdlc8a   cyclosporin           AM1    11 (PDB)   HDLC primitive
+hdlc8b   cyclosporin           AM1      none     HDLC primitive
+hdlc9a   TS PHBH model system  AM1    core+5env  HDLC conn. / prim.
+
+
+Computation times on Compaq XP1000:
+----------------------------------
+
+The test suite hdlc1a-hdlc6a needs about 120 sec of cpu time.
+Major contributors with cpu times greater than 5 sec:
+hdlc2b:     27 SECONDS  including    25 SECONDS for HDLC part
+hdlc2e:     22 SECONDS  including    20 SECONDS for HDLC part
+hdlc3a:      5 SECONDS  including     4 SECONDS for HDLC part
+hdlc3c:      7 SECONDS  including     6 SECONDS for HDLC part
+hdlc5b:     33 SECONDS  including    11 SECONDS for HDLC part
+hdlc6a:     15 SECONDS  including     8 SECONDS for HDLC part
+
+The remaining test jobs require more cpu time (data from 2001).
+hdlc6b:    109 SECONDS  including    58 SECONDS for HDLC part
+hdlc8a:   4121 SECONDS  including  1813 SECONDS for HDLC part
+hdlc8b:  11327 SECONDS  including  8686 SECONDS for HDLC part
+hdlc9a:    210 SECONDS  including    61 SECONDS for HDLC part
+
+
+Comparison between different optimizers:
+---------------------------------------
+
+job      system              coordinates   SCF     heat     cg-norm
+
+hdlc1a   ethylene C2H4       Cartesian       9   15.40470   0.15197  HDLCOPT
+hdlc1b   tetracene C18H12    Cartesian      17   80.90824   1.67858
+hdlc1c   triplet oxgen O2    Cartesian       6  -15.98748   0.03670
+hdlc1d   TS H2CO->HCHO       Cartesian      19   75.66444   0.00448
+hdlc2a   ethylene C2H4       HDLC prim       7   15.40476   0.26295
+hdlc2b   tetracene C18H12    HDLC prim      32   80.90247   0.46159
+hdlc2c   triplet oxgen O2    HDLC prim       7  -15.98748   0.00149
+hdlc2d   ethylene C2H4       DLC prim       19   15.40474   0.18571
+hdlc2e   tetracene C18H12    DLC prim       34   80.90257   0.55599
+
+job3a    ethylene C2H4       internal        6   15.40471   0.17087  FLEPO
+job3b    tetracene C18H12    internal       14   80.90257   0.55599
+job3c    triplet oxgen O2    internal        9  -15.98748   0.00823
+job3e    TS H2CO->HCHO       Cartesian      27   75.66444   0.01357  TSOPT
+job3g    TS H2CO->HCHO       Cartesian      11   75.66444   0.01313  EIGF 
+
+a) The results from different optimizers are compatible.
+b) The standard optimizers (FLEPO, TSOPT) exploit symmetry.
+   HDLCOPT does not yet make use of symmetry.
+   This may explain the higher number of SCF calls for tetracene.
+c) TS H2CO->HCHO: The comparison of job3g (EIGF) vs. job3d (TSOPT)
+   shows the superiority of eigenvector following over gradient
+   norm minimization (11 vs. 27 SCF calls). HDLCOPT also uses
+   eigenvector following (PRFO, hdlc1d); the higher number of
+   SCF calls compared with job3g (19 vs. 11) is largely due to
+   the use of two-sided rather than one-sided differentiation
+   when computing the numerical Hessian for the 5 optimized
+   variables (10 vs 5 SCF calls).

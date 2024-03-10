@@ -1,0 +1,91 @@
+      SUBROUTINE MATDEVS (A,JA,IA,B,JB,IB,N,MODE,DEVMAX,DEVRMS)
+C     *
+C     EVALUATE DEVIATIONS BETWEEN TWO MATRICES A AND B.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     A(*)      FIRST  INPUT MATRIX (I).
+C     B(*)      SECOND INPUT MATRIX (I).
+C     IX(N+1)   POINTERS FOR SPARSE MATRICES IN CSR FORMAT (S).
+C               X=A,B.
+C     JX(*)     COLUMN INDICES FOR SPARSE MATRICES IN CSR FORMAT (S).
+C               X=A,B.
+C     N         NUMBER OF ORBITALS (I).
+C     MODE      OPTION FOR RANGE OF CHECKS (I).
+C               = 0 CHECK FULL UPPER TRIANGLE.
+C               = 1 CHECK ONLY DIAGONAL ELEMENTS.
+C     DEVMAX    MAXIMUM ABSOLUTE DEVIATION (O).
+C     DEVRMS    RMS DEVIATION (O).
+C     *
+      USE module3
+C     IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      IMPLICIT NONE
+      INTEGER :: N,I,ie,NTOTAL,J,MODE,N4,K
+      DOUBLE PRECISION :: DEVMAX,DEVRMS,DEVRRS,ZERO,ONE,TWO,THREE,
+     +                    FOUR,PT5,PT25
+      INTEGER, ALLOCATABLE :: IW(:)
+      COMMON /CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+      DOUBLE PRECISION, DIMENSION (:), POINTER :: B,A,Q5
+      INTEGER, DIMENSION (:), POINTER :: JB,IB,JA,IA,JQ5,IQ5
+C
+C *** INITIALIZATION.
+      DEVMAX = 0.0D0
+      DEVRMS = 0.0D0
+      DEVRRS = 0.0D0
+C
+C *** EVALUATE DEVIATIONS ON THE DIAGONAL.
+C
+      DO 20 I=1,N
+      DO 10 J=IA(I),IA(I+1)-1
+      IF(JA(J).EQ.I) THEN
+         DO 40 K=IB(I),IB(I+1)-1
+         IF(JB(K).EQ.I) THEN
+            DEVMAX = MAX(DEVMAX,ABS(A(J)-B(K)))
+            DEVRRS = DEVRRS + (A(J)-B(K))**2
+            GOTO 20
+         ENDIF
+   40    CONTINUE
+      ENDIF
+   10 CONTINUE
+   20 CONTINUE
+C
+C *** CHECK FULL UPPER TRIANGLE.
+      IF(MODE.EQ.0) THEN
+C
+C *** COMPUTE DIFFERENCE: Q5 = A-B
+C
+         ALLOCATE (IW(N),IQ5(N+1),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'MATDEVS','IW',N,0)
+         CALL aplbdgp (N,JA,IA,JB,IB,N4,IW)
+         ALLOCATE (Q5(N4),JQ5(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'MATDEVS','Q5',N4,0)
+         DO 35 I=1,IB(N+1)-1
+         B(I) = -B(I)
+  35     CONTINUE
+         CALL aplbp (N,A,JA,IA,B,JB,IB,Q5,JQ5,IQ5,N4,IW,ie)
+            IF(ie.NE.0) CALL XERSPA (ie,'aplb','MATDEVS',1)
+         DO 45 I=1,IB(N+1)-1
+         B(I) = -B(I)
+  45     CONTINUE
+         DEALLOCATE (IW,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'MATDEVS','IW',N,1)
+C
+         DEVMAX = 0.0D0
+         DO 30 I=1,IQ5(N+1)-1
+         DEVMAX = MAX(DEVMAX,ABS(Q5(I)))
+         DEVRMS = DEVRMS + (Q5(I))**2
+   30    CONTINUE
+         DEVRMS = DEVRMS - DEVRRS
+         DEVRMS = DEVRMS/2
+         DEVRMS = DEVRMS + DEVRRS
+         NTOTAL = (N*(N+1))/2
+         DEVRMS = SQRT(DEVRMS/NTOTAL)
+         DEALLOCATE (Q5,IQ5,JQ5,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'MATDEVS','Q5',N4,1)
+         NULLIFY (Q5,IQ5,JQ5)
+C *** CHECK ONLY DIAGONAL ELEMENTS.
+      ELSE
+         DEVRMS = SQRT(DEVRRS/N)
+      ENDIF
+C
+      RETURN
+      END

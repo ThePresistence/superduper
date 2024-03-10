@@ -1,0 +1,13 @@
+DSC Ethene, D2, 88 deg twist, OM2 MR-CISD for closed-shell singlet
+DSC Multiple state gradient and interstate coupling calculation
+DSC Full expression for the non-adiabatic coupling matrix elements
+DSC Not using molecular symmetry, four point charges
+PRP mulstates=1:2:3
+PRP mulheats=58.12024:97.90441:102.99475
+PRP mulqmnorms=124.35028:43.21104:32.78442
+PRP mulqmmmnorms=124.37436:43.28134:32.88847
+PRP muloptnorms=124.35028:43.21104:32.78442
+PRP gicvstates=2,1:3,1:3,2
+PRP gicvqmnorms=2.68506:0.40964:16.43199
+PRP gicvqmmmnorms=2.68506:0.40972:16.45189
+PRP gicvoptnorms=2.68506:0.40964:16.43199

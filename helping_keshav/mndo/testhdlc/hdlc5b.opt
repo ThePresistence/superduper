@@ -1,0 +1,7 @@
+DSC Diphenyl-ethylene + di-t-butyl-butadiene, Diels-Alder TS, PM3
+DSC Reaction core: 4 C atoms, HDLC connection scheme
+DSC Environment: 4 HDLC fragments (2 phenyl, 2 t-butyl)
+DSC Environment: Remaining 8 atoms in Cartesian coords
+PRP hdlccyc=107
+PRP finalheat=111.95303
+PRP cartgrdopt=0.87334

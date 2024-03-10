@@ -1,0 +1,18 @@
+DSC BENZENE, D6h, OM2 full CI for closed-shell singlet
+DSC Active space: 3 MOs, 3 VOs - defined via pz populations (movo=-3)
+DSC Single-point energy calculation, 4 lowest states with symmetry #1,
+DSC original Davidson diagonalizer (cidiag=10)
+PRP heat=19.04022:19.04022
+PRP ciheat=1.59131:1.59131
+PRP deltae=0.000000:7.186105:8.889612:9.366631
+PRP dipole=0.000000:0.000000:0.000000:0.000000
+PRP fr=0.000000:0.000000:0.000000
+PRP fp=0.000000:0.000000:0.000000
+PRP frp=0.000000:0.000000:0.000000
+PRP rot=0.000000:0.000000:0.000000
+PRP deltae2=0.000000:7.186105:8.889612:9.366631
+PRP dipole2=0.000000:0.000000:0.000000:0.000000
+PRP fr2=0.000000:0.000000:0.000000
+PRP fp2=0.000000:0.000000:0.000000
+PRP frp2=0.000000:0.000000:0.000000
+PRP rot2=0.000000:0.000000:0.000000

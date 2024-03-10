@@ -1,0 +1,157 @@
+      SUBROUTINE MMDPE (PRT)
+C     *
+C     CALCULATION OF DISPERSION CORRECTION TO THE ENERGY.
+C     *
+C     INPUT AND OUTPUT VIA PARAMETER LIST AND COMMON BLOCKS.
+C     PRT        PRINTING FLAG DEFINED IN SCFCAL (I)
+C     VS6,VCD    GLOBAL DISPERSION CORRECTION PARAMETERS (I)
+C     EMMDP      DISPERSION CORRECTION TO THE ENERGY (O)
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      LOGICAL PRT
+      LOGICAL noabc
+      COMMON
+     ./ATOMS / NUMAT
+     ./INOPT2/ IN2(300)
+     ./MMDP  / EMMDP
+     ./OMXDC / VS6,VCD
+C *** INITIALIZATION.
+      IOP    = IN2(2)
+      IMMDP  = IN2(30)
+      EMMDP  = 0.0D0
+C *** COMPUTE DISPERSION CORRECTION EMMDP IN J MOL-1
+C     AM1-D AND PM3-D. SEE PCCP 9, 2362 (2007).
+      IF((IOP.EQ.-2.OR.IOP.EQ.-7).AND.IMMDP.EQ.1) THEN
+        DO I=1,NUMAT-1
+          DO J=I+1,NUMAT
+            EMMDP = EMMDP-VS6*C6IJ(I,J)/(RIJNM(I,J)**6)/
+     1      (1.0D0+EXP(-VCD*(RIJNM(I,J)/R0IJ(I,J)-1.0D0)))
+          ENDDO
+        ENDDO
+C     ELSTNER DAMPING FUNCTION IN JCP 114, 5149-5155 (2001).
+C     IMPLEMENTED FOR OM2 AND OM3.
+      ELSE IF((IOP.EQ.-6.OR.IOP.EQ.-8).AND.IMMDP.EQ.1) THEN
+        DO I=1,NUMAT-1
+          DO J=I+1,NUMAT
+            EMMDP = EMMDP-VS6*C6IJ(I,J)/(RIJNM(I,J)**6)
+     1      *((1.0D0-EXP(-VCD*(RIJNM(I,J)/R0IJ(I,J))**7))**4.0D0)
+          ENDDO
+        ENDDO
+C     D2 CORRECTION WITH YANG DAMPING FUNCTION. JCC 27, 1787 (2006).
+C     IMPLEMENTED FOR OM2 AND OM3.
+      ELSE IF((IOP.EQ.-6.OR.IOP.EQ.-8).AND.IMMDP.EQ.2) THEN
+        DO I=1,NUMAT-1
+          DO J=I+1,NUMAT
+            EMMDP = EMMDP-VS6*C6IJ(I,J)/(RIJNM(I,J)**6)/
+     1      (1.0D0+EXP(-VCD*(RIJNM(I,J)/R0IJ(I,J)-1.0D0)))
+          ENDDO
+        ENDDO
+      ENDIF
+C     CONVERT FROM J/MOL TO KCAL/MOL
+      EMMDP  = EMMDP/4184.043D0
+C
+C *** D3 correction from Grimme, JCP 132, 154104 (2010)
+C     Implemented by Lasse Spoerkel; Copied and adapted from
+C     http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=DFT-D3&lang=english
+C     Subroutines see 99/MMDPG.f
+C     Used for OM2, OM3, ODM2 and ODM3.
+      IF((IOP.EQ.-6.OR.IOP.EQ.-8.OR.IOP.EQ.-22.OR.IOP.EQ.-23)
+     1        .AND.(IMMDP.EQ.3.OR.IMMDP.EQ.-3)) THEN
+        IF (IMMDP.EQ.3) THEN
+          noabc  = .TRUE.
+        ELSE
+          noabc  = .FALSE.
+        ENDIF
+        CALL DFTD3(.TRUE.,.FALSE.,noabc,PRT)
+      ENDIF
+      RETURN
+      END SUBROUTINE MMDPE
+C     ******************************************************************
+      FUNCTION C6IJ(I,J)
+C     *
+C     UNIT FOR PREFACTOR C6 IS J NM6 MOL-1.
+C     INITIAL PARAMETERS FROM JCC 27, 1787-1799 (2006).
+C     COMBINATION RULE   FROM JCC 27, 1787-1799 (2006).
+C     *
+      USE LIMIT, ONLY: LM1, LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1)
+     ./INOPT2/ IN2(300)
+     ./MMDPP / C6(LMZ),R0(LMZ)
+     ./NBFILE/ NBF(20)
+     ./PARAVL/ IMPAR(LMZ)
+      NB6    = NBF(6)
+      IOP    = IN2(2)
+      C6IJ   = 0.0D0
+C     CHECK PARAMETERS: IF NOT AVAILABLE, PRINT MESSAGE AND RETURN.
+C     IN THIS CASE, THE CONTRIBUTION FROM ATOM PAIR I-J IS ZERO.
+      IF(IMPAR(NAT(I)).EQ.0) THEN
+        WRITE(NB6,100) I
+        RETURN
+      ENDIF
+      IF(IMPAR(NAT(J)).EQ.0) THEN
+        WRITE(NB6,100) J
+        RETURN
+      ENDIF
+C     FIRST  FORMULA: AM1-D AND PM3-D, PCCP 9, 2362 (2007).
+C     SECOND FORMULA: OTHER METHODS,   JCC 27, 1787 (2006).
+      IF(IOP.EQ.-2.OR.IOP.EQ.-7) THEN
+        C6IJ = 2.0D0*(C6(NAT(I))*C6(NAT(J)))/(C6(NAT(I))+C6(NAT(J)))
+      ELSE
+        C6IJ = SQRT(C6(NAT(I))*C6(NAT(J)))
+      ENDIF
+      RETURN
+100   FORMAT(/  1X,'WARNING: THE DISPERSION PARAMETER FOR ATOM ',I4,
+     1             ' IS NOT AVAILABLE.')
+      END FUNCTION C6IJ
+C     ******************************************************************
+      FUNCTION R0IJ(I,J)
+C     *
+C     UNIT FOR DISTANCE R0 IS NM.
+C     INITIAL PARAMETERS FROM JCC 27, 1787-1799 (2006).
+C     COMBINATION RULE   FROM JCC 27, 1787-1799 (2006).
+C     *
+      USE LIMIT, ONLY: LM1, LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1)
+     ./MMDPP / C6(LMZ),R0(LMZ)
+     ./NBFILE/ NBF(20)
+     ./PARAVL/ IMPAR(LMZ)
+      NB6    = NBF(6)
+      R0IJ   = 1.0D0
+C     CHECK PARAMETERS: IF NOT AVAILABLE, PRINT MESSAGE AND RETURN.
+C     IN THIS CASE, THE CONTRIBUTION FROM ATOM PAIR I-J IS ZERO.
+      IF(IMPAR(NAT(I)).EQ.0) THEN
+        WRITE(NB6,100) I
+        RETURN
+      ENDIF
+      IF(IMPAR(NAT(J)).EQ.0) THEN
+        WRITE(NB6,100) J
+        RETURN
+      ENDIF
+      R0IJ   = R0(NAT(I))+R0(NAT(J))
+      RETURN
+100   FORMAT(/  1X,'WARNING: THE DISPERSION PARAMETER FOR ATOM ',I4,
+     1             ' IS NOT AVAILABLE.')
+      END FUNCTION R0IJ
+C     ******************************************************************
+      FUNCTION RIJNM(I,J)
+C     *
+C     INTERATOMIC DISTANCE RIJNM IN NM.
+C     *
+      USE LIMIT, ONLY: LM1
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMC / COORD(3,LM1)
+      RIJNM = 0.0D0
+      IF (I.EQ.J) RETURN
+      RIJNM = SQRT((COORD(1,I)-COORD(1,J))**2
+     1            +(COORD(2,I)-COORD(2,J))**2
+     2            +(COORD(3,I)-COORD(3,J))**2)
+C     CONVERT FROM ANGSTROM TO NM.
+      RIJNM=RIJNM*0.1D0
+      RETURN
+      END FUNCTION RIJNM
+

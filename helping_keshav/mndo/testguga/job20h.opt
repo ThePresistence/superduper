@@ -1,0 +1,8 @@
+DSC BENZYL RADICAL, C2v, AM1 doublet reference, singlet full CI with cichg=-1
+DSC Active space: 4 MO, 3 VO - defined via pz population (movo=-3)
+DSC Single-point energy and gradient using numerical integral derivatives,
+DSC default diagonalizer
+PRP heat=52.01635
+PRP ciheat=1.26168
+PRP cartgrd=73.14229
+PRP intgrd=76.34998

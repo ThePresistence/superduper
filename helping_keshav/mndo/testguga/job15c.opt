@@ -1,0 +1,14 @@
+DSC NAPHTHALENE, D2h, MNDO MR-CISD for closed-shell singlet
+DSC Active space: 5 MOs, 5 VOs - defined via input
+DSC (movo=3, orbitals sorted by energy)
+DSC Single-point energy and gradient, 5 lowest states,
+DSC Davidson diagonalizer with modification by Liu
+PRP heat=39.82362
+PRP ciheat=2.11327
+PRP cartgrd=58.25719
+PRP deltae=0.000000:2.423166:3.397080:3.711818:3.947842
+PRP dipole=0.000000:0.000000:0.000000:0.000000:0.000000
+PRP fr=0.001348:0.000000:0.028459:0.000000
+PRP fp=0.003981:0.000000:0.031406:0.000000
+PRP frp=0.002317:0.000000:0.029896:0.000000
+PRP rot=0.000000:0.000000:0.000000:0.000000

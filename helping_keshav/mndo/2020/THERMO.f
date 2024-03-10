@@ -1,0 +1,205 @@
+      SUBROUTINE THERMO (AMSUM,EIG,PM,I3N,NUMSYM,LPRINT)
+C     *
+C     CALCULATION OF THERMODYNAMIC QUANTITIES.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./INFOC / ITYPE,NEG,NTR,NVIB
+     ./INOPT2/ IN2(300)
+     ./MOPAC / IMOPAC
+     ./NBFILE/ NBF(20)
+      DIMENSION EIG(I3N),PM(3)
+      DIMENSION C(25,4),G(25,4),H(25,4),Q(25,3),S(25,4)
+      DIMENSION T(25),TD(10),TM(22)
+C     PREDEFINED TEMPERATURES IN KELVIN.
+      DATA TD/273.15D0,298.15D0,300.0D0,400.0D0,500.0D0,600.0D0,700.0D0,
+     1        800.00D0,900.00D0,1000.0D0/
+      DATA TM/298.00D0,200.00D0,210.0D0,220.0D0,230.0D0,240.0D0,250.0D0,
+     1        260.00D0,270.00D0,280.0D0,290.0D0,300.0D0,310.0D0,320.0D0,
+     2        330.00D0,340.00D0,350.0D0,360.0D0,370.0D0,380.0D0,390.0D0,
+     3        400.00D0/
+C     FUNDAMENTAL CONSTANTS AND CONVERSION FACTORS TAKEN FROM
+C     J.PHYS.CHEM.REF.DATA 2, 663 (1973).
+C     AC     SPEED OF LIGHT         IN 10**(+08) M S-1
+C     AH     PLANCK CONSTANT        IN 10**(-34) J S
+C     AN     AVOGADRO CONSTANT      IN 10**(+23) MOL-1
+C     AR     MOLAR GAS CONSTANT     IN           J MOL-1 K-1
+C     AK     BOLTZMANN CONSTANT     IN 10**(-23) J K-1
+C     AMU    ATOMIC MASS UNIT       IN 10**(-27) KG
+C     ATM    PRESSURE OF 1 ATM      IN 10**(+05) N M-2
+C     FC     CONVERSION CAL-JOULE   IN           CAL J-1
+      DATA AC /2.99792458D0/
+      DATA AH /6.62617600D0/
+      DATA AN /6.02204500D0/
+      DATA AR /8.31441000D0/
+      DATA AK /1.38066200D0/
+      DATA AMU/1.66056550D0/
+      DATA ATM/1.01325000D0/
+      DATA FC /4.18400000D0/
+      DATA PI /3.141592653589793D0/
+C *** FILE NUMBERS.
+      NB6    = NBF(6)
+C *** INPUT DATA.
+      NTEMP  = IN2(207)
+      NTEMP1 = IN2(208)
+      NTEMP2 = IN2(209)
+C     CHECK WHETHER INPUT OR DEFAULT TEMPERATURES ARE USED.
+      IF(LPRINT.GT.-5) WRITE(NB6,500)
+      IF(NTEMP.LE.0 .OR. NTEMP.GT.25) THEN
+         IF(IMOPAC.LE.0) THEN
+            NTP = 10
+            DO 10 I=1,NTP
+            T(I) = TD(I)
+   10       CONTINUE
+         ELSE
+            NTP = 22
+            DO 15 I=1,NTP
+            T(I) = TM(I)
+   15       CONTINUE
+         ENDIF
+      ELSE
+         NTP = NTEMP
+         IF(NTEMP1.LT.100) THEN
+            WRITE(NB6,590) NTEMP1
+            NTEMP1 = 100
+         ENDIF
+         IF(NTEMP2.LE.0) THEN
+            WRITE(NB6,600) NTEMP2
+            NTEMP2 = 100
+         ENDIF
+         T(1) = NTEMP1
+         DO 20 I=2,NTP
+         T(I) = T(I-1)+NTEMP2
+   20    CONTINUE
+      ENDIF
+C *** INITIALIZATION.
+      SYM    = NUMSYM
+      CT     = (2.0D0*PI*AMU*AK/AH**2)**1.5D0 * (AK/ATM) * 0.1D0
+      CTM    = CT*AMSUM**1.5D0
+      CR     = 8.0D0*PI**2*AMU*AK/AH**2 * 1.0D-02
+      IF(ITYPE.EQ.1) THEN
+         CRI = CR*PM(1)/SYM
+      ELSE
+         CRI = CR**1.5D0*SQRT(PI*PM(1)*PM(2)*PM(3))/SYM
+      ENDIF
+      HCK    = (AH*AC/AK)*0.1D0
+C     CONVERT MOLAR GAS CONSTANT TO (K)CAL MOL-1 K-1
+      R      = AR/FC
+      RK     = R*1.0D-03
+C *** LOOP OVER TEMPERATURES.
+      DO 40 I=1,NTP
+      TI     = T(I)
+C     TRANSLATIONAL CONTRIBUTIONS.
+      QT     = CTM*TI**2.5D0
+      Q(I,1) = QT*AN*1.0D+23
+      H(I,1) = 2.5D0*RK*TI
+      C(I,1) = 2.5D0*R
+      S(I,1) = 2.5D0*R+R*LOG(QT)
+      G(I,1) = -RK*TI*LOG(QT)
+C     ROTATIONAL CONTRIBUTIONS.
+      IF(ITYPE.EQ.1) THEN
+         Q(I,2) = CRI*TI
+         H(I,2) = RK*TI
+         C(I,2) = R
+         S(I,2) = R+R*LOG(Q(I,2))
+         G(I,2) = -RK*TI*LOG(Q(I,2))
+      ELSE
+         Q(I,2) = CRI*TI**1.5D0
+         H(I,2) = 1.5D0*RK*TI
+         C(I,2) = 1.5D0*R
+         S(I,2) = 1.5D0*R+R*LOG(Q(I,2))
+         G(I,2) = -RK*TI*LOG(Q(I,2))
+      ENDIF
+C     VIBRATIONAL CONTRIBUTIONS.
+C     PROD   = 1.0D0
+      PROLOG = 0.0D0
+      SUM1   = 0.0D0
+      SUM2   = 0.0D0
+      HCKT   = HCK/TI
+      DO 30 J=NVIB,I3N
+      XJ     = HCKT*EIG(J)
+      IF(XJ.LE.0.0D0 .OR. XJ.GT.40.0D0) GO TO 30
+      EX     = EXP(-XJ)
+      REX    = 1.0D0/(1.0D0-EX)
+C     PROD   = PROD*REX
+      PROLOG = PROLOG+LOG(REX)
+      SUM1   = SUM1+XJ*EX*REX
+      SUM2   = SUM2+XJ**2*EX*REX**2
+   30 CONTINUE
+C     PROLOG = LOG(PROD)
+C     Q(I,3) = PROD
+      Q(I,3) = PROLOG
+      H(I,3) = RK*TI*SUM1
+      C(I,3) = R*SUM2
+      S(I,3) = R*SUM1+R*PROLOG
+      G(I,3) = -RK*TI*PROLOG
+C     SUM OF ALL CONTRIBUTIONS.
+      H(I,4) = H(I,1)+H(I,2)+H(I,3)
+      C(I,4) = C(I,1)+C(I,2)+C(I,3)
+      S(I,4) = S(I,1)+S(I,2)+S(I,3)
+      G(I,4) = G(I,1)+G(I,2)+G(I,3)
+   40 CONTINUE
+C *** PRINTING SECTION.
+      IF(LPRINT.LE.-5) RETURN
+      WRITE(NB6,560)
+      WRITE(NB6,570)
+      DO 50 I=1,NTP
+      WRITE(NB6,580) T(I),H(I,4),C(I,4),S(I,4),G(I,4)
+   50 CONTINUE
+      IF(LPRINT.LE.0) RETURN
+C     TRANSLATIONAL CONTRIBUTIONS.
+      WRITE(NB6,510)
+      WRITE(NB6,520)
+      DO 60 I=1,NTP
+      WRITE(NB6,530) T(I),Q(I,1),H(I,1),C(I,1),S(I,1),G(I,1)
+   60 CONTINUE
+C     ROTATIONAL CONTRIBUTIONS.
+      QI3MAX = 0.0D0
+      WRITE(NB6,540)
+      WRITE(NB6,520)
+      DO 70 I=1,NTP
+      WRITE(NB6,530) T(I),Q(I,2),H(I,2),C(I,2),S(I,2),G(I,2)
+      QI3MAX = MAX(QI3MAX,Q(I,3))
+   70 CONTINUE
+C     VIBRATIONAL CONTRIBUTIONS.
+      WRITE(NB6,550)
+      IF(QI3MAX.LT.40.0D0) THEN
+         WRITE(NB6,520)
+         DO 80 I=1,NTP
+         WRITE(NB6,530) T(I),EXP(Q(I,3)),H(I,3),C(I,3),S(I,3),G(I,3)
+   80    CONTINUE
+      ELSE
+         WRITE(NB6,525)
+         DO 90 I=1,NTP
+         WRITE(NB6,530) T(I),Q(I,3),H(I,3),C(I,3),S(I,3),G(I,3)
+   90    CONTINUE
+      ENDIF
+      RETURN
+  500 FORMAT(///5X,'CALCULATION OF THERMODYNAMIC QUANTITIES.',
+     1       ///5X,'RIGID-ROTOR HARMONIC-OSCILLATOR APPROXIMATION.',
+     2       /  5X,'NO SPECIAL TREATMENT OF INTERNAL ROTATIONS.',
+     3       /  5X,'ELECTRONIC CONTRIBUTIONS ARE NEGLECTED.',
+     4       /  5X,'EVALUATION VIA PARTITION FUNCTION Q.',
+     5       /  5X,'H(T)-H(0)  ENTHALPY      IN KCAL MOL-1.',
+     6       /  5X,'CP         HEAT CAPACITY IN CAL  MOL-1 KELVIN-1.',
+     7       /  5X,'S          ENTROPY       IN CAL  MOL-1 KELVIN-1.',
+     8       /  5X,'G(T)-G(0)  FREE ENTHALPY IN KCAL MOL-1.')
+  510 FORMAT(///5X,'TRANSLATIONAL CONTRIBUTIONS.')
+  520 FORMAT(/  5X,'T(KELVIN)',8X,'Q',12X,'H(T)-H(0)',10X,'CP',13X,'S',
+     1         10X,'G(T)-G(0)'/)
+  525 FORMAT(/  5X,'T(KELVIN)',6X,'LN(Q)',10X,'H(T)-H(0)',10X,'CP',
+     1         13X,'S',10X,'G(T)-G(0)'/)
+  530 FORMAT(   5X,F9.2,E15.5,4F15.5)
+  540 FORMAT(///5X,'ROTATIONAL CONTRIBUTIONS.')
+  550 FORMAT(///5X,'VIBRATIONAL CONTRIBUTIONS.')
+  560 FORMAT(///5X,'SUM OF TRANSLATIONAL, ROTATIONAL AND ',
+     1             'VIBRATIONAL CONTRIBUTIONS.')
+  570 FORMAT(/  5X,'T(KELVIN)',6X,'H(T)-H(0)',10X,'CP',13X,'S',
+     1         10X,'G(T)-G(0)'/)
+  580 FORMAT(   5X,F9.2,4F15.5)
+  590 FORMAT(// 5X,'INPUT VALUE FOR LOWEST TEMPERATURE OF',I4,
+     1             ' KELVIN IS RESET TO 100 KELVIN BECAUSE OF THE',
+     1       /  5X,'RIGID-ROTOR HARMONIC-OSCILLATOR APPROXIMATION.')
+  600 FORMAT(// 5X,'INPUT VALUE FOR TEMPERATURE INCREMENT OF',I4,
+     1             ' KELVIN IS RESET TO 100 KELVIN.')
+      END

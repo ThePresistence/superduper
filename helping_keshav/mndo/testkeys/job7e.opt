@@ -1,0 +1,8 @@
+DSC ETHYLENE, D2h, MNDO RHF at AM1 geometry
+DSC NMR, single-point MNDO-B3 calculation after AM1 geometry optimization
+PRP heat=16.47114:-3545.18635
+PRP optcyc=1
+PRP finalheat=16.47114
+PRP intgrdopt=0.27802
+PRP NMRatomA=1 NMRtypeA=C NMRisoA=-62.264 NMRs1A=-162.546 NMRs2A=-63.437 NMRs3A=39.192
+PRP NMRatomB=3 NMRtypeB=H NMRisoB=44.394 NMRs1B=40.863 NMRs2B=41.323 NMRs3B=50.995

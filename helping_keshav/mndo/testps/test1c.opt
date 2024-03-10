@@ -1,0 +1,9 @@
+DSC MNDO/d force constants for CHFClBr. Packed in-core MO solution using 
+DSC unconditioned globally orthogonal minres solver.
+DAT CHFClBr.dat
+OPT iprint=1
+OPT imix=1 idens=4 iqswap=-1 inrhs=-2 iprect=1 idstrp=5 ikmode=2 isolve=2 ikrsav=9
+PRP heat=-59.08879 intgrdopt=0.29086 cartgrdopt=0.72765 optcyc=5
+PRP freqmem=95023 freqdisk=0
+PRP freq7=224.90708 freq8=338.38693 zpe=14.25926 
+PRP modea=11 wavea=940.67033 ira=203.768 modeb=14 waveb=1545.86399 irb=208.533

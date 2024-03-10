@@ -1,0 +1,12 @@
+iop=-1 ksym=1 iscf=9 iplscf=9 iprec=100 iconv=3 kci=3
+
+SINGLET METHYLENE, C2V, MNDOC BWEN1
+99
+ 6           1.
+ 1           1.10      1       130.        1
+ 1                                                 180.                2 1 3
+
+ 3  1                4
+ 3  2                4
+
+   0   0   0

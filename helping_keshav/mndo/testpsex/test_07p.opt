@@ -1,0 +1,11 @@
+DSC BENZENE, D6h, OM2 pi-orbital full CI for closed-shell singlet
+DSC Multiple state gradient and interstate coupling calculation
+DSC Full expression for the non-adiabatic coupling matrix elements
+DSC Not using molecular symmetry, no point charges
+PRP mulstates=1:2:10
+PRP mulheats=1.58970:104.84460:217.59361
+PRP mulqmnorms=20.67244:78.98288:141.71549
+PRP muloptnorms=37.27526:229.96625:383.94621
+PRP gicvstates=2,1:10,1:10,2
+PRP gicvqmnorms=2.76487:0.20407:0.64159
+PRP gicvoptnorms=0.00000:0.49969:0.00000

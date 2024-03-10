@@ -1,0 +1,8 @@
+DSC BENZYL RADICAL, C2v, AM1 doublet CISDTQ with doublet reference
+DSC Active space: 4 MOs, 3 VOs - defined via pz population (movo=-3)
+DSC Single-point energy calculation for the 3 lowest states
+PRP ciheat=20.19045:20.19045
+PRP deltae=0.000000:1.941696:2.045668
+PRP dipole=0.037278:0.230389:0.466925
+PRP deltae2=0.000000:1.941696:2.045668
+PRP dipole2=0.037278:0.230389:0.466925

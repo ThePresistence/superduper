@@ -1,0 +1,130 @@
+#INPUT COORDINATES
+c_create coords=coord.c {
+coordinates angstrom
+C      -0.00210      -0.00063      -0.00001  
+N       1.28587      -0.00077       0.00001  
+H      -0.58316       0.93103       0.00000   
+H       1.83665       0.85914       0.00003  
+H      -0.58341      -0.93214      -0.00003  
+H       1.83641      -0.86084       0.00000  
+}
+
+#QM OPTION
+set QM_OPTION [ list executable=../../../../../mndo99         \
+                hamiltonian=om2                                             \
+                accuracy=veryhigh                                               \
+                charge=1                                                    \
+                mult=0                                                      \
+                scftype=rhf                                                 \
+                maxcyc=4000                                                 
+               ]
+
+#MD VARIABLES
+#TOTAL NUMBER OF STEPS
+set nsteps 100000
+
+#NUMBER OF STEPS IN EACH PREPARATION RUN
+set presteps 500
+
+#FREQUENCY OF OUTPUT OF TRAJECTORY
+set ftraj   10
+
+#OPEN FILE FOR STATISTICS
+set of [ open MD_STATISTICS.out w ]
+
+#DEFINE DYNAMICS
+dynamics dyn1 coords= coord.c                                      \
+              temperature= 100                                     \
+              timestep= 0.001                                      \
+              trajectory_type= 1                                   \
+              ensemble= NVT                                        \
+              nosehoover= 10                                        \
+              taut= 0.05                                          \
+              energy_unit= "kcal mol-1"                            \
+              theory= mndo : $QM_OPTION                            
+
+#INITIATE CONDITIONS
+dyn1 initvel
+
+set i 0
+set goal 0
+
+#PREPARATION RUN 1: 
+dyn1 configure temperature= 100 taut= 0.05
+set goal [expr $goal+$presteps]
+while {$i < $goal} {
+      dyn1 force
+      dyn1 step
+      incr i
+      puts $of "$i [ dyn1 get time             ] \
+                     [ dyn1 get total_energy     ] \
+                     [ dyn1 get kinetic_energy   ] \
+                     [ dyn1 get potential_energy ] \
+                     [ dyn1 get temperature      ] "
+      flush $of
+}
+
+#PREPARATION RUN 2: 
+dyn1 configure temperature= 200 taut= 0.05
+set goal [expr $goal+$presteps]
+while {$i < $goal} {
+      dyn1 force
+      dyn1 step
+      incr i
+      puts $of "$i [ dyn1 get time             ] \
+                     [ dyn1 get total_energy     ] \
+                     [ dyn1 get kinetic_energy   ] \
+                     [ dyn1 get potential_energy ] \
+                     [ dyn1 get temperature      ] "
+      flush $of
+}
+
+#PREPARATION RUN 3: 
+dyn1 configure temperature= 300 taut= 0.05
+set goal [expr $goal+$presteps]
+while {$i < $goal} {
+      dyn1 force
+      dyn1 step
+      incr i
+      puts $of "$i [ dyn1 get time             ] \
+                     [ dyn1 get total_energy     ] \
+                     [ dyn1 get kinetic_energy   ] \
+                     [ dyn1 get potential_energy ] \
+                     [ dyn1 get temperature      ] "
+      flush $of
+}
+
+#PREPARATION RUN 4: 
+dyn1 configure temperature= 300 taut= 0.1
+set goal [expr $goal+$presteps]
+while {$i < $goal} {
+      dyn1 force
+      dyn1 step
+      incr i
+      puts $of "$i [ dyn1 get time             ] \
+                     [ dyn1 get total_energy     ] \
+                     [ dyn1 get kinetic_energy   ] \
+                     [ dyn1 get potential_energy ] \
+                     [ dyn1 get temperature      ] "
+      flush $of
+}
+
+
+#FINAL MD RUN (WITH TAUT AT THE CORRECT VALUE AND SAMPLING)
+dyn1 configure temperature= 300 taut= 0.1
+set goal [expr $goal+$nsteps]
+while {$i < $goal} {
+    dyn1 force
+    dyn1 step
+    incr i
+    if { [ expr $i % $ftraj ] == 0 } { dyn1 trajectory }
+    puts $of "$i [ dyn1 get time             ] \
+                 [ dyn1 get total_energy     ] \
+                 [ dyn1 get kinetic_energy   ] \
+                 [ dyn1 get potential_energy ] \
+                 [ dyn1 get temperature      ] "
+    flush $of
+}
+
+close $of
+

@@ -1,0 +1,13 @@
+DSC MNDO ROHF force constants for doublet NO2 from numerical differentiation 
+DSC of gradients. Separate AO solution using Pople's solver and bi-linear
+DSC conditioning.
+DAT NO2.dat
+OPT iprint=1
+OPT imix=3 idens=7 iqswap=2 inrhs=-2 iprect=5 ihlst=1 ihlwrp=1 isolve=1
+PRP heat=-4.54099 intgrdopt=0.03198 cartgrdopt=0.02386 optcyc=4
+PRP freqmem=5073 freqdisk=35
+PRP freq7=676.192 freq8=1830.355 freq9=2287.163
+PRP zpe=6.85288
+PRP modea=9  wavea=2287.163 ira=642.560
+PRP modeb=7  waveb=676.192  irb=20.519 
+PRP modec=8  wavec=1830.355 irc=0.933  

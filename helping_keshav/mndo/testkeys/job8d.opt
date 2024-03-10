@@ -1,0 +1,15 @@
+DSC DIMETHYL ETHER, AM1 RHF for QM/MM
+DSC Single-point SCF calculation with external points charges.
+DSC Test of options kitscf=-1/-2 and ktrial=11/12 to compute energy
+DSC and gradient from given density/eigenvectors without SCF treatment.
+DSC Run 1 - standard SCF calculation, save density on file nb11.
+DSC Run 2 - use saved density, kitscf=-1, same results as run 1.
+DSC Run 3 - use saved density, kitscf=-1, first external point moved.
+DSC Run 4 - standard SCF calculation, save eigenvectors on file nb12.
+DSC Run 5 - use saved eigenvectors, kitscf=-2, same results as run 4.
+DSC Run 6 - use saved eigenvectors, kitscf=-2, first external point moved.
+PRP heat=-53.30526:-53.30526:-53.16110:-53.30526:-53.30526:-53.16110
+PRP cartgrd=62.45020:62.45020:62.49719:62.45020:62.45020:62.49719
+
+
+

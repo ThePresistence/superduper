@@ -1,0 +1,8 @@
+iop=0 jop=1 igeom=1 ief=1 iprint=1 jprint=1 iprec=100 kitscf=50 nprint=2
+ 
+TS H2CO-HCOH OPTIMIZATION, CARTESIAN, EF-DEFAULT
+ 6
+ 1           0.63488   1         1.14277   1
+ 8           1.26976   1
+ 1          -0.62292   1        -0.89677   1
+

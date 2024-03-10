@@ -1,0 +1,7 @@
+DSC ETHYLENE, D2h, MNDO RHF 
+DSC Finite-field calculation of polarizability and hyperpolarizability
+PRP heat=15.89999
+PRP meanpol=2.426513:2.426392
+PRP firsthpol=0.000000:0.000000
+PRP secondhpol=-0.098467:-0.098495
+

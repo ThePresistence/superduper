@@ -1,0 +1,16 @@
+DSC ETHENE, OM2 MRSD-CI for closed-shell singlet
+DSC Active space: 4 MOs, 4 VOs - defined by default
+DSC Geometry optimization for ground state plus
+DSC force constant analysis using numerical
+DSC integral derivatives
+PRP finalheat=4.27481
+PRP freq1=0
+PRP freq2=0
+PRP freq3=0
+PRP freq4=0
+PRP freq5=0
+PRP freq6=0
+PRP freq7=937.25725
+PRP freq8=952.88903
+PRP freq9=1054.02230
+PRP freq10=1054.60296

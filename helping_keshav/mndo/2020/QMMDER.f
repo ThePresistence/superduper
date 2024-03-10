@@ -1,0 +1,169 @@
+      SUBROUTINE QMMDER (PA,PB,LM4)
+C     *
+C     FAST GRADIENTS IN CARTESIAN COORDINATES BY FINITE DIFFERENCE.
+C     CONTRIBUTIONS FROM ELECTROSTATIC QM/MM INTERACTIONS TO THE
+C     GRADIENT ARE INCLUDED FOR QM AND MM ATOMS IN CG(K,I).
+C     QM ATOMS: I = 1,...,NUMAT.
+C     MM ATOMS: I = NUMAT+1,...,NUMAT+NUMATM.
+C     *
+      USE LIMIT, ONLY: LM1, LMX, LMZ, LM1M
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (LMH=45)
+      LOGICAL AM1PM3,NOTOMI
+      COMMON
+     ./ATOMC / COORD(3,LM1)
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CGRAD / CG(3,LM1+LM1M)
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./EXTRA1/ RI(22),CORE(10,2),REPT(10,2),WW(2025)
+     ./EXTRA2/ SIJ(14),T(14),YY(675)
+     ./INDEX / INDX(LMX)
+     ./INOPT2/ IN2(300)
+     ./MULTIP/ DD(6,0:LMZ),PO(9,0:LMZ)
+     ./PARDER/ TORE(LMZ),EHEAT(LMZ),EISOL(LMZ)
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+     ./QMMM2 / LINK(LM1)
+     ./QMMM3 / DELTAM(LMZ),OMEGAM(LMZ)
+      DIMENSION PA(LM4),PB(LM4)
+      DIMENSION H(LMH),Q(LMH)
+      DIMENSION DELX(2),ETOT(3)
+      DIMENSION XCOORD(3,2)
+C$OMP THREADPRIVATE (/EXTRA1/,/EXTRA2/)
+C *** INPUT OPTIONS.
+      IOP    = IN2(2)
+      NUMATM = IN2(120)
+      MMCOUP = IN2(121)
+      MMPOT  = IN2(122)
+      MMLINK = IN2(123)
+C *** CALL SPECIAL VERSION FOR MMPOT=1.
+      IF(MMPOT.EQ.1) THEN
+         CALL QMMDR1 (PA,PB,LM4)
+         RETURN
+      ENDIF
+C *** INITIALIZATION.
+      CG(1:3,NUMAT+1:NUMAT+NUMATM) = ZERO
+      IF(MMCOUP.LT.2) RETURN
+      DEL    = 1.0D-06
+      RDEL   = 5.0D+05
+      DELX(1)= DEL
+      DELX(2)=-DEL
+      AM1PM3 = IOP.EQ.-2 .OR. IOP.EQ.-7 .OR. IOP.EQ.-12 .OR. IOP.EQ.-17
+      NOTOMI = IOP.NE.-5 .AND. IOP.NE.-6 .AND. IOP.NE.-8 .AND. IOP.NE.-9
+C *** LOOP OVER QM ATOMS (I).
+      DO 90 I=1,NUMAT
+      IF(MMLINK.EQ.1 .AND. LINK(I).GT.0) GO TO 90
+      NI     = NAT(I)
+      IA     = NFIRST(I)
+      IB     = NLAST(I)
+      IORBS  = IB-IA+1
+      ISHELL = I
+      LIN    = INDX(IORBS)+IORBS
+      XCOORD(1,2) = COORD(1,I)
+      XCOORD(2,2) = COORD(2,I)
+      XCOORD(3,2) = COORD(3,I)
+C     EXTRACT RELEVANT ONE-CENTER DENSITY MATRIX ELEMENTS.
+      DO 20 K=1,IORBS
+      KK     = INDX(IA-1+K)+IA-1
+      DO 10 L=1,K
+      IJ     = INDX(K)+L
+      Q(IJ)  = PA(KK+L)+PB(KK+L)
+      IF(K.NE.L) Q(IJ)=Q(IJ)*TWO
+   10 CONTINUE
+   20 CONTINUE
+C *** LOOP OVER MM ATOMS (M).
+      DO 80 M=1,NUMATM
+      PTCHG       = CHARGM(M)
+      XCOORD(1,1) = COORDM(1,M)
+      XCOORD(2,1) = COORDM(2,M)
+      XCOORD(3,1) = COORDM(3,M)
+C *** LOOP OVER THREE CARTESIAN COORDINATES (K).
+      DO 70 K=1,3
+C *** LOOP OVER DISPLACEMENTS (L).
+      DO 60 L=1,2
+      XCOORD(K,2) = COORD(K,I)+DELX(L)
+C     DISTANCE R (AU) AND ROTATION MATRIX.
+      IF(IORBS.LE.4) THEN
+         R   = SQRT( (XCOORD(1,1)-XCOORD(1,2))**2
+     1              +(XCOORD(2,1)-XCOORD(2,2))**2
+     2              +(XCOORD(3,1)-XCOORD(3,2))**2 ) / A0
+      ELSE
+         CALL ROTMAT (1,2,0,IORBS,2,XCOORD,R,YY)
+      ENDIF
+C     LOCAL CHARGE-ELECTRON ATTRACTION INTEGRALS.
+      IF(NOTOMI) THEN
+         IF(IORBS.GT.1) THEN
+            CALL REPP0 (NI,R,RI,CORE)
+            IF(IORBS.GE.9) THEN
+               CALL REPPD (NI,0,R,RI,CORE,WW,45,1,1)
+            ENDIF
+         ELSE
+            AEE       = (PO(1,NI)+PO(1,0))**2
+            RI(1)     = EV/SQRT(R*R+AEE)
+            CORE(1,1) = -RI(1)
+         ENDIF
+      ELSE
+         NKO  = 1
+         CALL COREXT (ISHELL,NI,NKO,R,CORE,FKO)
+      ENDIF
+C     MULTIPLICATION BY POINT CHARGE.
+      CORE(1,1) = CORE(1,1)*PTCHG
+      IF(IORBS.GE.4) THEN
+         CORE(2:4,1) = CORE(2:4,1)*PTCHG
+         IF(IORBS.GE.9) THEN
+            CORE(5:10,1) = CORE(5:10,1)*PTCHG
+         ENDIF
+      ENDIF
+C     CONTRIBUTIONS TO THE CORE HAMILTONIAN.
+      IF(IORBS.GT.1) THEN
+         H(1:LIN) = ZERO
+         IF(IORBS.LE.4) THEN
+            CALL ROTHSP (1,1,R,XCOORD,CORE,H,LMH)
+         ELSE
+            CALL ROTCOH (1,0,IORBS,0,1,0,CORE,YY,H,LMH)
+         ENDIF
+         EH  = ZERO
+         DO 50 J=1,LIN
+         EH  = EH+H(J)*Q(J)
+   50    CONTINUE
+      ELSE
+         EH  = CORE(1,1)*Q(1)
+      ENDIF
+C     CONTRIBUTIONS TO THE CORE-CORE REPULSIONS.
+      IF(NOTOMI) THEN
+         XX     = OMEGAM(NI)*(R*A0-DELTAM(NI))
+         IF(XX.LT.BIGEXP) THEN
+            SCALE  = ONE+EXP(-XX)
+         ELSE
+            SCALE = ONE
+         ENDIF
+         IF(MMPOT.EQ.7) THEN
+            SCALE  = SCALE + EXP(-5.0D0*R*A0)
+            ENUC   = TORE(NI)*RI(1)*SCALE
+            IF(AM1PM3) THEN
+               CALL REPAM1 (NI,0,R,ENUC)
+            ENDIF
+         ELSE IF(MMPOT.EQ.8) THEN
+            SCALE  = SCALE + EXP(-OMEGAM(1)*R*A0)
+            ENUC   = TORE(NI)*RI(1)*SCALE
+            IF(AM1PM3) THEN
+               CALL REPAM1 (NI,1,R,ENUC)
+            ENDIF
+         ELSE
+            ENUC   = TORE(NI)*RI(1)*SCALE
+         ENDIF
+         ENUC  = PTCHG*ENUC
+      ELSE
+         ENUC  = FKO*PTCHG*TORE(NI)*EV/R
+      ENDIF
+      ETOT(L)  = EH+ENUC
+      XCOORD(K,2) = COORD(K,I)
+   60 CONTINUE
+      DERQ     = (ETOT(1)-ETOT(2))*EVCAL*RDEL
+      CG(K,I)  = CG(K,I) + DERQ
+      CG(K,NUMAT+M) = CG(K,NUMAT+M) - DERQ
+   70 CONTINUE
+   80 CONTINUE
+   90 CONTINUE
+      RETURN
+      END

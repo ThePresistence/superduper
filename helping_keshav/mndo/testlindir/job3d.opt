@@ -1,0 +1,6 @@
+DSC TS H2CO->HCOH, MNDO RHF
+DSC TS, gradient norm minimization, internal coordinates
+PRP heat=75.66444
+PRP optcyc=7
+PRP finalheat=75.66444
+PRP intgrdopt=0.00553

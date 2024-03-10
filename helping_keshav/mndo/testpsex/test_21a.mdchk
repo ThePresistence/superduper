@@ -1,0 +1,9 @@
+# Check Born-Oppenheimer MD at SCF level.
+# Values are: MD step number, SCF heat of formation, Cartesian gradient norm.
+CHECK: scfbomd
+   0      6.73452    158.19731
+   1      6.68269    157.42787
+  10      2.96452     91.79875
+ 100      1.16715     35.87346
+1000      2.00889     59.10145
+ENDCHECK

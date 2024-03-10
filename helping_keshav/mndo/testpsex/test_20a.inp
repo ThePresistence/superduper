@@ -1,0 +1,16 @@
+ iop=-6 jop=-2 igeom=1 iform=1 icuts=-1 icutg=-1 +
+ iscf=11 iplscf=11 +
+ kharge=1 imult=0 iprint=-1 mprint=-1 jprint=-1 nprint=-1 +
+ kci=5 movo=0 ici1=2 ici2=1 iroot=4 +
+ ipubo=1 ktrial=11 +
+ ncisym=-1 ncigrd=3 icross=6 ioutci=-1 imomap=1 multci=1 
+ 
+ Methaniminium with random geometry for dynamics sim
+ 6        -0.1086000 1      0.1377200 1     -0.0262400 1
+ 7         1.1318700 1     -0.0722300 1     -0.1466700 1
+ 1        -0.5541800 1      0.8893600 1     -0.1811000 1
+ 1         1.7727500 1      0.8939600 1     -0.0429500 1
+ 1        -0.4271800 1     -0.8427200 1      0.1661600 1
+ 1         2.0165900 1     -1.0464500 1      0.0783700 1
+ 
+  1 2 3

@@ -1,0 +1,12 @@
+DSC ETHYLENE, D2h, MNDO RHF
+DSC Geometry optimization followed by force constant analysis
+DSC Reference data from standard calculation with analytic derivatives
+DSC Current values from CG-DMS calculation without analytic derivatives
+DSC Possible deviations in zpe and zeroheat not surprising
+PRP heat=15.40470
+PRP optcyc=1
+PRP finalheat=15.40470
+PRP zeroheat=17.29616
+PRP zpe=33.51324
+PRP intgrdopt=0.02386
+

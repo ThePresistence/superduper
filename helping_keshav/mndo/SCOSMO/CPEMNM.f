@@ -1,0 +1,694 @@
+      SUBROUTINE CPEMNM(PA,PB,LM4,LM2,PRBMAT)
+c      SUBROUTINE CPEMNM(PA,PB,LM4,LM2,EIGVEC,EIGVAL,PMOL)
+C     CALCULATES CPE CONSTRAINT MATRIX AND POPULATIONS
+C     UNDER SUBSYSTEM NORMALIZATION
+C     PA,PB,LM4 ARE INPUTS USED FOR THE BOND ORDER MATRIX
+C     OUTPUTS: EIGVEC,EIGVAL
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (LM1=600)
+      INTEGER LM4,LM2
+      DIMENSION PA(LM4),PB(LM4)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./CPEOPT/ NFLCPE,NPTCPE,NCPEZ
+      DIMENSION PRBMAT(NUMAT,NUMAT)
+      DIMENSION BOMT(NUMAT,NUMAT)
+      LOGICAL DPRINT
+      DPRINT = .FALSE.
+c      WRITE(6,*)"NUMAT=",NUMAT
+c      CALL PTV(PA,LM4,1,"PA(ON) ",6,.FALSE.)
+c      CALL PTV(PB,LM4,1,"PB(ON) ",6,.FALSE.)
+c      DIMENSION EIGVAL(NUMAT)
+C      LOGICAL DPRINT
+c      CALL CLRM(NUMAT,BOMAT,NUMAT)
+c      WRITE(6,*)PMOL
+c      CALL CPYV(PA,LM4,ZA)
+c      CALL CPYV(PB,LM4,ZB)
+c     CALL ABORT()
+c      WRITE(6,*)BOMAT
+      CALL BNDPOP(PA,PB,LM4,LM2,PRBMAT,DPRINT)
+      CALL CPYM(NUMAT,PRBMAT,NUMAT,BOMT)
+c      CALL BNDPOP(PA,PB,LM4,LM2,BOMT,DPRINT)
+c      CALL CPYM(NUMAT,BOMT,NUMAT,PRBMAT)
+c      WRITE(6,*)BOMAT
+c      CALL PTV(PA,LM4,1,"PA(OUT)",6,.FALSE.)
+c      CALL PTV(PB,LM4,1,"PB(OUT)",6,.FALSE.)
+c      DO 100 I=1,LM4
+c         X = PA(I)
+c         WRITE(6,*)"PA",I,X
+c 100  CONTINUE
+c      DO 200 I=1,LM4
+c         WRITE(6,*)"PB",I,PB(I)
+c 200  CONTINUE
+c      DO 10 I=1,NUMAT
+c         DO 20 J=1,NUMAT
+c            BOMAT(I,J) = 1.0D0
+c            WRITE(6,*)I,J
+c            WRITE(6,*)I,J,PMOL(I,J)
+c            WRITE(6,*)I,J,BOMAT(I,J)
+c 20      CONTINUE
+c 10   CONTINUE
+      WRITE(6,'(A,F12.5)')"BONDORDER12",BOMT(1,2)
+c      CALL CLRM(NUMAT,PMOL,NUMAT)
+c      WRITE(6,*)EIGVEC
+c      WRITE(6,*)PMOL
+c      CALL Abort()
+c      FOO = EXP(1.D500)
+c      CALL MOLDRV(EIGVEC,EIGVAL,PMOL)
+      CALL MOLDRV(BOMT,PRBMAT)
+c      CALL CPYM(NUMAT,PMOL2,NUMAT,PMOL)
+c      WRITE(6,*)"NUMAT = ",NUMAT
+c      CALL PTM(NUMAT,PMOL,NUMAT,2,NUMAT,"PMOL",6,.TRUE.)
+      RETURN
+      END SUBROUTINE
+c      SUBROUTINE MOLDRV(BO,EIGVAL,PMOL)
+      SUBROUTINE MOLDRV(BO,PMOL)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (LM1=600)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./CPEOPT/ NFLCPE,NPTCPE,NCPEZ
+C      PARAMETER (MPN=NUMAT+NUMAT*(NUMAT-1)/2)
+C     BOND ORDER MATRIX (ON INPUT)
+C     EIGENVECTORS (ON OUTPUT)
+      DIMENSION BO(NUMAT,NUMAT)
+      DIMENSION PMOL(NUMAT,NUMAT)
+C     EIGENVALUES (ON OUTPUT)
+c      DIMENSION EIGVAL(NUMAT)
+C     LENGTH OF THE PACKED VECTOR
+C      PARAMETER (MPN=N+N*(N-1)/2)
+C     PACKED BOND ORDER VECTOR AND BOND PROBABILITY VECTOR
+      DIMENSION BPV(NUMAT+NUMAT*(NUMAT-1)/2)
+C     MOLECULE PROBABILITY
+c      DIMENSION WORK(1+6*NUMAT*NUMAT*NUMAT)
+c      DIMENSION IWORK(3+5*NUMAT)
+c      DIMENSION WORK2(NUMAT)
+C     TREE (T) VECTORS
+      DIMENSION ITREE(NUMAT,7)
+      DIMENSION TREE(6)
+      PARAMETER (LTREE=7)
+      INTEGER PK
+C     SIZE OF IWORK (USED FOR DIVIDE AND CONQUER
+c      LIWORK=3+5*NUMAT
+C     SIZE OF WORK (USED FOR DIVIDE AND CONQUER
+c      LWORK=1+6*NUMAT*NUMAT*NUMAT
+      N=NUMAT
+      MPN=NUMAT+NUMAT*(NUMAT-1)/2
+c      CALL CLRM(NUMAT,PMOL,NUMAT)
+c      CALL CLRV(EIGVAL,NUMAT)
+      CALL CLRV(BPV,MPN)
+c      CALL CLRV(TREE,LTREE-1)
+C     ZERO OUT ARRAYS
+      DO 1 I=1,N
+c         DO 2 J=1,N
+c            WRITE(6,*)"I,J",I,J,ZERO
+c            WRITE(6,*)PMOL(I,J)
+c            PMOL(I,J)  = ZERO
+c 2       CONTINUE
+c         write(6,*)"I=",i
+c         EIGVAL(I)   = ZERO
+         DO 4 J=1,LTREE
+            ITREE(I,J) = 0
+ 4       CONTINUE
+ 1    CONTINUE
+      DO 3 I=1,MPN
+         BPV(I) = ZERO
+ 3    CONTINUE
+      DO 5 I=1,LTREE-1
+         TREE(I)=ZERO
+ 5    CONTINUE
+      FSZ = -FOUR*FOUR
+      FLZ = -FOUR
+      FUZ = -FOUR
+      FSC = PT5
+      FLC = 0.1000D0
+      FUC = 0.9000D0
+C      WRITE(6,*)"BOND ORDER MATRIX"
+C      DO 20 I=1,N
+C         WRITE(6,'(20F6.3)')(BO(I,J),J=1,N)
+C 20   CONTINUE
+C      WRITE(6,*)"PROBABILITY MATRIX"
+C     CONVERT UPPER DIAGONAL TO PACKED FORM VECTOR
+      DO 30 I=1,N
+         DO 31 J=I,N
+            CALL PAKIND(I,J,N,K)
+c            K = PAKIND(I,J,N)
+            IF ( I.EQ.J ) THEN
+               BPV(K) = ONE
+            ELSE
+               BX = BO(I,J)
+C     CALCULATE THE PROBABILITY OF THE BOND
+               IF( BX .GE. FUC ) THEN
+                  BPV(K) = ONE
+               ELSE IF ( BX .LE. FLC ) THEN
+                  BPV(K) = ZERO
+               ELSE
+C     THIS FUNCTION SWITCHES BETWEEN 0 TO 1 IN THE RANGE
+C     OF FLC TO FUC AND HAS A DERIVATIVE OF ZERO AT THE END POINTS
+                  FS = EXP(FSZ*(BX-FSC))
+                  FS = FS/(ONE+FS)
+                  FL = ONE - EXP(FLZ*(BX-FLC)**2)
+                  FU = EXP(FUZ*(BX-FUC)**2)
+                  BPV(K) = FS*FL+(ONE-FS)*FU
+               END IF
+            END IF
+c            WRITE(6,'(2I3,F6.3)')I,J,BPV(K)
+ 31      CONTINUE
+ 30   CONTINUE
+      IF ( NFLCPE .EQ. 2 ) THEN
+C     "MOLECULAR" NORMALIZATION
+         IF ( NPTCPE.GT.0 ) THEN
+            WRITE(6,'(A)')"SUBSYSTEM TYPE: MOLECULAR"
+         END IF
+C     WE ARE CREATING THE "T" "VECTOR"
+C     THIS IS THE ARRAY WHICH MAKES THE SCALING TRANSFORMATION
+C     BEST CASE : (N-1)N(N-1)/2   => 6N(N-1)/2
+C     WORST CASE: (N-1)!N(N-1)/2  => 6!N(N-1)/2
+C
+         DO 40 I=1,N
+C     THE INDEX OF ITREE WHICH IS THE LAST VALID INDEX
+C     LVI -> ITREE(I,LTREE)
+            DO 42 J=1,LTREE-1
+               TREE(J)=ZERO
+ 42         CONTINUE
+            LVI=1
+            DO 50 J=1,N
+               IF ( J.EQ.I ) CYCLE
+               CALL PAKIND(I,J,N,PK)
+               PT = BPV(PK)
+               IF ( LVI.LT.6 ) THEN
+                  LL=LVI+1
+               ELSE
+                  LL=6
+               END IF
+               DO 60 L=1,LL
+                  IF ( PT.GT.TREE(L) ) THEN
+                     IF ( LVI.LE.LL.AND.ITREE(I,LVI).NE.0) THEN
+                        LVI=LVI+1
+                     END IF
+                     KL = L
+                     IF ( KL .EQ. 1 ) KL = 2
+                     DO 65 K=KL,LL
+                        TREE(K)  = TREE(K-1)
+                        ITREE(I,K) = ITREE(I,K-1)
+ 65                  CONTINUE
+                     TREE(L) = PT
+                     ITREE(I,L) = J
+                     GOTO 66
+                  END IF
+ 60            CONTINUE
+ 66            CONTINUE
+ 50         CONTINUE
+            IF ( ITREE(I,LVI).EQ.0 ) LVI=LVI-1
+            ITREE(I,LTREE) = LVI
+c            WRITE(6,*)
+c            WRITE(6,'(I3,A,10I3:)')I," ITREE=",(ITREE(I,J),J=1,LVI)
+ 40      CONTINUE
+         DO 70 I=1,N
+            IF ( ITREE(I,LTREE) .LT. 0 ) ITREE(I,LTREE)=0
+ 70      CONTINUE
+c         WRITE(6,*)"ITREE"
+c         DO 71 I=1,N
+c            WRITE(6,'(20I6)')(ITREE(I,K),K=1,ITREE(I,LTREE))
+c 71      CONTINUE
+C     COUNTER FOR THE NUMBER OF PERMUTATIONS
+         NPERM = 0
+C      NPERMF= NFACTRL(N)*(N-1)/2
+C      MPERM = 0
+         DO 100 I=1,N-1
+            DO 110 J=I+1,N
+C     FNDMAX WAS THE ORIGINAL IMPLEMENTATION
+C     AND SCALES (N-1)N(N-1)/2 AS A BEST CASE SCENERIO
+C     CALL FNDMAX(I,J,N,PMAX2,BPV,MPERM)
+C     FPMAX IS THE NEW IMPLEMENTATION
+C     AND SCALES 6N(N-1)/2 AS A BEST CASE SCENERIO
+               CALL FPMAX(I,J,PMAX,BPV,NPERM,ITREE,LTREE)
+               PMOL(I,J)=PMAX
+               PMOL(J,I)=PMAX
+C     THIS IS JUST A TEST TO MAKE SURE FPMAX AND FNDMAX
+C     GIVE THE SAME ANSWER
+C     WRITE(6,*)I,J,PMAX,PMAX2
+ 110        CONTINUE
+ 100     CONTINUE
+C     BO IS NOW THE NxN PROBABILITY MATRIX
+C     CONVERT UPPER DIAGONAL TO PACKED FORM VECTOR
+c         DO 300 I=1,N
+c            PMOL(I,I) = ONE
+c            DO 302 J=I,N
+c               CALL PAKIND(I,J,N,K)
+c               BPV(K) = PMOL(I,J)
+c 302        CONTINUE
+c 300     CONTINUE
+      ELSE IF ( NFLCPE.EQ.3 ) THEN
+C     "NEIGHBOR" NORMALIZATION
+         IF ( NPTCPE.GT.0 ) THEN
+            WRITE(6,'(A)')"SUBSYSTEM TYPE: NEIGHBOR"
+         END IF
+C     BPV ALREADY HAS WHAT WE WANT, SO WE DON'T
+C     REALLY HAVE TO DO ANYTHING
+         DO 500 I=1,NUMAT
+            DO 501 J=I,NUMAT
+               CALL PAKIND(I,J,NUMAT,K)
+               PMOL(I,J) = BPV(K)
+               PMOL(J,I) = BPV(K)
+ 501        CONTINUE
+ 500     CONTINUE
+      END IF
+c      CALL PTM(NUMAT,PMOL,NUMAT,1,1,"PMOL",6,.TRUE.)
+C     WE AREN'T GOING TO CALCULATE THE EIGENVALUES AND EIGENVECTORS
+C     ((THIS IS AN INTERFACE CHANGE))
+      RETURN
+C     CALCULATE EIGENVALUES AND EIGENBVECTORS
+C     BO IS NOW THE EIGENVECTORS
+c     << divide and conquer >>
+c      CALL DSPEVD('V','L',N,BPV,EIGVAL,BO,N,WORK,LWORK,
+c     $     IWORK, LIWORK, INFO )
+c     << NOT divide and conquer >>
+c      CALL DSPEV('V','L',N,BPV,EIGVAL,BO,N,WORK2,INFO)
+      RETURN
+      END SUBROUTINE
+      SUBROUTINE FPMAX(IA,IB,PMAX,BPV,NPERM,ITREE,LTREE)
+C     CALCULATES THE SERIES OF PROBABILITIES
+C     p^M_{IJ}
+C     AND DETERMINES THE MAXIMUM OF THE SET
+C     USED AS P(I,J)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (LM1=600)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+C     LENGTH OF THE PACKED VECTOR
+c      PARAMETER (MPN=NUMAT+NUMAT*(NUMAT-1)/2)
+C     PACKED BOND ORDER VECTOR AND BOND PROBABILITY VECTOR
+      DIMENSION BPV(NUMAT+NUMAT*(NUMAT-1)/2)
+      DIMENSION IV(NUMAT)
+      LOGICAL FIN,SKIP
+      DIMENSION ITREE(NUMAT,LTREE)
+      INTEGER PK
+      N = NUMAT
+      IF(IA.GT.IB) THEN
+         WRITE(6,*)"ERROR: FPMAX, IA>IB",IA,IB
+         WRITE(6,*)"METHOD ASSUMES IA<IB"
+         WRITE(6,*)"ABNORMAL TERMINATION"
+         STOP
+      END IF
+      FIN = .FALSE.
+      CALL PAKIND(IA,IB,N,PK)
+      PMAX = BPV( PK )
+      IF ( ITREE(IA,LTREE) .EQ. 0 ) RETURN
+C      WRITE(6,*)"START = ",PMAX
+C     START WITH THE FIRST VALID PERMUTATION.
+C     THE FIRST VALID PERMUTATION STARTS
+C     WITH THE ATOM FROM WHICH WE ARE BONDING
+      IV(1)=IA
+      IF ( N .GT. 1 ) THEN
+         IF ( ITREE(IA,LTREE).GT.0 ) THEN
+            IV(2) = ITREE(IA,1)
+         END IF
+         DO 5 I=3,N
+            IV(I)=0
+ 5       CONTINUE
+      END IF
+      CALL TREPRM(IV,N,3,ITREE,LTREE,FIN,IB)
+      DO 100 WHILE ( .NOT. FIN )
+C     WE CAN STOP PERMUTING SINCE THE REST OF THE
+C     PERMUTATIONS DON'T TRY TO BOND FROM THE
+C     FIRST ATOM (IA)
+         IF ( IV(1).NE.IA ) EXIT
+C     INITIALIZE THE PROBABILITY TEST
+         PTEST=1.0D0
+         SKIP=.FALSE.
+         DO 200 I=2,N
+C     IF WE ARE LESS THAN THE MAX, THEN THERE IS NO
+C     POINT CONTINUING SINCE IT WILL ONLY GET SMALLER
+            IF ( PTEST.LT.PMAX.OR.PTEST.EQ.0.0D0) THEN
+               PTEST = 0.0D0
+               SKIP = .TRUE.
+               ISKIP = I-1
+               EXIT
+            END IF
+            SKIP = .FALSE.
+C     KEEP MULTIPLYING THROUGH THE BONDS
+            CALL PAKIND(IV(I-1),IV(I),N,PK)
+            PTEST = PTEST*BPV(PK)
+C     IF WE REACHED THE ATOM TO WHICH WE ARE TRYING
+C     TO BOND TO, THEN STOP MULTIPLYING
+            IF (IV(I).EQ.IB) THEN
+               SKIP = .TRUE.
+               ISKIP = I
+               EXIT
+            END IF
+ 200     CONTINUE
+C     WE ARE DONE MULTIPLYING, WE MUST NOW SEE
+C     IF THE VALUE IS GREATER THAN THE MAX
+         IF (PTEST.GT.PMAX) THEN
+            PMAX=PTEST
+            IF ( PMAX.EQ.ONE ) RETURN
+         END IF
+C         CALL PERMUT(IV,N,FIN)
+         NPERM = NPERM+1
+c         WRITE(6,*)(IV(J),J=1,N)
+C     WE CAN SKIP AHEAD MANY PERMUTATIONS ACCORDING TO
+C     WHERE IN THE PERMUTATION THE TEST FAILED TO BE
+C     BETTER THAN BEST...
+C     ...THIS IS WHAT MAKES THE METHOD SCALE LESS THAN N!
+         IF ( SKIP ) THEN
+            CALL TREPRM(IV,N,ISKIP,ITREE,LTREE,FIN,IB)
+            SKIP=.FALSE.
+         ELSE
+            CALL PERMUT(IV,N,FIN)
+         END IF
+ 100  CONTINUE
+      RETURN
+      END SUBROUTINE
+      SUBROUTINE TREPRM(IV,N,IIND,ITREE,LTREE,FIN,IB)
+C     LIKE PERMUT, BUT DOES THE PERMUTATIONS OVER THE TREE VECTOR
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION IV(N), ITREE(N,LTREE)
+      LOGICAL FIN
+      IND = IIND
+      FIN = .FALSE.
+ 1    IOLD = IV(IND)
+      IF ( IND.EQ.1 ) THEN
+         FIN = .TRUE.
+         RETURN
+      END IF
+      IBND = IV(IND-1)
+C     FIND THE TREE INDEX OF IBND THAT CORRESPONDS TO IOLD
+      ITI=0
+      DO 200 I=1,ITREE(IBND,LTREE)
+         IF ( ITREE(IBND,I) .EQ. IOLD ) THEN
+            ITI=I
+            EXIT
+         END IF
+ 200  CONTINUE
+C     FIND THE VALUE TO WHICH IV(IND) SHOULD BE INCREASED TO
+      ITN=ITI
+C     INCREASE THE TREE INDEX BY 1
+ 9    ITN=ITN+1
+C     CHECK TO SEE IF IBND HAS ANYMORE AVAILABLE BONDS
+      IF ( ITN .GT. ITREE(IBND,LTREE) ) THEN
+         IND = IND-1
+         GOTO 1
+      END IF
+C     CHECK TO MAKE SURE THE BOND DOES NOT FORM A CYCLE
+      INEW = ITREE(IBND,ITN)
+C     WRITE(6,*)"IND ",IND," SHOULD BE INCREASED TO ",INEW
+      DO 10 I=1,IND-1
+         IF( IV(I) .EQ. INEW ) GOTO 9
+ 10   CONTINUE
+C     WE FOUND THE VALUE THAT IND SHOULD HAVE
+      IV(IND) = INEW
+C     FILL UP THE REST OF THE ARRAY AFTER IND
+C     WITH THE LOWSET REMAINING POSSIBLE NUMBERS
+      IF (INEW.NE.IB.AND.IND.NE.N) IV(IND+1)=IB
+      DO 20 I=IND+2,N
+         J = 0
+ 100     J = J+1
+C     CHECK TO SEE IF THIS NUMBER WAS PREVIOUSLY USED
+         DO 30 K=1,I-1
+            IF ( IV(K).EQ.J ) GOTO 100
+ 30      CONTINUE
+         IV(I)=J
+ 20   CONTINUE
+      END SUBROUTINE
+      SUBROUTINE PERMUT(IV,N,FIN)
+C     INCREASES THE LEXIOGRAPHIC PERMUTATION OF IV BY 1
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION IV(N)
+      LOGICAL FIN
+      FIN = .FALSE.
+      K = N-1
+      DO 1 WHILE(IV(K)>IV(K+1))
+         K=K-1
+ 1    CONTINUE
+      IF ( K.EQ.0 ) THEN
+         FIN=.TRUE.
+         RETURN
+      END IF
+      J=N
+      DO 2 WHILE(IV(K).GT.IV(J))
+         J=J-1
+ 2    CONTINUE
+      CALL SWAPIV(J,K,N,IV)
+      IR = N
+      IS = K+1
+      DO 3 WHILE(IR.GT.IS)
+         CALL SWAPIV(IR,IS,N,IV)
+         IR=IR-1
+         IS=IS+1
+ 3    CONTINUE
+      RETURN
+      END SUBROUTINE
+      SUBROUTINE PAKIND(I,J,N,K)
+C     CALCULATES THE PACKED INDEX OF A SYMMTRIC MATRIX
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER I,J,N,K
+      IF ( I < J ) THEN
+         K=J+(I-1)*(2*N-I)/2
+      ELSE
+         K=I+(J-1)*(2*N-J)/2
+      END IF
+      END SUBROUTINE
+      SUBROUTINE SWAPIV(I,J,N,IV)
+C     SWAPS ELEMENTS I AND J IN A VECTOR IV
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION IV(N)
+      K = IV(J)
+      IV(J) = IV(I)
+      IV(I) = K
+      RETURN
+      END SUBROUTINE
+C-------------------END---------------------------
+c$$$
+c$$$      SUBROUTINE FNDMAX(IA,IB,N,PMAX,BPV,NPERM)
+c$$$      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+c$$$C     MAXIMUM NUMBER OF ATOMS
+c$$$      PARAMETER (MN=100)
+c$$$C     LENGTH OF THE PACKED VECTOR
+c$$$      PARAMETER (MPN=MN+MN*(MN-1)/2)
+c$$$C     PACKED BOND ORDER VECTOR AND BOND PROBABILITY VECTOR
+c$$$      DIMENSION BPV(MPN)
+c$$$      DIMENSION IV(N)
+c$$$      LOGICAL FIN,SKIP
+c$$$
+c$$$      IF(IA.GT.IB) THEN
+c$$$         WRITE(6,*)"ERROR: FNDMAX, IA>IB",IA,IB
+c$$$         WRITE(6,*)"METHOD ASSUMES IA<IB"
+c$$$         WRITE(6,*)"ABNORMAL TERMINATION"
+c$$$         STOP
+c$$$      END IF
+c$$$      FIN = .FALSE.
+c$$$      PMAX = BPV( PAKIND(IA,IB,N) )
+c$$$C      WRITE(6,*)"START = ",PMAX
+c$$$C     START WITH THE FIRST VALID PERMUTATION.
+c$$$C     THE FIRST VALID PERMUTATION STARTS
+c$$$C     WITH THE ATOM FROM WHICH WE ARE BONDING
+c$$$      IV(1)=IA
+c$$$      DO 10 I=2,N
+c$$$         IF ( I.GT.IA ) THEN
+c$$$            IV(I)=I
+c$$$         ELSE
+c$$$            IV(I)=I-1
+c$$$         END IF
+c$$$ 10   CONTINUE
+c$$$
+c$$$      DO 100 WHILE ( .NOT. FIN )
+c$$$C     WE CAN STOP PERMUTING SINCE THE REST OF THE
+c$$$C     PERMUTATIONS DON'T TRY TO BOND FROM THE
+c$$$C     FIRST ATOM (IA)
+c$$$         IF ( IV(1).NE.IA ) EXIT
+c$$$C     INITIALIZE THE PROBABILITY TEST
+c$$$         PTEST=1.0D0
+c$$$         SKIP=.FALSE.
+c$$$         DO 200 I=2,N
+c$$$C     IF WE ARE LESS THAN THE MAX, THEN THERE IS NO
+c$$$C     POINT CONTINUING SINCE IT WILL ONLY GET SMALLER
+c$$$            IF ( PTEST.LT.PMAX.OR.PTEST.EQ.0.0D0) THEN
+c$$$               PTEST = 0.0D0
+c$$$               SKIP = .TRUE.
+c$$$               ISKIP = I-1
+c$$$               EXIT
+c$$$            END IF
+c$$$            SKIP = .FALSE.
+c$$$C     KEEP MULTIPLYING THROUGH THE BONDS
+c$$$            PTEST = PTEST*BPV(PAKIND(IV(I-1),IV(I),N))
+c$$$C     IF WE REACHED THE ATOM TO WHICH WE ARE TRYING
+c$$$C     TO BOND TO, THEN STOP MULTIPLYING
+c$$$            IF (IV(I).EQ.IB) THEN
+c$$$               SKIP = .TRUE.
+c$$$               ISKIP = I
+c$$$               EXIT
+c$$$            END IF
+c$$$ 200     CONTINUE
+c$$$C     WE ARE DONE MULTIPLYING, WE MUST NOW SEE
+c$$$C     IF THE VALUE IS GREATER THAN THE MAX
+c$$$         IF (PTEST.GT.PMAX) PMAX=PTEST
+c$$$C         CALL PERMUT(IV,N,FIN)
+c$$$         NPERM = NPERM+1
+c$$$C     WE CAN SKIP AHEAD MANY PERMUTATIONS ACCORDING TO
+c$$$C     WHERE IN THE PERMUTATION THE TEST FAILED TO BE
+c$$$C     BETTER THAN BEST...
+c$$$C     ...THIS IS WHAT MAKES THE METHOD SCALE LESS THAN N!
+c$$$         IF ( SKIP ) THEN
+c$$$            CALL PERMSK(IV,N,ISKIP)
+c$$$            SKIP=.FALSE.
+c$$$C         END IF
+c$$$         ELSE
+c$$$            CALL PERMUT(IV,N,FIN)
+c$$$c            NPERM = NPERM+1
+c$$$         END IF
+c$$$
+c$$$ 100  CONTINUE
+c$$$      RETURN
+c$$$      END SUBROUTINE
+c$$$
+c$$$
+c$$$      SUBROUTINE PERMSK(IV,N,IND)
+c$$$C     TAKES A PERMUTATION VECTOR, IV
+c$$$C     AND AN INDEX, IND
+c$$$C     AND THEN FINDS THE NEXT LEXIOGRAPHIC PERMUTATION
+c$$$C     THAT INCREASES IND BY 1 ...WITHOUT HAVING TO
+c$$$C     GENEREATE ALL THE PERMUTATIONS TO GET THERE.
+c$$$C     THIS MAKES IT POSSIBLE UNDER CERTAIN CONDITIONS
+c$$$C     TO MAKE IT THROUGH THE N! PERMUTATIONS IN N STEPS
+c$$$      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+c$$$      DIMENSION IV(N), ITMP(N)
+c$$$
+c$$$ 1    IOLD = IV(IND)
+c$$$C      WRITE(6,*)"THE OLD VALUE OF INDEX ",IND," IS ",IOLD
+c$$$      IF ( IOLD .EQ. N ) THEN
+c$$$C     WE NEED TO SWITCH THE INDEX IND-1, SINCE THE REST OF
+c$$$C     THE PERMUTATIONS AT IND INVOLVE N
+c$$$         IND = IND - 1
+c$$$         GOTO 1
+c$$$      END IF
+c$$$C     FIND THE VALUE TO WHICH IV(IND) SHOULD BE INCREASED TO
+c$$$      INEW=IOLD
+c$$$ 9    INEW=INEW+1
+c$$$C      WRITE(6,*)"IND ",IND," SHOULD BE INCREASED TO ",INEW
+c$$$      DO 10 I=1,IND-1
+c$$$         IF( IV(I) .EQ. INEW ) GOTO 9
+c$$$ 10   CONTINUE
+c$$$C     IF INEW > N, THEN WE NEED TO DECREASE IND AND DO IT AGAIN
+c$$$      IF ( INEW .GT. N ) THEN
+c$$$         IND = IND - 1
+c$$$         GOTO 1
+c$$$      END IF
+c$$$C     WE FOUND THE VALUE THAT IND SHOULD HAVE
+c$$$      IV(IND) = INEW
+c$$$C     FILL UP THE REST OF THE ARRAY AFTER IND
+c$$$C     WITH THE LOWSET REMAINING NUMBERS
+c$$$      DO 20 I=IND+1,N
+c$$$         J = 0
+c$$$ 100     J = J+1
+c$$$C     CHECK TO SEE IF THIS NUMBER WAS PREVIOUSLY USED
+c$$$         DO 30 K=1,I-1
+c$$$            IF ( IV(K).EQ.J ) GOTO 100
+c$$$ 30      CONTINUE
+c$$$         IV(I)=J
+c$$$ 20   CONTINUE
+c$$$      END SUBROUTINE
+      SUBROUTINE CNVRTP(PMOL,EIGVEC,EIGVAL,N)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION PMOL(N,N), EIGVEC(N,N), EIGVAL(N)
+      LOGICAL SAME
+C      RETURN
+      DO 5 I=1,N
+         IF ( EIGVAL(I) .LT. 0.0D0 ) THEN
+            WRITE(6,*)"EIGVAL",I," < 0.0"
+            DO 10 J=I+1,N
+               DPRD = 0.0D0
+               DO 15 K=1,N
+                  DPRD = DPRD+ABS(EIGVEC(K,I)*EIGVEC(K,J))
+ 15            CONTINUE
+               IF ( ABS(DPRD-1.000000D0) .LT. 0.00001D0 ) THEN
+                  WRITE(6,*)"MATCHES WITH EIGVAL",J
+                  WRITE(6,*)"EIGVAL",J," REDUCED FROM",EIGVAL(J)
+     A                 ," TO",EIGVAL(J)+EIGVAL(I)
+C                  EIGVAL(I) = 0.0D0
+                  DO 20 K=1,N
+                     EIGVEC(K,J) = (EIGVAL(J)*EIGVEC(K,J) +
+     A                    EIGVAL(I)*EIGVEC(K,I))
+ 20               CONTINUE
+                  EIGVAL(J) = EIGVAL(J)+EIGVAL(I)
+                  EIGVAL(I) = 0.0D0
+                  EIGVAL(J) = 0.0D0
+               END IF
+ 10         CONTINUE
+         END IF
+ 5    CONTINUE
+      DO 50 I=1,N
+         SAME = .TRUE.
+         DO 55 J=1,N
+            IF ( ABS(EIGVEC(J,I)-EIGVEC(1,I)).GT.0.0001D0 ) THEN
+               SAME = .FALSE.
+               EXIT
+            END IF
+ 55      CONTINUE
+         IF ( SAME ) THEN
+            WRITE(6,*)"EIGNVECTOR",I," IS THE SYSTEM CONSTRAINT."
+     A           ," REMOVING"
+            EIGVAL(I) = 0.0D0
+         END IF
+ 50   CONTINUE
+C     Make sure they are still normalized
+      DO 500 I=1,N
+         SUM = 0.0D0
+         DO 510 J=1,N
+            SUM=SUM+EIGVEC(J,I)**2
+ 510     CONTINUE
+         SUM = SQRT(SUM)
+         DO 520 J=1,N
+            EIGVEC(J,I) = EIGVEC(J,I)/SUM
+ 520     CONTINUE
+         SUM = 0.0D0
+         DO 530 J=1,N
+            SUM=SUM+EIGVEC(J,I)**2
+ 530     CONTINUE
+         WRITE(6,*)"Vt.V = ",SUM
+ 500  CONTINUE
+c      DO 70 I=1,N
+c         DO 75 J=1,N
+c            A = EIGVEC(J,I)
+c            EIGVEC(J,I) = A*ABS(A)
+c 75      CONTINUE
+c 70   CONTINUE
+C     MAKE SURE THE EIGENVALUES SUM TO THE NUMBER OF ELECTRONS
+c$$$
+c$$$      SUM = 0.0D0
+c$$$      DO 60 I=1,N
+c$$$         SUM = SUM + EIGVAL(I)
+c$$$ 60   CONTINUE
+c$$$      SCL = N/SUM
+c$$$      DO 65 I=1,N
+c$$$         EIGVAL(I) = EIGVAL(I) * SCL
+c$$$ 65   CONTINUE
+      RETURN
+c$$$
+c$$$
+c$$$
+c$$$C     LOOP OVER SUBSYSTEMS
+c$$$      DO 100 I = 1,N
+c$$$         WT = EIGVAL(I)/N
+c$$$C     LOOP OVER ROWS OF THE I'TH EIGENVECTOR
+c$$$         DO 110 J = 1,N
+c$$$            PMOL(J,I) = EIGVEC(J,I)*WT
+c$$$ 110     CONTINUE
+c$$$ 100  CONTINUE
+c$$$
+c$$$C     NOW ADD UP THE SUM OF THE ABSOLUTE VALUES
+c$$$      DO 150 J = 1,N
+c$$$         ABSUM = 0.0D0
+c$$$         DO 160 I=1,N
+c$$$            ABSUM = ABSUM + ABS( PMOL(J,I) )
+c$$$ 160     CONTINUE
+c$$$C     "NORMALIZE" THE ROWS
+c$$$         DO 170 I=1,N
+c$$$            EIGVEC(J,I) = PMOL(J,I)/ABSUM
+c$$$            PMOL(J,I) = ABS(EIGVEC(J,I))
+c$$$ 170     CONTINUE
+c$$$ 150  CONTINUE
+      END SUBROUTINE

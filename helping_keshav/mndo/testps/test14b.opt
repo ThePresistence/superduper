@@ -1,0 +1,17 @@
+DSC NMR chemical shifts in formaldehyde, "Method A" using incomplete
+DSC gamma function expansion for the 3-center terms with variable
+DSC accuracy controls and employing hermiticity of one-electron
+DSC matrices.
+DAT H2CO.dat
+OPT iprint=1
+OPT indsym=2 nmrlev=3 intctl=101
+OPT idens=7 iqswap=1 inrhs=1 iprect=2 ikmode=1 isolve=6 dncoff=10e-6
+PRP freqmem=2951 freqdisk=72
+PRP NMRatomA=1  NMRtypeA=C     NMRisoA=-158.657  NMRs1A=-279.347   NMRs2A=-187.161  NMRs3A=-9.464
+PRP NMRatomB=2  NMRtypeB=H     NMRisoB=40.127    NMRs1B=36.974     NMRs2B=39.592    NMRs3B=43.814
+PRP NMRatomC=3  NMRtypeC=H     NMRisoC=40.127    NMRs1C=36.974     NMRs2C=39.592    NMRs3C=43.814
+PRP NMRatomD=4  NMRtypeD=O     NMRisoD=-562.389  NMRs1D=-1022.058  NMRs2D=-702.985  NMRs3D=37.875
+PRP NMRatomE=5  NMRtypeE=NICS  NMRisoE=20.699    NMRs1E=10.942     NMRs2E=13.312    NMRs3E=37.844
+PRP NMRatomF=6  NMRtypeF=NICS  NMRisoF=16.775    NMRs1F=7.474      NMRs2F=13.694    NMRs3F=29.157
+PRP NMRatomG=7  NMRtypeG=NICS  NMRisoG=5.656     NMRs1G=-0.097     NMRs2G=1.639     NMRs3G=15.428
+PRP NMRatomH=8  NMRtypeH=NICS  NMRisoH=2.418     NMRs1H=-0.746     NMRs2H=-0.293    NMRs3H=8.293

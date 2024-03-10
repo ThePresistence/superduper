@@ -1,0 +1,11 @@
+DSC PENTA-3,5-DIENIMINIUM, OM2/GUGA-CI
+DSC Two sequential single point runs to test MO mapping
+DSC by file I/O (option imomap=3).
+DSC Orbital 20 should be mapped to 21 in second run.
+PRP mulstates=1:2
+PRP mulheats=227.89445:228.79235
+PRP mulqmnorms=138.95492:265.00410
+PRP muloptnorms=138.95492:265.00410
+PRP gicvstates=2,1
+PRP gicvqmnorms=57.88697
+PRP gicvoptnorms=57.88697

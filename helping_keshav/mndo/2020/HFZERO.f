@@ -1,0 +1,161 @@
+      SUBROUTINE HFZERO (EIG,I3N,LPRINT)
+C     *
+C     CONVERSION OF HEATS OF FORMATION FROM 298 K TO 0 K.
+C     *
+C     MODIFICATIONS BY PAVLO O. DRAL, 2016, JANUARY.
+C        ATOMIZATION ENERGIES RENAMED INTO ATOMIZATION ENTHALPIES, WHICH THEY ARE.
+C        IMPLEMENTED CALCULATIONS OF TRUE ZPVE-EXCLUSIVE ATOMIZATION ENERGIES AT 0 K.
+C        IMPLEMENTED SUPPORT FOR THE ODM2 AND ODM3 METHODS (IATERG=-1 KEYWORD).
+C     *
+      USE LIMIT, ONLY: LM1, LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./ENERGT/ EE,ENUCLR,EAT,ATHEAT
+     ./ERGREF/ H298,H0,HF298,HF0,HAT298,HAT0,D00,EVIB,SCFENR
+     ./INFOC / ITYPE,NEG,NTR,NVIB
+     ./INOPT2/ IN2(300)
+     ./NBFILE/ NBF(20)
+      DIMENSION EIG(I3N)
+      DIMENSION DELHAT(LMZ)
+C     DIFFERENCES IN THE EXPERIMENTAL HEATS OF FORMATION FOR THE ATOMS
+C     BETWEEN 298.15 K AND 0 K, IN KJ/MOL.
+C     TAKEN FROM THE JANAF TABLES, THIRD EDITION (1985).
+C     A ZERO ENTRY IMPLIES THAT THE EXPERIMENTAL VALUE IS NOT AVAILABLE
+C     FROM JANAF (EXCEPT FOR THE NOBLE GASES).
+      DATA DELHAT/ 1.964D0, 0.000D0, 1.600D0, 4.000D0, 5.000D0, 5.480D0,
+     1             1.860D0, 2.380D0, 2.110D0, 0.000D0,-0.200D0, 1.200D0,
+     2             2.400D0, 4.000D0, 0.840D0, 2.250D0, 1.681D0, 0.000D0,
+     3            -0.900D0, 0.500D0, 0.000D0, 2.710D0, 3.300D0, 2.140D0,
+     4             1.200D0, 2.400D0, 1.600D0, 2.000D0, 1.200D0, 0.530D0,
+     5             0.990D0, 0.000D0, 0.000D0, 0.000D0,-6.060D0, 0.000D0,
+     6            -1.300D0,-0.400D0, 0.000D0, 7.900D0, 3.100D0,-5.568D0,
+     7             0.000D0, 0.000D0, 0.000D0, 0.000D0, 0.000D0, 0.000D0,
+     8             0.000D0, 0.000D0, 0.000D0, 0.000D0,-0.400D0, 0.000D0,
+     9            -1.500D0,-0.700D0, 0.000D0, 0.000D0, 0.000D0, 0.000D0,
+     A             0.000D0, 0.000D0, 0.000D0, 0.000D0, 0.000D0, 0.000D0,
+     B             0.000D0, 0.000D0, 0.000D0, 0.000D0, 0.000D0, 0.400D0,
+     C             0.520D0, 1.200D0, 0.000D0, 0.000D0, 0.000D0, 0.000D0,
+     D             0.000D0,-3.150D0, 0.000D0,-0.680D0, 0.000D0, 0.000D0,
+     E             0.000D0, 0.000D0/
+C     FUNDAMENTAL CONSTANTS AND CONVERSION FACTORS TAKEN FROM
+C     J.PHYS.CHEM.REF.DATA 2, 663 (1973).
+C     AC     SPEED OF LIGHT         IN 10**(+08) M S-1
+C     AH     PLANCK CONSTANT        IN 10**(-34) J S
+C     AR     MOLAR GAS CONSTANT     IN           J MOL-1 K-1
+C     AK     BOLTZMANN CONSTANT     IN 10**(-23) J K-1
+C     FC     CONVERSION CAL-JOULE   IN           CAL J-1
+      DATA AC /2.99792458D0/
+      DATA AH /6.62617600D0/
+      DATA AR /8.31441000D0/
+      DATA AK /1.38066200D0/
+      DATA FC /4.18400000D0/
+C *** INPUT OPTIONS.
+      IATERG = IN2(119)
+C     DEFINE TEMPERATURE.
+      TI     = 298.15D0
+C     CONVERT MOLAR GAS CONSTANT TO (K)CAL MOL-1 K-1
+      R      = AR/FC
+      RK     = R*1.0D-03
+      RT     = RK*TI
+C     TRANSLATIONAL CONTRIBUTIONS.
+      H1     = 2.5D0*RT
+C     ROTATIONAL CONTRIBUTIONS.
+      IF(ITYPE.EQ.1) THEN
+         H2  = RT
+      ELSE
+         H2  = 1.5D0*RT
+      ENDIF
+C     VIBRATIONAL CONTRIBUTIONS.
+      HCK    = (AH*AC/AK)*0.1D0
+      HCKT   = HCK/TI
+      SUM1   = 0.0D0
+      DO 10 J=NVIB,I3N
+      XJ     = HCKT*EIG(J)
+      IF(XJ.LE.0.0D0 .OR. XJ.GT.40.0D0) GO TO 10
+      EX     = EXP(-XJ)
+      REX    = 1.0D0/(1.0D0-EX)
+      SUM1   = SUM1+XJ*EX*REX
+   10 CONTINUE
+      H3     = RT*SUM1
+C     SUM OF ALL CONTRIBUTIONS.
+      H4     = H1+H2+H3
+C     *
+C     HEAT OF FORMATION AT 0 K AND RELATED QUANTITIES.
+      NODATA = 0
+      DELEXP = 0.0D0
+      DO 20 I=1,NUMAT
+      NI     = NAT(I)
+      IF(DELHAT(NI).EQ.0.0D0) THEN
+         IF(NI.NE. 2 .AND. NI.NE.10 .AND. NI.NE.18 .AND.
+     1      NI.NE.36 .AND. NI.NE.54 .AND. NI.NE.86)
+     2      NODATA=NODATA+1
+      ELSE
+         DELEXP = DELEXP+DELHAT(NI)
+      ENDIF
+   20 CONTINUE
+      DELEXP = DELEXP/FC
+      DELAT  = NUMAT*H1
+      DELD0  = DELAT-H4
+      IF(IATERG.EQ.1) THEN
+         HF298  = SCFENR
+         HF0    = HF298+DELD0-DELEXP
+         HAT298 = ATHEAT-HF298
+         HAT0   = (ATHEAT-DELEXP)-HF0
+         D00    = HAT0+EVIB
+      ELSEIF(IATERG.EQ.-1) THEN
+         H0     = SCFENR+EVIB
+         H298   = H0+H4
+         D00    = EVCAL*EAT-SCFENR
+         HAT0   = D00-EVIB
+         HAT298 = HAT0+DELD0
+         HF298  = ATHEAT-HAT298
+         HF0    = HF298+DELD0-DELEXP
+      ENDIF
+C     *
+C     PRINTING SECTION.
+      IF(LPRINT.GT.-5) THEN
+         NB6 = NBF(6)
+         IF(IATERG.EQ.-1) THEN
+            WRITE(NB6,500) H298,H0
+         ELSE
+            WRITE(NB6,'(///)')
+         ENDIF
+         WRITE(NB6,505) HF298,HF0,HAT298,HAT0,D00
+         IF(LPRINT.GE.-1) WRITE(NB6,510) HF298-HF0,DELEXP,-DELD0,
+     1                                   -DELAT,H4,H3
+         IF(NODATA.GT.0) WRITE(NB6,520) NODATA
+      ENDIF
+      RETURN
+  500 FORMAT(///5X,'ENTHALPY                          AT 298 K   ',
+     1       F15.5,' KCAL/MOL',
+     2       /  5X,'ENTHALPY                          AT   0 K   ',
+     3       F15.5,' KCAL/MOL')
+  505 FORMAT(   5X,'HEAT OF FORMATION                 AT 298 K   ',
+     1       F15.5,' KCAL/MOL',
+     2       /  5X,'HEAT OF FORMATION                 AT   0 K   ',
+     3       F15.5,' KCAL/MOL',
+     4       /  5X,'ATOMIZATION ENTHALPY              AT 298 K   ',
+     5       F15.5,' KCAL/MOL',
+     6       /  5X,'ATOMIZATION ENTHALPY              AT   0 K   ',
+     7       F15.5,' KCAL/MOL',
+     8       /  5X,'ZPVE-EXCLUSIVE ATOMIZATION ENERGY AT   0 K   ',
+     9       F15.5,' KCAL/MOL')
+  510 FORMAT(/  5X,'DIFFERENCE Hf(298 K)-Hf(0 K)                 ',
+     1       F15.5,' KCAL/MOL',
+     2       /  5X,'CONTRIBUTIONS FROM',
+     3       /  5X,'* EXPERIMENTAL HEATS FOR ATOMS               ',
+     4       F15.5,' KCAL/MOL',
+     5       /  5X,'* SUM OF ALL THEORETICAL TERMS               ',
+     6       F15.5,' KCAL/MOL',
+     7       /  5X,'* H(298 K)-H(0 K) FOR ATOMS                  ',
+     8       F15.5,' KCAL/MOL',
+     9       /  5X,'* H(298 K)-H(0 K) FOR MOLECULE               ',
+     1       F15.5,' KCAL/MOL',
+     2       /  5X,'* VIBRATIONAL PART                           ',
+     3       F15.5,' KCAL/MOL')
+  520 FORMAT(/  5X,'EXPERIMENTAL VALUES FOR Hf(298 K)-Hf(0 K) ARE NOT',
+     1          1X,'AVAILABLE FOR',I3,' ATOMS.',
+     2       /  5X,'THE CONVERSION TO 0 K IS THUS ONLY APPROXIMATE.')
+      END

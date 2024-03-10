@@ -1,0 +1,11 @@
+DSC Test suite 1 with 16 runs
+DSC Single-point energy and gradient calculations
+DSC Check of available electronic structure options
+DSC Use of MNDO, PM3, and MINDO/3 with RHF, UHF, and CI
+DSC Half-electron SCF energies for orthogonal ethylene excluded (arbitrary)
+DSC Half-electron CI  energies for orthogonal ethylene included (meaningful)
+PRP heat=-32.88190:12.82404:::45.13622:39.72437:41.66820:-25.56137:21.78619:-39.38105:-41.82386:106.65103:45.13554
+PRP cartgrd=0.03139:0.04527:0.07217:0.00709:0.00450:0.00037:0.15921:0.15825:0.08038:0.07161
+PRP CIstate1=45.14631:54.04930
+PRP CIstate2=115.25312:106.65105
+PRP CIstate3=115.26388:106.65929

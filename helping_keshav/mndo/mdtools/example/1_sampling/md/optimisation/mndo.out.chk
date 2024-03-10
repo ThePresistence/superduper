@@ -1,0 +1,1777 @@
+
+
+
+ PROGRAM MNDO2005.
+ VERSION 7.0 OF 4 AUGUST 2005.
+
+ COPYRIGHT BY WALTER THIEL,
+ MAX-PLANCK-INSTITUT FUER KOHLENFORSCHUNG,
+ D-45470 MUELHEIM, GERMANY.
+
+
+ ***** STANDARD INPUT USING KEYWORDS *****
+
+ IOP    =   -6     JOP    =    0     IGEOM  =    1     IFORM  =    1     NSAV13 =    2
+ ICUTS  =   -1     ICUTG  =   -1     MAXRTL =  200     ISCF   =   11     IPLSCF =   11
+ IPRINT =    1     MPRINT =    1     IPREC  =  100     KHARGE =    1     IMULT  =    0
+ KCI    =    5     ICI1   =    3     ICI2   =    1     IOUTCI =    1     MOVO   =    1
+ NCIREF =    3     MCIREF =    0     LEVEXC =    2     IMOMAP =    1
+
+
+ ***********************************************************************
+ * INPUT OF OPTIONS VIA KEYWORDS
+ * NUMBER OF MNDO97 KEYWORDS FOUND: 24
+ * MOPAC KEYWORDS NOT FOUND: IMOPAC=-1
+ ***********************************************************************
+
+
+
+ *** OPTIONS FROM THE FIRST LINE OF INPUT    ***
+ *** DEFINED EITHER EXPLICITLY OR BY DEFAULT ***
+
+ LIMIT  =    0     IOP    =   -6     JOP    =    0     IGEOM  =    1     IFORM  =    1
+ NEXMOL =    1     MPLIB  =    0     IEF    =    0     IDIIS  =    0     INREFD =    0
+ IPAROK =    0     MMINP  =    0     NMR    =    0     NSAV7  =    0     NSAV8  =    0
+ NSAV9  =    0     NSAV13 =    2     NSAV15 =    0     NSAV16 =    0     IMMOK  =    0
+ IHBOND =    0     IFLD1  =    0     IFLD2  =    0     IFLD3  =    0     ICUTS  =   -1
+ ICUTG  =   -1     IEXBAS =    0     ICOSMO =    0     IPSANA =    0     IMMDP  =    0
+ INAC   =    0
+
+
+
+ OM2    
+
+ GEOMETRY OPTIMIZATION FOR ENERGY MINIMUM
+
+ INPUT IN CARTESIAN COORDINATES
+
+ INPUT OF MOLECULAR DATA IN FREE FORMAT
+
+ DATA FOR MOLDEN POSTPROCESSING SAVED ON FILE
+
+
+
+ *** OPTIONS FROM THE SECOND LINE OF INPUT   ***
+ *** DEFINED EITHER EXPLICITLY OR BY DEFAULT ***
+
+
+ MAXEND = 9999     MAXLIN =    4     MAXRTL =  200     ISCF   =   11     IPLSCF =   11
+ MIDDLE =    0     IPRINT =    1     KPRINT =    0     LPRINT =    0     MPRINT =    1
+ JPRINT =    0     IPREC  =  100     ICONV  =    0     IHESS  =    0     IDFP   =    0
+ NREPET =    3     LINITG =   10     LCONVG =   10     LGDUM  =    0     IHDLC1 =    0
+ IHDLC2 =    0     IHDLC3 =    0     INGEOM =    0     INTDIR =    0     LINDMS =    0
+ LINDIA =    0     LINFRG =    0     INPFRG =    0     INP21  =    0     INP22  =    0
+ INP23  =    0     INP24  =    0     INP25  =    0
+
+
+
+ Initial coordinates from OM2 optimisation                                       
+ Methaniminium OM2/GUGA-CI ground state RHF opt                                  
+
+
+     INPUT GEOMETRY
+
+
+      ATOM      ATOMIC              X-COORDINATE         Y-COORDINATE         Z-COORDINATE
+     NUMBER     NUMBER               (ANGSTROMS)          (ANGSTROMS)          (ANGSTROMS)
+
+        1          6                   0.00000 *            0.00000 *            0.00000 *
+        2          7                   1.28268 *            0.00000 *            0.00000 *
+        3          1                  -0.58300 *            0.93267 *            0.00000 *
+        4          1                   1.83410 *            0.85765 *            0.00001 *
+        5          1                  -0.58300 *           -0.93267 *           -0.00004 *
+        6          1                   1.83410 *           -0.85765 *            0.00001 *
+
+
+
+     **********
+
+     *  VARIABLES TO BE OPTIMIZED, OF WHICH THERE ARE  18
+
+
+
+     INITIAL INTERATOMIC DISTANCES (ANGSTROMS)
+
+
+             1           2           3           4           5           6
+ ----------------------------------------------------------------------------
+   1      0.00000
+   2      1.28268     0.00000
+   3      1.09989     2.08582     0.00000
+   4      2.02472     1.01962     2.41826     0.00000
+   5      1.09989     2.08582     1.86534     3.00793     0.00000
+   6      2.02472     1.01962     3.00793     1.71530     2.41826     0.00000
+
+
+
+ MOLECULAR CHARGE         1
+ NUMBER OF ELECTRONS     12
+ DOUBLY OCCUPIED MOS      6
+
+
+ *** OPTIONS FOR THE MOLECULE UNDER STUDY    ***
+ *** DEFINED EITHER EXPLICITLY OR BY DEFAULT ***
+
+ KHARGE =    1     IMULT  =    0     KTRIAL =    0     KGEOM  =    0     IPUBO  =    0
+ IUHF   =    0     KITSCF =  200     NPRINT =    0     IFAST  =    0     IDIAG  =    0
+ KSYM   =    0     NUMSYM =    0     KCI    =    5     NSTART =    4     NSTEP  =    4
+
+
+
+ *** OPTIONS FOR THE GUGA-CI CALCULATIONS    ***
+ *** DEFINED EITHER EXPLICITLY OR BY DEFAULT ***
+
+ ICI1   =    3     ICI2   =    1     IOUTCI =    1     MOVO   =    1     MPERT  =    0
+ NCIREF =    3     MCIREF =    0     LEVEXC =    2     IROOT  =    1     LROOT  =    1
+ CICHG  =    1     MULTCI =    1     NCISYM =    0     CIDIR  =    1     CIDIAG =    0
+ IUVCD  =    0     IMCD   =    0     IPOP   =    0     CIPLOT =    0     CILEAD = 1000
+ JCI1   =    0     JCI2   =    0     PIPOP  = 4000     INATUR =    0     CISELT =   85
+ IMOMAP =    1     ICIMAP =    0     KEEPCI =    0     NCIGRD =    0     ICROSS =    0
+ MINDAV =    0     MAXDAV =    0     KITDAV =    0     NRMDAV =    7     MAXMAP =    5
+ MAPTHR =   90     NCONJ  =    0     ICIOCC =    6     ICIVIR =    6     LDROOT =    2
+
+
+
+ ORBITALS INCLUDED IN THE ACTIVE CI SPACE.
+ THE NUMBERING REFERS TO THE SCF SOLUTION.
+
+ MOS        3   5   6   7
+
+ MOSYM      0   0   0   0
+
+
+
+ REFERENCE CONFIGURATIONS FOR GUGA-CI.
+ OCCUPATION NUMBERS FOR THE ACTIVE ORBITALS.
+
+ REF  1     2   2   2   0
+
+ REF  2     2   2   1   1
+
+ REF  3     2   2   0   2
+
+ ANALYTICAL GRADIENT SELECTED BY DEFAULT.
+
+ CHKANA: IPSANA =  1, ISKPA = -3, ISKPAF =  0
+
+
+
+ GEOMETRY OPTIMIZATION FOR ENERGY MINIMUM
+ Initial coordinates from OM2 optimisation                                       
+ Methaniminium OM2/GUGA-CI ground state RHF opt                                  
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.25961      A        1      1     2.00000      -
+     2      -29.09671      A        1      2     2.00000      -
+     3      -25.34467      A        1      3     2.00000      2
+     4      -23.37010      A        1      4     2.00000      -
+     5      -20.62953      A        1      5     2.00000      2
+     6      -19.98117      A        1      6     2.00000      1
+     7       -5.80845      A        1      7     0.00000      1
+     8       -3.45245      A        1      8     0.00000      -
+     9       -2.62884      A        1      9     0.00000      -
+    10       -2.22131      A        1     10     0.00000      -
+    11       -0.04051      A        1     11     0.00000      -
+    12        1.44045      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+
+
+ Point group used in GUGA-CI calculation:  C1
+
+
+ There are        10 CI basis functions of symmetry A   (1).
+ There are        10 CI basis functions in the CI problem.
+ There are        10 CI basis functions represented by the DRT.
+
+
+ Reference occupations and corresponding configuration state functions:
+
+               3   5   6   7
+ Ref.      1   2   2   2   0
+ CSF       1  ab  ab  ab   -
+
+               3   5   6   7
+ Ref.      2   2   2   1   1
+ CSF       2  ab  ab   a   b
+
+               3   5   6   7
+ Ref.      3   2   2   0   2
+ CSF       5  ab  ab   -  ab
+
+ Orbital level separating upper and lower part of the DRT:   2
+
+ Total number of upper partial loops:            44
+ Total number of lower partial loops:            48
+ Total number of complete one-body loops:        16
+ Total number of complete two-body loops:        19
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22269780 eV
+ Total energy:                             -393.65140304 eV
+ Electronic energy:                        -885.61375692 eV
+ Nuclear energy:                            491.96235388 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.651403 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992309       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.20     -0.119848       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.73004 KCAL/MOL
+
+
+ CURRENT GRADIENT NORM                           15.48292
+ CURRENT CARTESIAN GRADIENT NORM                 15.48292
+
+ INITIAL GEOMETRY, TOTAL TIME =      0.036 , HEAT =   169.73004 , GNORM =       15.48292
+
+
+ *****
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5      0.997
+        6      UNCHANGED      6     -0.997
+        7      UNCHANGED      7      0.999
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.10896      A        1      1     2.00000      -
+     2      -29.12835      A        1      2     2.00000      -
+     3      -25.22588      A        1      3     2.00000      2
+     4      -23.28610      A        1      4     2.00000      -
+     5      -20.44645      A        1      5     2.00000      2
+     6      -20.11645      A        1      6     2.00000      1
+     7       -5.93127      A        1      7     0.00000      1
+     8       -3.40884      A        1      8     0.00000      -
+     9       -2.51879      A        1      9     0.00000      -
+    10       -2.26197      A        1     10     0.00000      -
+    11       -0.04723      A        1     11     0.00000      -
+    12        1.15249      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.23563079 eV
+ Total energy:                             -393.62402815 eV
+ Electronic energy:                        -883.84278919 eV
+ Nuclear energy:                            490.21876105 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.624028 eV
+ ---------------------------------------------------------------
+
+   -393.39      0.991567       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.64     -0.124496       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       170.36133 KCAL/MOL
+
+
+ CURRENT GRADIENT NORM                           55.39145
+ CURRENT CARTESIAN GRADIENT NORM                 55.39145
+
+ FUNCTION VALUE   169.73004     WILL NOT BE REPLACED BY VALUE   170.36133     FOUND IN RESTART PROCEDURE.
+
+
+ AT THE BEGINNING OF CYCLE    1  THE FUNCTION VALUE IS    169.73004
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)     0.00000     0.00000     0.00000     1.28268     0.00000     0.00000    -0.58300     0.93267     0.00000     1.83410
+ G(I)    11.73812     0.00000     0.00550    -9.73467     0.00000    -0.00282    -0.43095     1.11018    -0.00089    -0.57078
+ P(I)    -0.00221    -0.00000    -0.00001     0.00311    -0.00000     0.00001     0.00103    -0.00200     0.00000     0.00086
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85765     0.00001    -0.58300    -0.93267    -0.00004     1.83410    -0.85765     0.00001
+ G(I)    -1.35747    -0.00049    -0.43095    -1.11018    -0.00264    -0.57078     1.35747     0.00135
+ P(I)     0.00110     0.06000     0.00040     0.00067     0.00001     0.09512    -0.01960    -0.00001
+
+ ANGLE COSINE   =  0.8071E-01
+ ALPHA.P.G TEST =  0.1428E+00
+ GRADIENT NORM  =  0.1548E+02
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.1428E+00
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.1051E+01
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16973004E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      0.997
+        5      UNCHANGED      5      0.998
+        6      UNCHANGED      6      0.999
+        7      UNCHANGED      7      0.999
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.08091      A        1      1     2.00000      -
+     2      -29.02152      A        1      2     2.00000      -
+     3      -24.97175      A        1      3     2.00000      2
+     4      -23.28334      A        1      4     2.00000      -
+     5      -20.49443      A        1      5     2.00000      2
+     6      -19.85430      A        1      6     2.00000      1
+     7       -5.76677      A        1      7     0.00000      1
+     8       -3.49773      A        1      8     0.00000      -
+     9       -2.80078      A        1      9     0.00000      -
+    10       -2.33374      A        1     10     0.00000      -
+    11       -0.17742      A        1     11     0.00000      -
+    12        1.44924      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22881730 eV
+ Total energy:                             -393.56136322 eV
+ Electronic energy:                        -881.75279229 eV
+ Nuclear energy:                            488.19142907 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.561363 eV
+ ---------------------------------------------------------------
+
+   -393.33      0.991999       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.33     -0.120321       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       171.80645 KCAL/MOL
+
+   1   0.1000E+01   0.17180645E+03   0.3217E-01   0.2219E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      0.998
+        5      UNCHANGED      5      0.992
+        6      UNCHANGED      6      0.992
+        7      UNCHANGED      7      0.999
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.25399      A        1      1     2.00000      -
+     2      -29.09476      A        1      2     2.00000      -
+     3      -25.33265      A        1      3     2.00000      2
+     4      -23.36785      A        1      4     2.00000      -
+     5      -20.62499      A        1      5     2.00000      2
+     6      -19.97782      A        1      6     2.00000      1
+     7       -5.80704      A        1      7     0.00000      1
+     8       -3.45267      A        1      8     0.00000      -
+     9       -2.63199      A        1      9     0.00000      -
+    10       -2.22667      A        1     10     0.00000      -
+    11       -0.04579      A        1     11     0.00000      -
+    12        1.44077      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22289680 eV
+ Total energy:                             -393.65149792 eV
+ Electronic energy:                        -885.49215525 eV
+ Nuclear energy:                            491.84065733 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.651498 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992299       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.21     -0.119924       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.72785 KCAL/MOL
+
+   2   0.3217E-01   0.16972785E+03   0.3072E-01   0.2324E+01
+
+ CURRENT GRADIENT NORM                           15.59055
+ CURRENT CARTESIAN GRADIENT NORM                 15.59055
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =   4
+ RELATIVE CHANGE IN X = 0.1049E-02
+ ABSOLUTE CHANGE IN F = 0.2188E-02
+ GRADIENT NORM        = 0.1559E+02
+
+ TOTAL TIME             0.056 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    2  THE FUNCTION VALUE IS    169.72785
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00007    -0.00000    -0.00000     1.28278    -0.00000     0.00000    -0.58297     0.93261     0.00000     1.83413
+ G(I)    11.19603     0.22436     0.01950   -10.52063     1.20437    -0.21071    -0.40279     1.04374    -0.02676    -0.51699
+ P(I)    -0.03079    -0.00020    -0.00011     0.04371    -0.00096     0.00046     0.01428    -0.02782     0.00020     0.01194
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85769     0.00194    -0.58299    -0.93265    -0.00004     1.83716    -0.85828     0.00001
+ G(I)    -1.46818     0.12455    -0.42383    -1.07602     0.06047     0.66821     0.07174     0.03294
+ P(I)     0.01547   -13.69235     0.00551     0.00932    -0.00009     1.13032    -0.25581    -0.00036
+
+ ANGLE COSINE   =  0.8637E-02
+ ALPHA.P.G TEST =  0.4949E-03
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.1850E+01
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.7303E-02
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16972785E+03   0.7303E-02
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      0.999
+        5      UNCHANGED      5     -0.981
+        6      UNCHANGED      6     -0.982
+        7      UNCHANGED      7      0.997
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.23111      A        1      1     2.00000      -
+     2      -29.08054      A        1      2     2.00000      -
+     3      -25.27922      A        1      3     2.00000      2
+     4      -23.35466      A        1      4     2.00000      -
+     5      -20.63017      A        1      5     2.00000      2
+     6      -19.93739      A        1      6     2.00000      1
+     7       -5.81448      A        1      7     0.00000      1
+     8       -3.45357      A        1      8     0.00000      -
+     9       -2.64601      A        1      9     0.00000      -
+    10       -2.25348      A        1     10     0.00000      -
+    11       -0.07366      A        1     11     0.00000      -
+    12        1.43996      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22298077 eV
+ Total energy:                             -393.63704897 eV
+ Electronic energy:                        -884.95162319 eV
+ Nuclear energy:                            491.31457422 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.637049 eV
+ ---------------------------------------------------------------
+
+   -393.41      0.992269       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.28     -0.115978       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       170.06106 KCAL/MOL
+
+   1   0.7303E-02   0.17006106E+03   0.1423E-03   0.6500E+04
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      0.999
+        5      UNCHANGED      5      0.981
+        6      UNCHANGED      6     -0.983
+        7      UNCHANGED      7     -0.998
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.25368      A        1      1     2.00000      -
+     2      -29.09466      A        1      2     2.00000      -
+     3      -25.33202      A        1      3     2.00000      2
+     4      -23.36772      A        1      4     2.00000      -
+     5      -20.62473      A        1      5     2.00000      2
+     6      -19.97766      A        1      6     2.00000      1
+     7       -5.80697      A        1      7     0.00000      1
+     8       -3.45269      A        1      8     0.00000      -
+     9       -2.63215      A        1      9     0.00000      -
+    10       -2.22696      A        1     10     0.00000      -
+    11       -0.04606      A        1     11     0.00000      -
+    12        1.44076      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22290845 eV
+ Total energy:                             -393.65150372 eV
+ Electronic energy:                        -885.48562333 eV
+ Nuclear energy:                            491.83411961 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.651504 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992298       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.21     -0.119930       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.72772 KCAL/MOL
+
+   2   0.1423E-03   0.16972772E+03   0.1447E-03   0.6395E+04
+
+ CURRENT GRADIENT NORM                           15.59898
+ CURRENT CARTESIAN GRADIENT NORM                 15.59898
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =   6
+ RELATIVE CHANGE IN X = 0.5582E-03
+ ABSOLUTE CHANGE IN F = 0.1338E-03
+ GRADIENT NORM        = 0.1560E+02
+
+ TOTAL TIME             0.068 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    3  THE FUNCTION VALUE IS    169.72772
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00008    -0.00000    -0.00000     1.28279    -0.00000     0.00000    -0.58296     0.93260     0.00000     1.83413
+ G(I)    11.16373     0.23626     0.00516   -10.55827     1.27006    -0.00067    -0.40098     1.03971    -0.00060    -0.51508
+ P(I)    -0.00466    -0.00023    -0.00001     0.00699    -0.00109     0.00002     0.00214    -0.00418     0.00001     0.00177
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85769    -0.00001    -0.58299    -0.93265    -0.00004     1.83732    -0.85832     0.00001
+ G(I)    -1.47487    -0.00173    -0.42329    -1.07392    -0.00317     0.73389     0.00276     0.00101
+ P(I)     0.00247     0.00036     0.00085     0.00142     0.00002    -0.01975    -0.02203    -0.00002
+
+ ANGLE COSINE   =  0.3140E+00
+ ALPHA.P.G TEST =  0.9579E-02
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.1534E+00
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.4540E+01
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16972772E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5      1.000
+        6      UNCHANGED      6      1.000
+        7      UNCHANGED      7      1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.17999      A        1      1     2.00000      -
+     2      -29.07673      A        1      2     2.00000      -
+     3      -25.32182      A        1      3     2.00000      2
+     4      -23.29405      A        1      4     2.00000      -
+     5      -20.52128      A        1      5     2.00000      2
+     6      -20.05281      A        1      6     2.00000      1
+     7       -5.87735      A        1      7     0.00000      1
+     8       -3.44722      A        1      8     0.00000      -
+     9       -2.55238      A        1      9     0.00000      -
+    10       -2.28420      A        1     10     0.00000      -
+    11       -0.01820      A        1     11     0.00000      -
+    12        1.25065      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22968968 eV
+ Total energy:                             -393.64717484 eV
+ Electronic energy:                        -884.48057041 eV
+ Nuclear energy:                            490.83339557 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.647175 eV
+ ---------------------------------------------------------------
+
+   -393.42      0.991904       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.45     -0.122823       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.82754 KCAL/MOL
+
+   1   0.1000E+01   0.16982754E+03   0.3029E+00   0.2533E+00
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5      1.000
+        6      UNCHANGED      6      1.000
+        7      UNCHANGED      7      1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.23165      A        1      1     2.00000      -
+     2      -29.08908      A        1      2     2.00000      -
+     3      -25.32945      A        1      3     2.00000      2
+     4      -23.34609      A        1      4     2.00000      -
+     5      -20.59344      A        1      5     2.00000      2
+     6      -20.00078      A        1      6     2.00000      1
+     7       -5.82842      A        1      7     0.00000      1
+     8       -3.45086      A        1      8     0.00000      -
+     9       -2.60730      A        1      9     0.00000      -
+    10       -2.24392      A        1     10     0.00000      -
+    11       -0.03712      A        1     11     0.00000      -
+    12        1.38267      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22493294 eV
+ Total energy:                             -393.65250596 eV
+ Electronic energy:                        -885.18594128 eV
+ Nuclear energy:                            491.53343532 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652506 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992181       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.29     -0.120795       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.70460 KCAL/MOL
+
+   2   0.3029E+00   0.16970460E+03   0.3013E+00   0.2546E+00
+
+ CURRENT GRADIENT NORM                            5.29998
+ CURRENT CARTESIAN GRADIENT NORM                  5.29998
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =   8
+ RELATIVE CHANGE IN X = 0.2709E-02
+ ABSOLUTE CHANGE IN F = 0.2311E-01
+ GRADIENT NORM        = 0.5300E+01
+
+ TOTAL TIME             0.076 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    4  THE FUNCTION VALUE IS    169.70460
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00149    -0.00007    -0.00000     1.28490    -0.00033     0.00000    -0.58232     0.93133     0.00000     1.83467
+ G(I)     3.24047     0.17006     0.00222    -2.33839     2.71713    -0.00918     0.32801    -0.12610    -0.00118    -1.10827
+ P(I)    -0.00221    -0.00023    -0.00001     0.00313    -0.00261     0.00001    -0.00004    -0.00121     0.00000     0.00227
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85844     0.00010    -0.58273    -0.93222    -0.00003     1.83134    -0.86499     0.00000
+ G(I)    -0.74293     0.00475     0.00303    -0.39533     0.00163    -0.12485    -1.62283     0.00175
+ P(I)     0.00145    -0.00010     0.00029     0.00072     0.00001     0.01925     0.01530    -0.00001
+
+ ANGLE COSINE   =  0.3935E+00
+ ALPHA.P.G TEST =  0.1979E-01
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.5258E-01
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.5194E+01
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16970460E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5     -1.000
+        6      UNCHANGED      6     -1.000
+        7      UNCHANGED      7      1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.19374      A        1      1     2.00000      -
+     2      -29.11913      A        1      2     2.00000      -
+     3      -25.28062      A        1      3     2.00000      2
+     4      -23.35493      A        1      4     2.00000      -
+     5      -20.54866      A        1      5     2.00000      2
+     6      -20.02251      A        1      6     2.00000      1
+     7       -5.85827      A        1      7     0.00000      1
+     8       -3.45557      A        1      8     0.00000      -
+     9       -2.59255      A        1      9     0.00000      -
+    10       -2.20002      A        1     10     0.00000      -
+    11       -0.04907      A        1     11     0.00000      -
+    12        1.32068      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22723819 eV
+ Total energy:                             -393.65061243 eV
+ Electronic energy:                        -884.69925906 eV
+ Nuclear energy:                            491.04864663 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.650612 eV
+ ---------------------------------------------------------------
+
+   -393.42      0.992034       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.38     -0.121841       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.74827 KCAL/MOL
+
+   1   0.1000E+01   0.16974827E+03   0.2732E+00   0.9625E-01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5      1.000
+        6      UNCHANGED      6      1.000
+        7      UNCHANGED      7      1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.22140      A        1      1     2.00000      -
+     2      -29.09731      A        1      2     2.00000      -
+     3      -25.31643      A        1      3     2.00000      2
+     4      -23.34852      A        1      4     2.00000      -
+     5      -20.58125      A        1      5     2.00000      2
+     6      -20.00695      A        1      6     2.00000      1
+     7       -5.83660      A        1      7     0.00000      1
+     8       -3.45204      A        1      8     0.00000      -
+     9       -2.60266      A        1      9     0.00000      -
+    10       -2.23196      A        1     10     0.00000      -
+    11       -0.04001      A        1     11     0.00000      -
+    12        1.36530      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22555665 eV
+ Total energy:                             -393.65281480 eV
+ Electronic energy:                        -885.05514140 eV
+ Nuclear energy:                            491.40232660 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652815 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992142       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.31     -0.121078       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.69748 KCAL/MOL
+
+   2   0.2732E+00   0.16969748E+03   0.2709E+00   0.9705E-01
+
+ CURRENT GRADIENT NORM                            1.20570
+ CURRENT CARTESIAN GRADIENT NORM                  1.20570
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =  10
+ RELATIVE CHANGE IN X = 0.1965E-02
+ ABSOLUTE CHANGE IN F = 0.7122E-02
+ GRADIENT NORM        = 0.1206E+01
+
+ TOTAL TIME             0.088 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    5  THE FUNCTION VALUE IS    169.69748
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00209    -0.00013    -0.00001     1.28576    -0.00104     0.00001    -0.58233     0.93100     0.00000     1.83529
+ G(I)    -0.15423     0.78788     0.00040     0.03733     0.04674    -0.00505     0.38042    -0.46166    -0.00049    -0.48989
+ P(I)    -0.00005    -0.00074    -0.00000     0.00010    -0.00013     0.00000    -0.00091     0.00079    -0.00000     0.00082
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85883     0.00007    -0.58265    -0.93202    -0.00003     1.83660    -0.86081    -0.00000
+ G(I)    -0.40005     0.00287     0.20610    -0.03350     0.00135     0.02026     0.06060     0.00092
+ P(I)     0.00037    -0.00006    -0.00018     0.00005     0.00000    -0.00011    -0.00041    -0.00000
+
+ ANGLE COSINE   =  0.9042E+00
+ ALPHA.P.G TEST =  0.7508E-02
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.1904E-02
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.1103E+03
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16969748E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5     -1.000
+        6      UNCHANGED      6     -1.000
+        7      UNCHANGED      7     -1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.21779      A        1      1     2.00000      -
+     2      -29.09344      A        1      2     2.00000      -
+     3      -25.31038      A        1      3     2.00000      2
+     4      -23.34534      A        1      4     2.00000      -
+     5      -20.57792      A        1      5     2.00000      2
+     6      -20.00285      A        1      6     2.00000      1
+     7       -5.83542      A        1      7     0.00000      1
+     8       -3.45516      A        1      8     0.00000      -
+     9       -2.60583      A        1      9     0.00000      -
+    10       -2.23553      A        1     10     0.00000      -
+    11       -0.04235      A        1     11     0.00000      -
+    12        1.36425      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22563191 eV
+ Total energy:                             -393.65282745 eV
+ Electronic energy:                        -884.94866888 eV
+ Nuclear energy:                            491.29584143 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652827 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992137       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.32     -0.121112       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.69719 KCAL/MOL
+
+   1   0.1000E+01   0.16969719E+03   0.5905E+00   0.1612E-02
+
+ CURRENT GRADIENT NORM                            1.16313
+ CURRENT CARTESIAN GRADIENT NORM                  1.16313
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =  11
+ RELATIVE CHANGE IN X = 0.4981E-03
+ ABSOLUTE CHANGE IN F = 0.2919E-03
+ GRADIENT NORM        = 0.1163E+01
+
+ TOTAL TIME             0.100 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    6  THE FUNCTION VALUE IS    169.69719
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00214    -0.00087    -0.00001     1.28586    -0.00117     0.00001    -0.58323     0.93179     0.00000     1.83611
+ G(I)    -0.04304    -0.78188    -0.00032     0.03300    -0.22747     0.00140    -0.29798     0.57434     0.00025    -0.04789
+ P(I)     0.00003     0.00033     0.00000    -0.00004     0.00013    -0.00000     0.00030    -0.00049    -0.00000     0.00012
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85921     0.00002    -0.58283    -0.93197    -0.00003     1.83649    -0.86122    -0.00000
+ G(I)     0.13770    -0.00081     0.35934     0.34050    -0.00032    -0.00344    -0.04319    -0.00020
+ P(I)    -0.00004     0.00000    -0.00022    -0.00013    -0.00000    -0.00012     0.00011    -0.00000
+
+ ANGLE COSINE   =  0.9154E+00
+ ALPHA.P.G TEST =  0.1860E-02
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.7998E-03
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.2058E+03
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16969719E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5     -1.000
+        6      UNCHANGED      6     -1.000
+        7      UNCHANGED      7     -1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.21854      A        1      1     2.00000      -
+     2      -29.09436      A        1      2     2.00000      -
+     3      -25.31116      A        1      3     2.00000      2
+     4      -23.34652      A        1      4     2.00000      -
+     5      -20.57883      A        1      5     2.00000      2
+     6      -20.00319      A        1      6     2.00000      1
+     7       -5.83539      A        1      7     0.00000      1
+     8       -3.45415      A        1      8     0.00000      -
+     9       -2.60553      A        1      9     0.00000      -
+    10       -2.23496      A        1     10     0.00000      -
+    11       -0.04218      A        1     11     0.00000      -
+    12        1.36527      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22560958 eV
+ Total energy:                             -393.65284679 eV
+ Electronic energy:                        -884.97084208 eV
+ Nuclear energy:                            491.31799529 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652847 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992139       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.31     -0.121101       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.69674 KCAL/MOL
+
+   1   0.1000E+01   0.16969674E+03   0.1130E+01   0.3539E-03
+
+ CURRENT GRADIENT NORM                            0.29691
+ CURRENT CARTESIAN GRADIENT NORM                  0.29691
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =  12
+ RELATIVE CHANGE IN X = 0.2143E-03
+ ABSOLUTE CHANGE IN F = 0.4459E-03
+ GRADIENT NORM        = 0.2969E+00
+
+ TOTAL TIME             0.108 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    7  THE FUNCTION VALUE IS    169.69674
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00211    -0.00054    -0.00001     1.28582    -0.00104     0.00001    -0.58294     0.93130     0.00000     1.83623
+ G(I)    -0.00267     0.02417    -0.00011    -0.09283    -0.19896     0.00105     0.01076     0.06294     0.00014    -0.06171
+ P(I)     0.00000    -0.00003     0.00000     0.00004     0.00019     0.00000    -0.00005    -0.00014    -0.00000     0.00016
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85917     0.00002    -0.58305    -0.93210    -0.00003     1.83637    -0.86110    -0.00000
+ G(I)     0.08736    -0.00062     0.14896     0.03819    -0.00029    -0.00250    -0.01371    -0.00016
+ P(I)    -0.00006     0.00001    -0.00019    -0.00004    -0.00000     0.00006     0.00023    -0.00000
+
+ ANGLE COSINE   =  0.7836E+00
+ ALPHA.P.G TEST =  0.1748E-03
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.1002E-03
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.4356E+03
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16969674E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5      1.000
+        6      UNCHANGED      6     -1.000
+        7      UNCHANGED      7     -1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.21838      A        1      1     2.00000      -
+     2      -29.09487      A        1      2     2.00000      -
+     3      -25.31089      A        1      3     2.00000      2
+     4      -23.34720      A        1      4     2.00000      -
+     5      -20.57866      A        1      5     2.00000      2
+     6      -20.00301      A        1      6     2.00000      1
+     7       -5.83562      A        1      7     0.00000      1
+     8       -3.45427      A        1      8     0.00000      -
+     9       -2.60565      A        1      9     0.00000      -
+    10       -2.23385      A        1     10     0.00000      -
+    11       -0.04224      A        1     11     0.00000      -
+    12        1.36502      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22561248 eV
+ Total energy:                             -393.65284950 eV
+ Electronic energy:                        -884.96894730 eV
+ Nuclear energy:                            491.31609780 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652849 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992138       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.31     -0.121103       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.69668 KCAL/MOL
+
+   1   0.1000E+01   0.16969668E+03   0.1324E+01   0.3785E-04
+
+ CURRENT GRADIENT NORM                            0.12635
+ CURRENT CARTESIAN GRADIENT NORM                  0.12635
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =  13
+ RELATIVE CHANGE IN X = 0.1229E-03
+ ABSOLUTE CHANGE IN F = 0.6238E-04
+ GRADIENT NORM        = 0.1263E+00
+
+ TOTAL TIME             0.120 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    8  THE FUNCTION VALUE IS    169.69668
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00211    -0.00057    -0.00001     1.28585    -0.00085     0.00001    -0.58299     0.93117     0.00000     1.83640
+ G(I)    -0.03671     0.04506     0.00001     0.01346    -0.00894    -0.00004     0.03853     0.01007    -0.00002    -0.07337
+ P(I)     0.00000    -0.00004     0.00000     0.00001     0.00007     0.00000    -0.00012    -0.00011     0.00000     0.00024
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85911     0.00003    -0.58324    -0.93214    -0.00003     1.83643    -0.86087    -0.00000
+ G(I)    -0.04294     0.00004     0.05836    -0.00867     0.00002    -0.00026     0.00542    -0.00001
+ P(I)     0.00004    -0.00000    -0.00016    -0.00002    -0.00000    -0.00003     0.00003     0.00000
+
+ ANGLE COSINE   =  0.8295E+00
+ ALPHA.P.G TEST =  0.4514E-04
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.3646E-04
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.4147E+03
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16969668E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5     -1.000
+        6      UNCHANGED      6     -1.000
+        7      UNCHANGED      7     -1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.21794      A        1      1     2.00000      -
+     2      -29.09471      A        1      2     2.00000      -
+     3      -25.30994      A        1      3     2.00000      2
+     4      -23.34739      A        1      4     2.00000      -
+     5      -20.57836      A        1      5     2.00000      2
+     6      -20.00228      A        1      6     2.00000      1
+     7       -5.83546      A        1      7     0.00000      1
+     8       -3.45438      A        1      8     0.00000      -
+     9       -2.60615      A        1      9     0.00000      -
+    10       -2.23398      A        1     10     0.00000      -
+    11       -0.04265      A        1     11     0.00000      -
+    12        1.36520      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22562122 eV
+ Total energy:                             -393.65285033 eV
+ Electronic energy:                        -884.95759067 eV
+ Nuclear energy:                            491.30474034 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652850 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992138       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.31     -0.121106       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.69666 KCAL/MOL
+
+   1   0.1000E+01   0.16969666E+03   0.1059E+01   0.1721E-04
+
+ CURRENT GRADIENT NORM                            0.05810
+ CURRENT CARTESIAN GRADIENT NORM                  0.05810
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =  14
+ RELATIVE CHANGE IN X = 0.9921E-04
+ ABSOLUTE CHANGE IN F = 0.1924E-04
+ GRADIENT NORM        = 0.5810E-01
+
+ TEST ON F SATISFIED
+
+ TOTAL TIME             0.128 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE    9  THE FUNCTION VALUE IS    169.69666
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00211    -0.00061    -0.00001     1.28586    -0.00078     0.00001    -0.58310     0.93105     0.00000     1.83664
+ G(I)    -0.01486     0.03415     0.00001    -0.01068    -0.00145     0.00003     0.02556    -0.00394    -0.00001     0.00341
+ P(I)     0.00000    -0.00002    -0.00000     0.00001     0.00001    -0.00000    -0.00005    -0.00002     0.00000     0.00001
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85915     0.00003    -0.58340    -0.93215    -0.00003     1.83640    -0.86085    -0.00000
+ G(I)     0.00459    -0.00001    -0.00341    -0.03405    -0.00000    -0.00002     0.00070    -0.00002
+ P(I)    -0.00000     0.00000    -0.00001     0.00002    -0.00000     0.00001     0.00001     0.00000
+
+ ANGLE COSINE   =  0.6564E+00
+ ALPHA.P.G TEST =  0.1327E-04
+
+ /////FSTMIN, LINEAR SEARCH ENTERED
+
+ GRADIENT ALONG SEARCH DIRECTION (BQ=-G*P)        0.2593E-05
+ MAXIMUM STEP SIZE ALLOWED IN LINE SEARCH         0.1818E+04
+
+
+   I    CURRENT        FUNCTION      PREDICTED    PREDICTED
+       STEP SIZE         VALUE       STEP SIZE    CURVATURE
+
+   0   0.0000E+00   0.16969666E+03   0.1000E+01
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5      1.000
+        6      UNCHANGED      6     -1.000
+        7      UNCHANGED      7     -1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.21790      A        1      1     2.00000      -
+     2      -29.09474      A        1      2     2.00000      -
+     3      -25.30987      A        1      3     2.00000      2
+     4      -23.34749      A        1      4     2.00000      -
+     5      -20.57833      A        1      5     2.00000      2
+     6      -20.00219      A        1      6     2.00000      1
+     7       -5.83546      A        1      7     0.00000      1
+     8       -3.45437      A        1      8     0.00000      -
+     9       -2.60620      A        1      9     0.00000      -
+    10       -2.23391      A        1     10     0.00000      -
+    11       -0.04267      A        1     11     0.00000      -
+    12        1.36520      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22562253 eV
+ Total energy:                             -393.65285041 eV
+ Electronic energy:                        -884.95671470 eV
+ Nuclear energy:                            491.30386430 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652850 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992138       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.31     -0.121107       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.69666 KCAL/MOL
+
+   1   0.1000E+01   0.16969666E+03   0.1489E+01   0.8705E-06
+
+ CURRENT GRADIENT NORM                            0.02493
+ CURRENT CARTESIAN GRADIENT NORM                  0.02493
+
+ TERMINATION TESTS ...
+ FUNCTION EVALUATIONS =  15
+ RELATIVE CHANGE IN X = 0.1939E-04
+ ABSOLUTE CHANGE IN F = 0.1722E-05
+ GRADIENT NORM        = 0.2493E-01
+
+ TEST ON F SATISFIED
+
+ TOTAL TIME             0.140 SECONDS
+
+
+ *****
+
+ AT THE BEGINNING OF CYCLE   10  THE FUNCTION VALUE IS    169.69666
+ THE CURRENT POINT IS ...
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00210    -0.00063    -0.00001     1.28587    -0.00077     0.00001    -0.58316     0.93103     0.00000     1.83665
+ G(I)    -0.01206     0.00050     0.00001     0.00025     0.00775    -0.00003     0.00858     0.00835    -0.00001     0.00438
+ P(I)     0.00000    -0.00001    -0.00000     0.00000    -0.00001    -0.00000    -0.00004    -0.00003     0.00000    -0.00001
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85914     0.00003    -0.58341    -0.93214    -0.00003     1.83641    -0.86084    -0.00000
+ G(I)    -0.00127     0.00002    -0.00124    -0.01580     0.00001     0.00008     0.00047     0.00000
+ P(I)    -0.00000    -0.00000    -0.00000     0.00002     0.00000     0.00000    -0.00001     0.00000
+
+ ANGLE COSINE   =  0.7115E+00
+ ALPHA.P.G TEST =  0.1206E-05
+
+ TEST ON ALPHA.P.G SATISFIED
+
+ TOTAL TIME             0.140 SECONDS
+
+
+
+     Initial coordinates from OM2 optimisation                                       
+     Methaniminium OM2/GUGA-CI ground state RHF opt                                  
+
+
+
+     EIGENVALUES AND EIGENVECTORS.
+
+
+                         1           2           3           4           5           6           7           8           9
+
+                    -40.21790   -29.09474   -25.30987   -23.34749   -20.57833   -20.00219    -5.83546    -3.45437    -2.60620
+
+  1  C (1)   s        0.41758     0.70204     0.00000     0.18736     0.00000    -0.00000    -0.00000     0.48139    -0.00003
+  2  C (1)   x        0.20687    -0.12278    -0.00004    -0.61407    -0.00001     0.00007    -0.00001    -0.05772    -0.00004
+  3  C (1)   y       -0.00002     0.00002    -0.42971     0.00006    -0.00001     0.63848    -0.00002    -0.00002    -0.43931
+  4  C (1)   z        0.00000    -0.00000    -0.00001    -0.00001     0.55762     0.00001     0.83010    -0.00000    -0.00001
+
+  5  N (2)   s        0.83895    -0.30066    -0.00000    -0.02194    -0.00000    -0.00000     0.00000    -0.23515     0.00002
+  6  N (2)   x       -0.07097    -0.43473    -0.00009     0.59545    -0.00001    -0.00003     0.00001     0.11218    -0.00004
+  7  N (2)   y        0.00001     0.00005    -0.72191    -0.00008    -0.00002    -0.32796     0.00001    -0.00003    -0.31845
+  8  N (2)   z       -0.00000    -0.00000    -0.00001     0.00001     0.83010    -0.00001    -0.55762     0.00000    -0.00001
+
+  9  H (3)   s        0.06380     0.24582    -0.17037     0.27186    -0.00000     0.41713    -0.00000    -0.54152     0.45240
+
+ 10  H (4)   s        0.18140    -0.21428    -0.34362     0.20609     0.00000    -0.26152    -0.00000     0.23506     0.38490
+
+ 11  H (5)   s        0.06380     0.24582     0.17036     0.27188     0.00000    -0.41712     0.00000    -0.54159    -0.45232
+
+ 12  H (6)   s        0.18140    -0.21428     0.34362     0.20609    -0.00000     0.26153    -0.00000     0.23500    -0.38495
+
+
+
+                        10          11          12
+                     -2.23391    -0.04267     1.36520
+
+  1  C (1)   s       -0.08449     0.00001    -0.24247
+  2  C (1)   x        0.29226     0.00007    -0.69015
+  3  C (1)   y       -0.00003     0.46336     0.00008
+  4  C (1)   z        0.00000     0.00001    -0.00001
+
+  5  N (2)   s       -0.32856    -0.00000     0.20501
+  6  N (2)   x       -0.27849    -0.00005    -0.60106
+  7  N (2)   y        0.00003    -0.51949     0.00006
+  8  N (2)   z       -0.00000    -0.00001    -0.00001
+
+  9  H (3)   s        0.23021    -0.30389    -0.12373
+
+ 10  H (4)   s        0.55496     0.40664     0.12449
+
+ 11  H (5)   s        0.23021     0.30389    -0.12373
+
+ 12  H (6)   s        0.55494    -0.40666     0.12446
+
+
+
+
+     SCF HEAT OF FORMATION      174.89974 KCAL/MOL
+     SCF BINDING ENERGY         -13.76342 EV
+     SCF TOTAL ENERGY          -393.42723 EV
+     ELECTRONIC ENERGY         -884.73109 EV
+     NUCLEAR ENERGY             491.30386 EV
+     IONIZATION ENERGY           20.00219 EV
+     SCF CYCLES                   2
+
+
+
+     NET ATOMIC CHARGES AND ORBITAL POPULATIONS.
+
+     ATOM    I        CHARGE      DENSITY        S          PX          PY          PZ
+
+      C      1       -0.08105     4.08105     1.40466     0.86990     1.18461     0.62188
+      N      2       -0.32216     5.32216     1.58944     1.09717     1.25743     1.37812
+      H      3        0.31713     0.68287     0.68287
+      H      4        0.38447     0.61553     0.61553
+      H      5        0.31714     0.68286     0.68286
+      H      6        0.38447     0.61553     0.61553
+
+
+
+     DIPOLE              X           Y           Z         TOTAL
+
+     POINT-CHARGE    -0.26251     0.00002    -0.00000     0.26251
+     HYBRID           0.43008    -0.00005     0.00000     0.43008
+     SUM              0.16757    -0.00003     0.00000     0.16757
+
+
+     POINT GROUP C1. NO SYMMETRY.
+
+
+      MATCHED ACTIVE ORBITALS (OVERLAP OVER 0.5):
+
+      SAVED     STATUS     CURRENT  OVERLAP
+      -------------------------------------
+        3      UNCHANGED      3      1.000
+        5      UNCHANGED      5      1.000
+        6      UNCHANGED      6     -1.000
+        7      UNCHANGED      7     -1.000
+
+
+
+    MO     EIGENVALUE     LABEL   NSYM  IMOSYM     OCC.    ACTIVE
+
+     1      -40.21790      A        1      1     2.00000      -
+     2      -29.09474      A        1      2     2.00000      -
+     3      -25.30987      A        1      3     2.00000      2
+     4      -23.34749      A        1      4     2.00000      -
+     5      -20.57833      A        1      5     2.00000      2
+     6      -20.00219      A        1      6     2.00000      1
+     7       -5.83546      A        1      7     0.00000      1
+     8       -3.45437      A        1      8     0.00000      -
+     9       -2.60620      A        1      9     0.00000      -
+    10       -2.23391      A        1     10     0.00000      -
+    11       -0.04267      A        1     11     0.00000      -
+    12        1.36520      A        1     12     0.00000      -
+
+
+
+ REFERENCE OCCUPATIONS
+
+    3   5   6   7
+    A   A   A   A
+    2   2   2   0
+    2   2   1   1
+    2   2   0   2
+ 
+ ==========================================================
+ 
+ Results of CI calculation:
+ 
+ Correlation energy for CI root   1:         -0.22562253 eV
+ Total energy:                             -393.65285041 eV
+ Electronic energy:                        -884.95671470 eV
+ Nuclear energy:                            491.30386430 eV
+ 
+
+ ---------------------------------------------------------------
+ State  1,  Mult. 1,  E-E(1)=  0.000000 eV,  E=   -393.652850 eV
+ ---------------------------------------------------------------
+
+   -393.43      0.992138       1     3   5   6   7
+                                    ab  ab  ab   -
+ 
+   -378.31     -0.121107       8     3   5   6   7
+                                    ab   -  ab  ab
+ 
+
+ CI HEAT OF FORMATION       169.69666 KCAL/MOL
+
+
+
+
+ Initial coordinates from OM2 optimisation                                       
+ Methaniminium OM2/GUGA-CI ground state RHF opt                                  
+
+
+
+ OPTIMIZATION FINISHED AFTER   9 CYCLES AND  16 FUNCTION EVALUATIONS
+
+ FINAL HEAT OF FORMATION      169.69666 KCAL/MOL
+
+
+
+ FINAL VARIABLES AND GRADIENTS
+
+
+   I         1           2           3           4           5           6           7           8           9          10
+ X(I)    -0.00210    -0.00063    -0.00001     1.28587    -0.00077     0.00001    -0.58316     0.93103     0.00000     1.83665
+ G(I)    -0.01206     0.00050     0.00001     0.00025     0.00775    -0.00003     0.00858     0.00835    -0.00001     0.00438
+
+   I        11          12          13          14          15          16          17          18
+ X(I)     0.85914     0.00003    -0.58341    -0.93214    -0.00003     1.83641    -0.86084    -0.00000
+ G(I)    -0.00127     0.00002    -0.00124    -0.01580     0.00001     0.00008     0.00047     0.00000
+
+
+
+ FINAL OPTIMIZED GRADIENT NORM                0.02493
+
+ FINAL CARTESIAN GRADIENT NORM                0.02493
+
+
+
+
+      ATOM      ATOMIC              X-COORDINATE         Y-COORDINATE         Z-COORDINATE
+     NUMBER     NUMBER               (ANGSTROMS)          (ANGSTROMS)          (ANGSTROMS)
+
+        1          6                  -0.00210 *           -0.00063 *           -0.00001 *
+        2          7                   1.28587 *           -0.00077 *            0.00001 *
+        3          1                  -0.58316 *            0.93103 *            0.00000 *
+        4          1                   1.83665 *            0.85914 *            0.00003 *
+        5          1                  -0.58341 *           -0.93214 *           -0.00003 *
+        6          1                   1.83641 *           -0.86084 *           -0.00000 *
+
+
+
+ INTERATOMIC DISTANCES (ANGSTROMS)
+
+
+
+             1           2           3           4           5           6
+ ----------------------------------------------------------------------------
+   1      0.00000
+   2      1.28797     0.00000
+   3      1.09800     2.08842     0.00000
+   4      2.02983     1.02118     2.42087     0.00000
+   5      1.09801     2.08846     1.86316     3.01088     0.00000
+   6      2.02980     1.02118     3.01083     1.71998     2.42088     0.00000
+
+
+
+ COMPUTATION TIME                 0.132 SECONDS
+
+

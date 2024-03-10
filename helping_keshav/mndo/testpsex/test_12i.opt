@@ -1,0 +1,6 @@
+DSC HCO, OM2 CAS-CI conical intersection optimization
+DSC Yarkony search algorithm, orthogonalise throughout
+DSC Empirical diagonal Hessian, BFGS update
+DSC Close starting geometry, no trust radius
+PRP finalstate1heat=62.70689
+PRP finalstate2heat=62.70689

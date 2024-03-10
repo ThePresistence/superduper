@@ -1,0 +1,15 @@
+DSC BENZYL RADICAL, C2v, OM2 doublet CISD with doublet reference
+DSC Active space: 3 MOs, 2 VOs - defined by default (movo=0)
+DSC Transition state optimization and force constant analysis
+DSC for the ground state using numerical integral derivatives
+PRP finalheat=46.18933
+PRP freq1=-183.63481
+PRP freq2=0
+PRP freq3=0
+PRP freq4=0
+PRP freq5=0
+PRP freq6=0
+PRP freq7=0
+PRP freq8=207.51548
+PRP freq9=300.83809
+PRP freq10=373.30385

@@ -1,0 +1,8 @@
+DSC PENTADIENIMINIUM CATION, OM2 (ROHF) MRSD-CI
+DSC Planar (z=0), movo=-5
+DSC Expected active space: 11 14 16 17 18 21
+DSC Single-point energy and gradient, ground state
+PRP heat=301.16150
+PRP ciheat=175.45522
+PRP cartgrd=0.04710
+PRP intgrd=0.04710

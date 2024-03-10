@@ -1,0 +1,79 @@
+      SUBROUTINE PASPIN (PA,PB,LM4,PRT)
+C     *
+C     POPULATION ANALYSIS FOR SPIN DENSITY.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     PA(LM4)   RHF OR UHF-ALPHA DENSITY MATRIX (I).
+C     PB(LM4)   UHF-BETA DENSITY MATRIX (I).
+C     PRT       LOGICAL PRINTING FLAG (I).
+C     *
+      USE LIMIT, ONLY: LM1, LMX, LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      CHARACTER*2 ELEMNT
+      LOGICAL PRT
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./ELEMTS/ ELEMNT(107)
+     ./INDEX / INDX(LMX)
+     ./NBFILE/ NBF(20)
+      DIMENSION PA(LM4),PB(LM4)
+      DIMENSION PAO(9),POP(3)
+C *** FILE NUMBERS.
+      NB6    = NBF(6)
+C *** INITIALIZATION.
+      IF(PRT) THEN
+         WRITE(NB6,500)
+         ITMAX = 0
+         DO 10 I=1,NUMAT
+         ITMAX = MAX(ITMAX,NLAST(I)-NFIRST(I)+1)
+   10    CONTINUE
+         IF(ITMAX.LE.1) THEN
+            WRITE(NB6,510)
+         ELSE IF(ITMAX.LE.4) THEN
+            WRITE(NB6,520)
+         ELSE
+            WRITE(NB6,530)
+         ENDIF
+      ENDIF
+C *** LOOP OVER ALL ATOMS.
+      QISUM  = ZERO
+      DO 30 I=1,NUMAT
+      NI     = NAT(I)
+      IA     = NFIRST(I)
+      IB     = NLAST(I)
+      IORBS  = IB-IA+1
+C *** CALCULATE ATOMIC POPULATIONS.
+      L      = 0
+      W      = ZERO
+      DO 20 J=IA,IB
+      K      = INDX(J)+J
+      L      = L+1
+      P      = PA(K)-PB(K)
+      PAO(L) = P
+      W      = W+P
+   20 CONTINUE
+      QISUM  = QISUM + W
+C *** PRINT ATOMIC AND ORBITAL POPULATIONS.
+      IF(PRT) THEN
+         IF(L.LE.4) THEN
+            WRITE(NB6,540) ELEMNT(NI),I,W,(PAO(J),J=1,L)
+         ELSE
+            POPD = PAO(5)+PAO(6)+PAO(7)+PAO(8)+PAO(9)
+            WRITE(NB6,540) ELEMNT(NI),I,W,(PAO(J),J=1,4),POPD
+         ENDIF
+      ENDIF
+   30 CONTINUE
+      IF(PRT) THEN
+         WRITE(NB6,550) QISUM
+      ENDIF
+      RETURN
+  500 FORMAT(///5X,'NET ATOMIC AND ORBITAL SPIN DENSITIES.')
+  510 FORMAT(/  5X,'ATOM',4X,'I',5X,'SPIN DENSITY',7X,'S'/)
+  520 FORMAT(/  5X,'ATOM',4X,'I',5X,'SPIN DENSITY',7X,'S',
+     1          10X,'PX',10X,'PY',10X,'PZ'/)
+  530 FORMAT(/  5X,'ATOM',4X,'I',5X,'SPIN DENSITY',7X,'S',
+     1          10X,'PX',10X,'PY',10X,'PZ',10X,'DSUM'/)
+  540 FORMAT(   6X,A2,3X,I3,3X,6F12.5)
+  550 FORMAT(/  5X,'TOTAL SPIN DENSITY',6X,F12.5)
+      END

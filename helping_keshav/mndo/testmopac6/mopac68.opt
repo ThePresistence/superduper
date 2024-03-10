@@ -1,0 +1,10 @@
+DSC Test suite 8 with 11 runs
+DSC Collection of miscellaneous tests of different options
+DSC Geometry optimizations and other types of calculations
+PRP heat=-51.87734:-19.72200:118.45661:46.59635:-34.08164:-59.24079:-60.93813:-34.08161
+PRP optcyc=13:6:3:3:5:3
+PRP finalheat=-51.87734:-19.72200:118.45661:-34.08164:-59.24079:-60.93813
+PRP zeroheat=-32.16791
+PRP zpe=17.98861
+PRP intgrdopt=0.00668:0.00097:0.33408:0.01240:0.05845:0.68597
+  

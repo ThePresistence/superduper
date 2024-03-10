@@ -1,0 +1,9 @@
+DSC ETHYLENE with connection atom, MNDO RHF for QM/MM
+DSC Geometry optimization, standard BFGS
+PRP heat=5.37357
+PRP optcyc=7
+PRP finalheat=5.37357
+PRP intgrdopt=0.08308
+
+
+

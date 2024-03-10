@@ -1,0 +1,14 @@
+DSC AM1 vibrational frequencies for C2v doublet C2H3 (2x2 CI on MOs 4 and 6).
+DSC Stabilized local ortres solution in MO basis (direct integrals).
+DSC Variable shift conditioner. Integral route used for Z-vector reduction.
+DAT C2H3.dat
+OPT iprint=1
+OPT kci=1 cik=4 cil=6 cinc=2 cilroot=1
+OPT imix=1 idens=6 iqswap=-1 inrhs=1 irows=-3 iprect=3 ihlst=1 ihlwrp=1 ikmode=2 isolve=5 ikrsav=7
+PRP heat=64.76823
+PRP freqmem=4125 freqdisk=0
+PRP optcyc=4
+PRP intgrdopt=0.13597 cartgrdopt=0.11859
+PRP CIstate1=63.99474 CIstate2=251.62252
+PRP freq7=271.58135 freq8=814.96173 freq9=946.15071 freq10=1031.40360
+PRP zpe=23.07925

@@ -1,0 +1,30 @@
+This directory contains utilities for automating the preparation of 
+excited state dynamics calculations and collating the data produced
+by them.
+
+Further documentation can be found in mdtools.doc
+
+---------------------------------------------------------------------
+
+Files:
+README                                  This file.
+mdtools.doc                             A guide to using the utilities in this directory.
+mdsample.py                             Utility for sampling snapshots from a Molden or XYZ
+                                        trajectory.
+mdfilter.py                             Utility for selecting starting geometries for dynamics
+                                        from a sample XYZ file according to various criteria.
+                                        Can also be used to simulate absorption spectra.
+MDextr.py                               Utility for extracting MD and hopping data from MNDO
+                                        output files.
+mmean.py                                Utility to average MD and hopping data.
+geoman.py                               Utility to analyse trajectory files.
+mndotools.py                            Library for general processing of MNDO/XYZ files.
+trajectories_check_I_length.tcsh        Sort out trajectories that break too early
+trajectories_check_II_energy_crash.tcsh Sort out trajectories that have too high energy jumps
+trajectories_ci_struct.tcsh             Extract the geometries at hopping points
+trajectories_data_generator.sh          Create additional output files after calculations finished
+trajectories_state_average.tcsh         Calculate the average state occupations for all trajectories
+Chemsh_getSample.sh                     Convert chemshell .trj files to traj.out and vel.out
+TOOLS/...                               Auxiliary fortran files for the scripts
+
+---------------------------------------------------------------------

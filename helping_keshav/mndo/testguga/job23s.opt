@@ -1,0 +1,8 @@
+DSC PENTADIENIMINIUM CATION, OM2 (ROHF) MRSD-CI
+DSC Near-planar geometry, movo=-5
+DSC Expected active space: 11 14 16 17 18 21
+DSC Inactive-active sigma/pi mixing causes unphysical gradient
+DSC Single-point energy and gradient, ground state
+PRP heat=304.66330
+PRP ciheat=181.64292
+PRP cartgrd=2650.99744

@@ -1,0 +1,8 @@
+DSC Biphenylene, MNDO SCF optimized geometry
+DSC MNDO full CI for ground-state singlet
+DSC Active space: 2 MOs, 2 VOs, pi only
+DSC Single-point energy and gradient calculation
+PRP heat=94.75983
+PRP ciheat=90.59828
+PRP cartgrd=12.84182
+PRP intgrd=25.68365

@@ -1,0 +1,13 @@
+OM2 jop=-1 iform=1 imult=1 icuts=6 icutg=6 kci=5 +
+ioutci=6 movo=0 iroot=3 lroot=1 ncisym=-1 cidir=1 iuvcd=4
+Hydrogen molecule
+
+ H    0.000000  0      0.00  0      0.00  0      0  0  0
+ H    0.700000  1      0.00  0      0.00  0      1  0  0
+
+OM2 jop=-1 iform=1 imult=1 icuts=6 icutg=6 kci=5 +
+ioutci=6 movo=0 iroot=3 lroot=1 ncisym=-1 cidir=3 iuvcd=4
+Hydrogen molecule
+
+ H    0.000000  0      0.00  0      0.00  0      0  0  0
+ H    0.700000  1      0.00  0      0.00  0      1  0  0

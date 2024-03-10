@@ -1,0 +1,39 @@
+      SUBROUTINE CCPROD (C1,C2,C12,LM2,LM6)
+C     *
+C     PRODUCTS OF MO COEFFICIENTS FOR ONE-CENTER PAIRS.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     C1(LM2)   FIRST  MO EIGENVECTOR (I).
+C     C2(LM2)   SECOND MO EIGENVECTOR (I).
+C     C12(LM6)  PRODUCTS FOR ONE-CENTER PAIRS INVOLVING AOS I,J (O).
+C               FOR I.EQ.J: C1(I)*C2(I)
+C               FOR I.NE.J: C1(I)*C2(J)+C1(J)*C2(I)
+C     *
+      USE LIMIT, ONLY: LM1, LMI
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./FINDX1/ IP(LMI),IP1(LMI),IP2(LMI)
+     ./INOPT2/ IN2(300)
+      DIMENSION C1(LM2),C2(LM2),C12(LM6)
+      IF(IN2(2).EQ.2) GO TO 20
+C     MNDO,MINDO,INDO.
+      DO 10 IJ=1,LM6
+      I      = IP1(IJ)
+      J      = IP2(IJ)
+      C12(IJ)= C1(I)*C2(J)
+      IF(I.NE.J) C12(IJ)=C12(IJ)+C1(J)*C2(I)
+   10 CONTINUE
+      RETURN
+C     CNDO.
+   20 DO 40 II=1,NUMAT
+      IA     = NFIRST(II)
+      IB     = NLAST(II)
+      CC     = 0.0D0
+      DO 30 I=IA,IB
+      CC     = CC+C1(I)*C2(I)
+   30 CONTINUE
+      C12(II)= CC
+   40 CONTINUE
+      RETURN
+      END

@@ -1,0 +1,31 @@
+ &DYNVAR
+ IOUT = 3,
+ NSTEP = 200,
+ DT = 1.0D-004,
+ TEMP0 = 300.0,
+ NOROT = F,
+ NOTRA = F,
+ WRITE_STATS = T,
+ SUNIT = 30,
+ SFILE = stat.out,
+ WRITE_TRAJ = T,
+ XUNIT = 31,
+ XFILE = traj.out,
+ WRITE_VEL = F,
+ VUNIT = 32,
+ VFILE = vel.out,
+ FSTAT = 1,
+ AVSTAT = F,
+ FSAV = 1,
+ RESTART = F,
+ WRITE_REST = T,
+ RFILE = dynam.restart,
+ RND_GEN = PM_BD,
+ RND_SEED = 417467306,
+ VS = F,
+ Tfix = 300.0,
+ fvs =1,
+ vs_Emax = -1.0
+ g0 = 0.0
+ /
+

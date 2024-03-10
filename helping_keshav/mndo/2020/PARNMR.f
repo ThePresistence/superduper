@@ -1,0 +1,269 @@
+      SUBROUTINE PARNMR (NMR)
+C     *
+C     INITIALIZATION OF NMR PARAMETERS.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     NMR       OPTION TO SELECT NMR PARAMETERS (I).
+C               < 0  STANDARD PARAMETERS ARE EMPLOYED FOR NMR.LT.0.
+C               > 0  SPECIFIC PARAMETERS ARE SELECTED FOR NMR.GT.0.
+C                    MOD(NMR,10) GOVERNS THE CHOICE OF PARAMETERS.
+C               999  INTERNAL FLAG TO MODIFY SCF PARAMETERS IN PAROPT
+C                    AFTER CHANGING THE NMR PARAMETERS IN /PSNPRD/
+C                    THROUGH EXPLICIT INPUT (OPTION IPAROK).
+C     *
+C     CONVENTIONS FOR OFFSET VALUES XOFFN(NI,J):
+C     NMR CHEMICAL SHIFTS ARE COMPUTED BY ADDING EMPIRICAL OFFSETS
+C     TO THE COMPUTED (NEGATIVE) NMR SHIELDINGS. THESE OFFSETS REFLECT
+C     THE CHOICE OF THE EXPERIMENTAL NMR REFERENCE, AND THEREFORE TWO
+C     DIFFERENT VALUES ARE PROVIDED FOR THE GAS PHASE (J=1) AND THE
+C     LIQUID PHASE (J=2). MOREOVER, THE OFFSETS ALSO ABSORB SYSTEMATIC
+C     ERRORS IN THE THEORETICAL RESULTS. AS A RULE, THERE IS ONE OFFSET
+C     VALUE PER ELEMENT. HOWEVER, FOR HYDROGEN, THE SYSTEMATIC ERRORS
+C     ARE RATHER DIFFERENT FOR C-H, N-H, AND O-H, SO THAT IT SEEMED
+C     JUSTIFIED TO DEFINE SEPARATE OFFSET VALUES FOR N-H AND O-H
+C     WHICH ARE STORED AS XOFFN(85,J) AND XOFFN(86,J), RESPECTIVELY.
+C     *
+C     THE OPTIMUM OFFSET VALUES DEPEND ON THE PARAMETERS USED (NMR),
+C     ON THE TREATMENT OF THE THREE-CENTER TERMS (NMRLEV), AND ON
+C     THE CHOICE OF THE EXPERIMENTAL REFERENCE DATA (J=1 VS J=2).
+C     STANDARD PUBLISHED OFFSET VALUES ARE INCLUDED IN THIS ROUTINE.
+C     IF NECESSARY, THEY MAY BE REPLACED BY VALUES TAKEN FROM AN
+C     EXTERNAL PARAMETER FILE (OPTION IPAROK).
+C     *
+C     REFERENCE FOR THE NMR PARAMETERS:
+C     (1) S. PATCHKOVSKII AND W. THIEL, J.COMP.CHEM. 20, 1220 (1999).
+C     *
+      USE LIMIT, ONLY: LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./DPARM / LORBS(LMZ)
+     ./DPARM1/ UDD(LMZ),ZD(LMZ),BETAD(LMZ)
+     ./INOPT2/ IN2(300)
+     ./MULTIP/ DD(6,0:LMZ),PO(9,0:LMZ)
+     ./PARDER/ CORE(LMZ),EHEAT(LMZ),EISOL(LMZ)
+     ./PAROPT/ USS(LMZ),UPP(LMZ),ZS(LMZ),ZP(LMZ),BETAS(LMZ),BETAP(LMZ),
+     .         ALP(LMZ)
+     ./PSNPRD/ XBETAN(LMZ,3),XZETAN(LMZ,3),XZETAS(LMZ,3),XBETAS(LMZ,3),
+     .         XUS(LMZ,3),XSCALN(0:LMZ),XOFFN(0:LMZ,2),IDEFN(0:LMZ)
+      IF(NMR.EQ.999) GO TO 30
+C *** INPUT OPTIONS.
+      NMRLEV = IN2(115)
+C *** INITIALIZATION.
+      DO 10 I=0,LMZ
+      IDEFN(I)   = 0
+      XSCALN(I)  = ONE
+      XOFFN(I,1) = ZERO
+      XOFFN(I,2) = ZERO
+   10 CONTINUE
+C *** OFFSET VALUES FOR STANDARD MNDO.
+      IF(NMR.LE.0) THEN
+C        OFFSETS WITH THREE-CENTER TERMS INCLUDED.
+C        J=1: REF.1, TABLE II, MNDO (B3LYP GEOMETRIES).
+C        J=1: REF.1, TABLE IV, M3 (B3LYP GEOMETRIES).
+C        J=2: NOT DOCUMENTED IN REF.1.
+         IF(NMRLEV.NE.2) THEN
+            XOFFN(1,1)  =  51.717D0
+            XOFFN(85,1) =  44.186D0
+            XOFFN(86,1) =  41.438D0
+            XOFFN(6,1)  =-111.14D0
+            XOFFN(7,1)  =-552.48D0
+            XOFFN(8,1)  =-426.00D0
+            XOFFN(1,2)  =  49.416D0
+            XOFFN(85,2) =  46.769D0
+            XOFFN(86,2) =  44.949D0
+            XOFFN(6,2)  =-128.98D0
+            XOFFN(7,2)  =-623.71D0
+            XOFFN(8,2)  =-472.69D0
+         ELSE
+C        OFFSETS WITHOUT THREE-CENTER TERMS.
+C        J=1: REF.1, TABLE IV, M2 (B3LYP GEOMETRIES).
+C        J=2: NOT DOCUMENTED IN REF.1.
+            XOFFN(1,1)  =  48.854D0
+            XOFFN(85,1) =  42.556D0
+            XOFFN(86,1) =  41.335D0
+            XOFFN(6,1)  =-114.17D0
+            XOFFN(7,1)  =-553.02D0
+            XOFFN(8,1)  =-426.55D0
+            XOFFN(1,2)  =   47.799D0
+            XOFFN(85,2) =   45.488D0
+            XOFFN(86,2) =   44.671D0
+            XOFFN(6,2)  = -132.03D0
+            XOFFN(7,2)  = -624.57D0
+            XOFFN(8,2)  = -472.52D0
+         ENDIF
+      ENDIF
+      IF(NMR.LE.0) RETURN
+C *** PARAMETER VALUES FOR SPECIAL NMR PARAMETRIZATIONS.
+C *** CASE NMRMOD=1: METHOD A.
+      NMRMOD = MOD(NMR,10)
+      IF(NMRMOD.EQ.1) THEN
+         IDEFN(1) = 2
+         IDEFN(6) = 2
+         IDEFN(7) = 2
+         IDEFN(8) = 2
+         XZETAS(1,1) = 1.17827D0
+         XZETAS(6,1) = 1.65445D0
+         XZETAS(7,1) = 2.02658D0
+         XZETAS(8,1) = 2.20274D0
+         XZETAS(6,2) = XZETAS(6,1)
+         XZETAS(7,2) = XZETAS(7,1)
+         XZETAS(8,2) = XZETAS(8,1)
+         XBETAS(1,1) = -15.20928D0
+         XBETAS(6,1) = -18.54181D0
+         XBETAS(7,1) = -23.53155D0
+         XBETAS(8,1) = -19.80485D0
+         XBETAS(6,2) = -12.81144D0
+         XBETAS(7,2) = XBETAS(7,1)
+         XBETAS(8,2) = XBETAS(8,1)
+C        OFFSETS WITH THREE-CENTER TERMS INCLUDED.
+C        J=1: REF.1, TABLE II, MA  (B3LYP GEOMETRIES).
+C        J=1: REF.1, TABLE IV, MA3 (B3LYP GEOMETRIES).
+C        J=1: REF.1, TABLE V , MA3 (B3LYP GEOMETRIES).
+C        J=2: REF.1, TABLE VI, MA3 (MNDO GEOMETRIES).
+         IF(NMRLEV.NE.2) THEN
+            XOFFN(1,1)  =  51.918D0
+            XOFFN(85,1) =  46.415D0
+            XOFFN(86,1) =  46.287D0
+            XOFFN(6,1)  =  52.11D0
+            XOFFN(7,1)  =-241.04D0
+            XOFFN(8,1)  =  75.97D0
+            XOFFN(1,2)  =  50.629D0
+            XOFFN(85,2) =  49.300D0
+            XOFFN(86,2) =  49.892D0
+            XOFFN(6,2)  =  43.95D0
+            XOFFN(7,2)  =-298.60D0
+            XOFFN(8,2)  =  30.14D0
+C        OFFSETS WITHOUT THREE-CENTER TERMS.
+C        J=1: REF.1, TABLE IV, MA2 (B3LYP GEOMETRIES).
+C        J=1: REF.1, TABLE V , MA2 (B3LYP GEOMETRIES).
+C        J=2: REF.1, TABLE VI, MA2 (MNDO GEOMETRIES).
+         ELSE
+            XOFFN(1,1)  =  48.863D0
+            XOFFN(85,1) =  45.684D0
+            XOFFN(86,1) =  47.009D0
+            XOFFN(6,1)  =  49.70D0
+            XOFFN(7,1)  =-241.24D0
+            XOFFN(8,1)  =  75.29D0
+            XOFFN(1,2)  =  48.942D0
+            XOFFN(85,2) =  48.828D0
+            XOFFN(86,2) =  50.090D0
+            XOFFN(6,2)  =  41.50D0
+            XOFFN(7,2)  =-299.15D0
+            XOFFN(8,2)  =  30.16D0
+         ENDIF
+      ENDIF
+C *** CASE NMRMOD=2: METHOD B.
+      IF(NMRMOD.EQ.2) THEN
+         IDEFN(1) = 3
+         IDEFN(6) = 3
+         IDEFN(7) = 3
+         IDEFN(8) = 3
+         XZETAS(1,1) = 1.38909D0
+         XZETAS(6,1) = 1.95307D0
+         XZETAS(7,1) = 2.44504D0
+         XZETAS(8,1) = 2.80691D0
+         XZETAS(6,2) = XZETAS(6,1)
+         XZETAS(7,2) = XZETAS(7,1)
+         XZETAS(8,2) = XZETAS(8,1)
+         XBETAS(1,1) = -28.93865D0
+         XBETAS(6,1) = -41.95587D0
+         XBETAS(7,1) = -64.53046D0
+         XBETAS(8,1) = -65.20940D0
+         XBETAS(6,2) = -30.40719D0
+         XBETAS(7,2) = XBETAS(7,1)
+         XBETAS(8,2) = XBETAS(8,1)
+         XUS(1,1)    = -13.43618D0
+         XUS(6,1)    = -58.42197D0
+         XUS(7,1)    = -78.94077D0
+         XUS(8,1)    =-105.07355D0
+         XUS(6,2)    = -39.80082D0
+         XUS(7,2)    = -60.51671D0
+         XUS(8,2)    = -84.31485D0
+C        OFFSETS WITH THREE-CENTER TERMS INCLUDED.
+C        J=1: REF.1, TABLE II, MB  (B3LYP GEOMETRIES).
+C        J=1: REF.1, TABLE IV, MB3 (B3LYP GEOMETRIES).
+C        J=1: REF.1, TABLE V , MB3 (B3LYP GEOMETRIES).
+C        J=2: REF.1, TABLE VI, MB3 (MNDO GEOMETRIES).
+         IF(NMRLEV.NE.2) THEN
+            XOFFN(1,1)  =  50.064D0
+            XOFFN(85,1) =  42.873D0
+            XOFFN(86,1) =  37.897D0
+            XOFFN(6,1)  =  69.53D0
+            XOFFN(7,1)  =-172.20D0
+            XOFFN(8,1)  = 281.57D0
+            XOFFN(1,2)  =  49.900D0
+            XOFFN(85,2) =  45.994D0
+            XOFFN(86,2) =  42.423D0
+            XOFFN(6,2)  =  59.09D0
+            XOFFN(7,2)  =-231.72D0
+            XOFFN(8,2)  = 256.97D0
+C        OFFSETS WITHOUT THREE-CENTER TERMS.
+C        J=1: REF.1, TABLE IV, MB2 (B3LYP GEOMETRIES).
+C        J=1: REF.1, TABLE V , MB2 (B3LYP GEOMETRIES).
+C        J=2: REF.1, TABLE VI, MB2 (MNDO GEOMETRIES).
+         ELSE
+            XOFFN(1,1)  =  48.051D0
+            XOFFN(85,1) =  43.037D0
+            XOFFN(86,1) =  38.975D0
+            XOFFN(6,1)  =  68.51D0
+            XOFFN(7,1)  =-172.61D0
+            XOFFN(8,1)  = 281.08D0
+            XOFFN(1,2)  =  49.012D0
+            XOFFN(85,2) =  46.431D0
+            XOFFN(86,2) =  43.094D0
+            XOFFN(6,2)  =  58.02D0
+            XOFFN(7,2)  =-232.20D0
+            XOFFN(8,2)  = 256.83D0
+        ENDIF
+      ENDIF
+C *** DEFINE PARAMETERS FOR NMR INTEGRALS.
+      DO 20 I=1,LMZ
+      IF(IDEFN(I).GE.1) THEN
+         XBETAN(I,1) = XBETAS(I,1)
+         XZETAN(I,1) = XZETAS(I,1)
+         IF(LORBS(I).GE.4) THEN
+            XBETAN(I,2) = XBETAS(I,2)
+            XZETAN(I,2) = XZETAS(I,2)
+         ENDIF
+         IF(LORBS(I).GE.9) THEN
+            XBETAN(I,3) = XBETAS(I,3)
+            XZETAN(I,3) = XZETAS(I,3)
+         ENDIF
+      ENDIF
+   20 CONTINUE
+C *** DEFINE NMR-SPECIFIC PARAMETERS FOR SCF CALCULATION.
+   30 CONTINUE
+      DO 40 I=1,LMZ
+C     RESONANCE INTEGRALS.
+      IF(IDEFN(I).GE.2) THEN
+         BETAS(I) = XBETAS(I,1)
+         ZS(I)    = XZETAS(I,1)
+         IF(LORBS(I).GE.4) THEN
+            BETAP(I) = XBETAS(I,2)
+            ZP(I)    = XZETAS(I,2)
+         ENDIF
+         IF(LORBS(I).GE.9) THEN
+            BETAD(I) = XBETAS(I,3)
+            ZD(I)    = XZETAS(I,3)
+         ENDIF
+      ENDIF
+C     ONE-CENTER TERMS.
+      IF(IDEFN(I).GE.3) THEN
+         USS(I) = XUS(I,1)
+         IF(LORBS(I).GE.4) THEN
+            UPP(I) = XUS(I,2)
+         ENDIF
+         IF(LORBS(I).GE.9) THEN
+            UDD(I) = XUS(I,3)
+         ENDIF
+      ENDIF
+C     COMPUTE DEPENDENT PARAMETERS.
+      IF(IDEFN(I).GE.2 .AND. NMRMOD.EQ.2) THEN
+         CALL DDPOHY (I)
+         PO(9,I)  = PO(1,I)
+         EISOL(I) = EATOM(I,0,0,0)
+      ENDIF
+   40 CONTINUE
+      RETURN
+      END

@@ -1,0 +1,11 @@
+DSC ETHYLENE, D2h, MNDO RHF, STANDARD DIIS
+OPT iop=0 jop=-2 idiis=1 jprint=2 nprint=2 ksym=1 nstart=-1 +
+OPT iscf=8 iplscf=8
+DSC ETHYLENE, D2h, MNDO RHF, WITHOUT DIIS OR EXTRAPOLATION
+OPT iop=0 jop=-2 idiis=0 jprint=-1 nprint=-1 ksym=1 nstart=-1 +
+OPT iscf=8 iplscf=8
+DSC ETHYLENE, D2h, MNDO RHF, WITHOUT DIIS, USING DEFAULT EXTRAPOLATION
+OPT iop=0 jop=-2 idiis=0 jprint=-1 nprint=-1 ksym=1 nstart=-1 +
+OPT iscf=8 iplscf=8
+PRP heat=15.89999:15.89999:15.89999
+PRP cartgrd=21.47175:21.47175:21.47175

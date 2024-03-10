@@ -1,0 +1,223 @@
+      SUBROUTINE ESTIM
+C     *
+C     STANDARD INPUT OF GEOMETRY AND SYMMETRY DATA.
+C     *
+C     INTERNAL  COORDINATES FOR IGEOM=0.
+C     CARTESIAN COORDINATES FOR IGEOM=1.
+C     *
+      USE LIMIT, ONLY: LM1, LMV, LMS, LMR, LMG
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      CHARACTER LINE*132
+      LOGICAL INT
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./DFP   / X(LMV),NVAR
+     ./INOPT2/ IN2(300)
+     ./NBFILE/ NBF(20)
+     ./PARM1 / A(3,LM1),NC(LM1),NB(LM1),NA(LM1),NN(LM1),NATOMS
+     ./PARM2 / NSYM,LPAR(LMS),LNUM(LMS),LDEP(LMS)
+     ./PARM3 / LOC(LMV),NV
+     ./PARM4 / RC(LMR),LREACT,LTOTAL
+     ./PARM5 / RC1(LMG),RC2(LMG),LGRID1,LTOT1,LGRID2,LTOT2
+     ./PARM7 / DEPFAC
+      DIMENSION AI(3),L(3)
+      DIMENSION LTEMP(40),VALUE(40)
+C *** FILE NUMBERS.
+      NB5    = NBF(5)
+      NB6    = NBF(6)
+C *** INPUT OPTIONS.
+      IGEOM  = IN2(4)
+      IFORM  = IN2(5)
+      KGEOM  = IN2(68)
+      KSYM   = IN2(75)
+C *** INITIALIZATION.
+      NUMAT  = 0
+      NATOMS = 0
+      NVAR   = 0
+      NSYM   = 0
+      NAI    = 0
+      NBI    = 0
+      NCI    = 0
+      BFACT  = ONE/AFACT
+C
+C *** INPUT OF COORDINATES, LOOP OVER ATOMS.
+      INT    = IGEOM.EQ.0
+      I      = 0
+   20 I      = I+1
+      IF(INT) THEN
+         IF(IFORM.LE.0) THEN
+            READ(NB5,500) NNI,(AI(J),L(J),J=1,3),NAI,NBI,NCI
+         ELSE
+            READ(NB5,*)   NNI,(AI(J),L(J),J=1,3),NAI,NBI,NCI
+         ENDIF
+C     THE FIRST SIX GEOMETRIC VARIABLES ARE FIXED BY DEFAULT IN INTERNAL
+C     COORDINATES.
+         IF(1.EQ.I) THEN
+           AI(1) = 0.0
+           AI(2) = 0.0
+           AI(3) = 0.0
+           L(1) = 0
+           L(2) = 0
+           L(3) = 0
+           NAI = 0
+           NBI = 0
+           NCI = 0
+         ELSE IF(2.EQ.I) THEN
+           AI(2) = 0.0
+           AI(3) = 0.0
+           L(2) = 0
+           L(3) = 0
+           NBI = 0
+           NCI = 0
+         ELSE IF(3.EQ.I) THEN
+           AI(3) = 0.0
+           L(3) = 0
+           NCI = 0
+         ENDIF
+      ELSE
+         IF(IFORM.LE.0) THEN
+            READ(NB5,500) NNI,(AI(J),L(J),J=1,3)
+         ELSE
+C           READ(NB5,*)   NNI,(AI(J),L(J),J=1,3)
+            READ(NB5,'(A)',END=80) LINE
+            IF(LINE.EQ.' ') GO TO 40
+            CALL NUCHAR (LINE,VALUE,NVALUE)
+            NNI    = NINT(VALUE(1))
+            L(1)   = NINT(VALUE(3))
+            L(2)   = NINT(VALUE(5))
+            L(3)   = NINT(VALUE(7))
+            AI(1)  = VALUE(2)
+            AI(2)  = VALUE(4)
+            AI(3)  = VALUE(6)
+         ENDIF
+      ENDIF
+      IF(NNI.LE.0) GO TO 40
+C     CHECK FOR SIMPLE INPUT ERRORS.
+      IF(I.GT.LM1) GO TO 1005
+      IF(INT) THEN
+         IF(NAI.GE.I .OR. NBI.GE.I .OR. NCI.GE.I) GO TO 1001
+      ENDIF
+      IF(INT .AND. I.GT.3) THEN
+         IF(NAI.LT.1 .OR. NBI.LT.1 .OR. NCI.LT.1) GO TO 1001
+      ENDIF
+C     STORE THE INPUT DATA.
+      NN(I)   = NNI
+      NA(I)   = NAI
+      NB(I)   = NBI
+      NC(I)   = NCI
+      A(1,I)  = AI(1)
+      A(2,I)  = AI(2)
+      A(3,I)  = AI(3)
+      IF(NNI.LT.99) THEN
+         NUMAT = NUMAT+1
+         NAT(NUMAT) = NNI
+      ENDIF
+      IF(INT) THEN
+         A(2,I) = A(2,I)*BFACT
+         A(3,I) = A(3,I)*BFACT
+      ENDIF
+C     STORE VARIABLES TO BE OPTIMIZED.
+      DO 30 J=1,3
+      IF(L(J).LE.0) GO TO 30
+      NVAR = NVAR+1
+      IF(NVAR.GT.LMV) GO TO 1006
+      LOC(NVAR) = 3*(I-1)+J
+      X(NVAR) = A(J,I)
+   30 CONTINUE
+      GO TO 20
+C     ASSIGNMENTS AFTER END OF INPUT LOOP.
+   40 NATOMS = I-1
+      NV     = NVAR
+      IF(NATOMS.EQ.0) GO TO 1008
+      IF(INT) THEN
+         NA(2)  = 1
+         IF(NA(3).EQ.0) NA(3)=2
+         IF(NB(3).EQ.0) NB(3)=1
+      ENDIF
+C
+C *** INPUT OF SYMMETRY DATA.
+      IF(KSYM.EQ.0) GO TO 80
+      I      = 0
+   50 I      = I+1
+C     IF-STATEMENT KEPT FOR BACKWARD COMPATIBILITY.
+C     IF(KGEOM.LE.0) WOULD CONFORM TO NEW STANDARD.
+      IF(IFORM.EQ.0) THEN
+         READ(NB5,510) (LTEMP(J),J=1,12)
+         NVALUE = 12
+      ELSE
+         READ(NB5,'(A)',END=80) LINE
+         IF(LINE.EQ.' ') GO TO 80
+         CALL NUCHAR (LINE,VALUE,NVALUE)
+         DO 60 I=1,NVALUE
+         LTEMP(I) = NINT(VALUE(I))
+   60    CONTINUE
+      ENDIF
+      L1  = LTEMP(1)
+      L2  = LTEMP(2)
+      IF(L1.LE.0) GO TO 80
+C     CHECK FOR SIMPLE INPUT ERRORS.
+      IF(L1.GT.NATOMS) GO TO 1002
+      IF(L2.LT.1) GO TO 1002
+C     READ FACTOR FOR SPECIAL CASE L2=18.
+      IF(L2.EQ.18) THEN
+         IF(IFORM.LE.0) THEN
+            READ(NB5,520) DEPFAC
+         ELSE
+            READ(NB5,*)   DEPFAC
+         ENDIF
+      ENDIF
+C     STORE THE INPUT DATA.
+      DO 70 J=3,NVALUE
+      LT     = LTEMP(J)
+      IF(LT.LT.0 .OR. LT.GT.NATOMS) GO TO 1002
+      IF(LT.EQ.0 .AND. J.EQ.1) GO TO 1002
+      IF(LT.EQ.0) GO TO 50
+      NSYM   = NSYM+1
+      IF(NSYM.GT.LMS) GO TO 1007
+      LPAR(NSYM) = L1
+      LNUM(NSYM) = L2
+      LDEP(NSYM) = LT
+   70 CONTINUE
+      GO TO 50
+C
+C *** INPUT OF A REACTION PATH.
+   80 CONTINUE
+      IF(KGEOM.LE.0) RETURN
+      IF(KGEOM.EQ.1 .OR. KGEOM.EQ.4) THEN
+         CALL INPATH (RC,LMR,LREACT,LTOTAL,A,NATOMS,IFORM,INT,BFACT)
+      ELSE IF(KGEOM.EQ.2 .OR. KGEOM.EQ.3) THEN
+         CALL INPATH (RC1,LMG,LGRID1,LTOT1,A,NATOMS,IFORM,INT,BFACT)
+         CALL INPATH (RC2,LMG,LGRID2,LTOT2,A,NATOMS,IFORM,INT,BFACT)
+      ENDIF
+      RETURN
+C
+C *** ERROR SECTION.
+ 1001 WRITE(NB6,650) I
+      WRITE(NB6,700) NNI,(AI(J),L(J),J=1,3),NAI,NBI,NCI
+      STOP 'ESTIM'
+ 1002 WRITE(NB6,660) I
+      WRITE(NB6,710) L1,L2,(LTEMP(J),J=1,10)
+      STOP 'ESTIM'
+ 1005 WRITE(NB6,730) LM1
+      STOP 'ESTIM'
+ 1006 WRITE(NB6,740) LMV
+      STOP 'ESTIM'
+ 1007 WRITE(NB6,750) LMS
+      STOP 'ESTIM'
+ 1008 WRITE(NB6,770)
+      STOP 'ESTIM'
+C
+  500 FORMAT(I2,8X,3(F10.5,2X,I2,6X),3I2)
+  510 FORMAT(I2,I3,12X,10(2X,I3) )
+  520 FORMAT(8F10.5)
+  650 FORMAT(///5X,'**** WRONG INPUT ON LINE',I4,' OF GEOMETRY SECTION')
+  660 FORMAT(///5X,'**** WRONG INPUT ON LINE',I4,' OF SYMMETRY SECTION')
+  700 FORMAT(/  4X,I3,8X,3(F10.5,2X,I2,6X),3I3)
+  710 FORMAT(/  5X,I2,I3,3X,10(3X,I2))
+  730 FORMAT(///5X,'**** TOO MANY ATOMS. MAXIMUM IS',I4/)
+  740 FORMAT(///5X,'**** TOO MANY VARIABLES. MAXIMUM IS',I4/)
+  750 FORMAT(///5X,'**** TOO MANY SYMMETRY CONDITIONS. MAXIMUM IS',I4/)
+  770 FORMAT(///5X,'**** THE MOLECULE CONTAINS NO ATOMS.'/)
+      END

@@ -1,0 +1,14 @@
+DSC AM1 vibrational frequencies for C2v doublet C2H3 (2x2 CI on MOs 6 and 8).
+DSC Local gencg solution in AO basis. Bi-linear conditioner.
+DSC Fock route used for Z-vector reduction.
+DAT C2H3.dat
+OPT iprint=1
+OPT kci=1 cik=6 cil=8 cinc=2 cilroot=1
+OPT imix=2 idens=7 iqswap=2 inrhs=1 irows=-1 iprect=5 ihlst=2 ihlwrp=2 ikmode=1 isolve=6 ikrsav=1
+PRP heat=64.76768
+PRP freqmem=2441 freqdisk=1025
+PRP optcyc=4
+PRP intgrdopt=0.11196 cartgrdopt=0.09438
+PRP CIstate1=64.76768 CIstate2=174.67647
+PRP freq1=-96.56264 freq8=814.153 freq9=861.38507 freq10=1033.09467
+PRP zpe=22.39336

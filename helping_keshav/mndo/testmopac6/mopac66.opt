@@ -1,0 +1,7 @@
+DSC Test suite 6 with 1 trivial run
+DSC Formaldehyde, C2v, MNDO RHF
+DSC Geometry optimization
+PRP heat=-32.88176
+PRP optcyc=3
+PRP finalheat=-32.88176
+PRP intgrdopt=0.78083

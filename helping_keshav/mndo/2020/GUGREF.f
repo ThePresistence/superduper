@@ -1,0 +1,40 @@
+      SUBROUTINE GUGREF (XCALC,X,NSYM,N,ID4,ID5)
+C     *
+C     FIND THE REQUESTED VALUE XCALC IN THE ARRAY X(N).
+C     *
+C     NOTATION.
+C     XCALC    REQUESTED VALUE.
+C     X(N)     ARRAY OF AVAILABLE VALUES.
+C     NSYM(N)  ARRAY OF SYMMETRY LABELS (STANDARD CONVENTIONS).
+C     N        NUMBER OF AVAILABLE DATA.
+C     ID4      FIRST  IDENTIFIER (SEE INPUT DESCRIPTION).
+C     ID5      SECOND IDENTIFIER (SEE INPUT DESCRIPTION).
+C     *
+      USE LIMIT, ONLY: LMPROP
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./NBFILE/ NBF(20)
+      DIMENSION X(LMPROP,N),NSYM(N)
+      NB6 = NBF(6)
+      XCALC = 0.D0
+      IF(ID4.LE.0 .OR. ID4.GT.N) RETURN
+      IF(ID5.LE.0) THEN
+         XCALC = X(1,ID4)
+      ELSE IF(ID5.GT.0) THEN
+         NID5 = 0
+         DO J=1,N
+         IF(NSYM(J).EQ.0) THEN
+            WRITE(NB6,*) 'TOO FEW STATES CALCULATED.'
+            STOP 'SYMGUG'
+         ENDIF
+         IF(ID5.EQ.NSYM(J)) THEN
+            NID5 = NID5+1
+            IF(ID4.EQ.NID5) THEN
+               XCALC = X(1,J)
+               EXIT
+            ENDIF
+         ENDIF
+         ENDDO
+      ENDIF
+      RETURN
+      END

@@ -1,0 +1,218 @@
+      SUBROUTINE ADDDSP (EDISP,CA,EA,SUP,LM2,LM3,LMSUP,ICOSMO)
+C     *
+C     CALCULATION OF DISPERSION AND CAVITATION ENERGIES.
+C     EXTENSION OF THE ORIGINAL COSMO MODEL.
+C     A. GELESSUS, PH.D. THESIS, UNIVERSITY OF ZURICH, 1997.
+C     *
+C     NOTATION.    I=INPUT, O=OUTPUT, S=SCRATCH.
+C     EDISP        DISPERSION-CAVITATION ENERGY (O).
+C     CA(LM2,LM3)  EIGENVECTOR MATRIX (I).
+C     EA(LM3)      EIGENVALUES (I).
+C     SUP(LMSUP)   SUPERDELOCALIZABILITIES (O).
+C     ICOSMO       CONTROL FLAG (I).
+C     *
+      USE LIMIT, ONLY: LM1, LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMC / COORD(3,LM1)
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./COSMO5/ ATOMAR(LM1),AREA1,NSP1
+     ./COSMO6/ CAVITA(LMZ),ATOMDI(LMZ),BONDDI(LMZ),BONDSP(LMZ),
+     .         DELTA(LMZ),OMEGA(LMZ)
+     ./ORBITS/ NUMB,NORBS,NMOS,NALPHA,NBETA
+      DIMENSION CA(LM2,LM3),EA(LM3)
+      DIMENSION SUP(LMSUP)
+      DIMENSION CONNEC(18,18),CONDIA(18),CONSUB(18),TMAT(9)
+C *** INITIALIZATION.
+      EDISP  = ZERO
+      IJMAX  = NUMAT*(NUMAT+1)/2
+      DO 10 I=1,IJMAX
+      SUP(I) = ZERO
+   10 CONTINUE
+      IF(ICOSMO.LE.1) RETURN
+C *** COMPUTATION OF SUPERDELOCALIZABILIES.
+C     OUTER LOOP OVER ATOMS.
+      DO 350 I=1,NUMAT
+      IA     = NFIRST(I)
+      IB     = NLAST(I)
+      IORBS  = IB-IA+1
+      ID     = I*(I-1)/2
+C     INNER LOOP OVER ATOMS.
+      DO 340 J=1,I
+      IJ     = ID+J
+C     ONE-CENTER CONTRIBUTIONS.
+      IF(I.EQ.J) THEN
+         DO 40 K=IA,IB
+         ORBPOL=ZERO
+         DO 30 KK=1,NUMB
+         ORBPOL=ORBPOL+CA(K,KK)*CA(K,KK)/EA(KK)
+   30    CONTINUE
+         SUP(IJ)=SUP(IJ)+ORBPOL
+   40    CONTINUE
+C     TWO-CENTER CONTRIBUTIONS.
+      ELSE
+         JA     = NFIRST(J)
+         JORBS  = NLAST(J)-JA+1
+         IF(IORBS.EQ.1 .AND. JORBS.EQ.1) THEN
+            DO 50 K=1,NUMB
+            SUP(IJ)=SUP(IJ)+CA(IA,K)*CA(JA,K)/EA(K)
+   50       CONTINUE
+         ELSE IF(IORBS.EQ.1 .AND. JORBS.EQ.4) THEN
+            DO 70 K=1,4
+            TMAT(K)=ZERO
+            DO 60 KK=1,NUMB
+            TMAT(K)=TMAT(K)+CA(IA,KK)*CA(JA+K-1,KK)/EA(KK)
+   60       CONTINUE
+   70       CONTINUE
+            SUP(IJ)=SQRT(TMAT(1)*TMAT(1)+TMAT(2)*TMAT(2)+
+     1                   TMAT(3)*TMAT(3)+TMAT(4)*TMAT(4))
+         ELSE IF(IORBS.EQ.4 .AND. JORBS.EQ.1) THEN
+            DO 90 K=1,4
+            TMAT(K)=ZERO
+            DO 80 KK=1,NUMB
+            TMAT(K)=TMAT(K)+CA(IA+K-1,KK)*CA(JA,KK)/EA(KK)
+   80       CONTINUE
+   90       CONTINUE
+            SUP(IJ)=SQRT(TMAT(1)*TMAT(1)+TMAT(2)*TMAT(2)+
+     1                   TMAT(3)*TMAT(3)+TMAT(4)*TMAT(4))
+         ELSE IF(IORBS.EQ.4 .AND. JORBS.EQ.4) THEN
+            DO 110 K=1,8
+            DO 100 KK=1,K
+            CONNEC(K,KK)=ZERO
+  100       CONTINUE
+  110       CONTINUE
+            DO 140 K=0,3
+            DO 130 KK=0,3
+            DO 120 KKK=1,NUMB
+            CONNEC(5+K,1+KK)=CONNEC(5+K,1+KK)+CA(IA+KK,KKK)*
+     1                       CA(JA+K,KKK)/EA(KKK)
+  120       CONTINUE
+  130       CONTINUE
+  140       CONTINUE
+            CALL TRED2(18,8,CONNEC,CONDIA,CONSUB,CONNEC)
+            CALL TQL2(18,8,CONDIA,CONSUB,CONNEC,IERR)
+            SUP(IJ)=CONDIA(5)+CONDIA(6)+CONDIA(7)+CONDIA(8)
+C        D-ORBITAL CONTRIBUTIONS, NOT USED PRESENTLY
+         ELSE IF(IORBS.EQ.1 .AND. JORBS.EQ.9) THEN
+            SUM=ZERO
+            DO 160 K=1,9
+            TMAT(K)=ZERO
+            DO 150 KK=1,NUMB
+            TMAT(K)=TMAT(K)+CA(IA,KK)*CA(JA+K-1,KK)/EA(KK)
+  150       CONTINUE
+            SUM=SUM+TMAT(K)*TMAT(K)
+  160       CONTINUE
+            SUP(IJ)=SQRT(SUM)
+         ELSE IF(IORBS.EQ.9 .AND. JORBS.EQ.1) THEN
+            SUM=ZERO
+            DO 180 K=1,9
+            TMAT(K)=ZERO
+            DO 170 KK=1,NUMB
+            TMAT(K)=TMAT(K)+CA(IA+K-1,KK)*CA(JA,KK)/EA(KK)
+  170       CONTINUE
+            SUM=SUM+TMAT(K)*TMAT(K)
+  180       CONTINUE
+            SUP(IJ)=SQRT(SUM)
+         ELSE IF(IORBS.EQ.4 .AND. JORBS.EQ.9) THEN
+            DO 200 K=1,13
+            DO 190 KK=1,K
+            CONNEC(K,KK)=ZERO
+  190       CONTINUE
+  200       CONTINUE
+            DO 230 K=0,8
+            DO 220 KK=0,3
+            DO 210 KKK=1,NUMB
+            CONNEC(5+K,1+KK)=CONNEC(5+K,1+KK)+CA(IA+KK,KKK)*
+     1                       CA(JA+K,KKK)/EA(KKK)
+  210       CONTINUE
+  220       CONTINUE
+  230       CONTINUE
+            CALL TRED2(18,13,CONNEC,CONDIA,CONSUB,CONNEC)
+            CALL TQL2(18,13,CONDIA,CONSUB,CONNEC,IERR)
+            SUP(IJ)=CONDIA(8)+CONDIA(9)+CONDIA(10)+
+     1              CONDIA(11)+CONDIA(12)+CONDIA(13)
+         ELSE IF(IORBS.EQ.9 .AND. JORBS.EQ.4) THEN
+            DO 250 K=1,13
+            DO 240 KK=1,K
+            CONNEC(K,KK)=ZERO
+  240       CONTINUE
+  250       CONTINUE
+            DO 280 K=0,3
+            DO 270 KK=0,8
+            DO 260 KKK=1,NUMB
+            CONNEC(10+K,1+KK)=CONNEC(10+K,1+KK)+CA(IA+KK,KKK)*
+     1                        CA(JA+K,KKK)/EA(KKK)
+  260       CONTINUE
+  270       CONTINUE
+  280       CONTINUE
+            CALL TRED2(18,13,CONNEC,CONDIA,CONSUB,CONNEC)
+            CALL TQL2(18,13,CONDIA,CONSUB,CONNEC,IERR)
+            SUP(IJ)=CONDIA(8)+CONDIA(9)+CONDIA(10)+
+     1              CONDIA(11)+CONDIA(12)+CONDIA(13)
+         ELSE IF(IORBS.EQ.9 .AND. JORBS.EQ.9) THEN
+            DO 300 K=1,18
+            DO 290 KK=1,K
+            CONNEC(K,KK)=ZERO
+  290       CONTINUE
+  300       CONTINUE
+            DO 330 K=0,8
+            DO 320 KK=0,8
+            DO 310 KKK=1,NUMB
+            CONNEC(10+K,1+KK)=CONNEC(10+K,1+KK)+CA(IA+KK,KKK)*
+     1                        CA(JA+K,KKK)/EA(KKK)
+  310       CONTINUE
+  320       CONTINUE
+  330       CONTINUE
+            CALL TRED2(18,18,CONNEC,CONDIA,CONSUB,CONNEC)
+            CALL TQL2(18,18,CONDIA,CONSUB,CONNEC,IERR)
+            SUP(IJ)=CONDIA(10)+CONDIA(11)+CONDIA(12)+
+     1              CONDIA(13)+CONDIA(14)+CONDIA(15)+
+     2              CONDIA(16)+CONDIA(17)+CONDIA(18)
+         ENDIF
+         SUP(IJ)=-ABS(SUP(IJ))
+      ENDIF
+  340 CONTINUE
+  350 CONTINUE
+C *** CALCULATION OF THE CAVITATION-DISPERSION ENERGY.
+C     CAVITATION AND ONE-CENTER DISPERSION TERMS.
+      DO 360 I=1,NUMAT
+      NI     = NAT(I)
+      II     = I*(I+1)/2
+      EDISP  = EDISP+CAVITA(NI)*ATOMAR(I)+ATOMDI(NI)*SUP(II)*ATOMAR(I)
+  360 CONTINUE
+C     TWO-CENTER DISPERSION TERMS.
+      DO 380 I=2,NUMAT
+      ID     = I*(I-1)/2
+      NI     = NAT(I)
+      ATOMAI = ATOMAR(I)
+      SQAI   = SQRT(ATOMAI)
+      BDGSUP = ZERO
+      BDGSPE = ZERO
+      DO 370 J=1,I-1
+      IJ     = ID+J
+      NJ     = NAT(J)
+      ATOMAJ = ATOMAR(J)
+      BTERM  = SQAI*SQRT(ATOMAJ)*SUP(IJ)
+C     SPECIAL TREATMENT OF N-H AND O-H BONDS.
+C     THE FACTOR 1000 ARISES FROM THE UNITS OF THE CORRESPONDING
+C     PARAMETERS (INVOLVING CAL FOR BONDDI AND KCAL FOR BONDSP).
+      IF(((NI.EQ.7 .OR. NI.EQ.8) .AND. NJ.EQ.1) .OR.
+     1   ((NJ.EQ.7 .OR. NJ.EQ.8) .AND. NI.EQ.1)) THEN
+         DIST   = (COORD(1,I)-COORD(1,J))**2+
+     1            (COORD(2,I)-COORD(2,J))**2+
+     2            (COORD(3,I)-COORD(3,J))**2
+         EXPON  = DIST+0.1D0*(ATOMAI+ATOMAJ)
+         BTERM  = BTERM*EXP(-EXPON)*1.0D+03
+         BDGSPE = BDGSPE+BTERM*(BONDSP(NI)+BONDSP(NJ))
+C     STANDARD TREATMENT.
+      ELSE
+         BDGSUP = BDGSUP+BTERM*(BONDDI(NI)+BONDDI(NJ))
+      ENDIF
+  370 CONTINUE
+      EDISP  = EDISP+BDGSUP+BDGSPE
+  380 CONTINUE
+C *** CONVERSION FROM CAL/MOL TO KCAL/MOL.
+      EDISP  = EDISP*1.0D-3
+      RETURN
+      END

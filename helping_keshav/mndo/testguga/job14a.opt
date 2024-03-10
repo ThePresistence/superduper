@@ -1,0 +1,9 @@
+DSC CYCLOPENTADIENYL ANION, D5h, OM2 closed-shell reference,
+DSC doublet full CI with zero charge.
+DSC Active space: 3 MOs, 2 VOs - defined via pz populations
+DSC Single-point energy calculation, 5 lowest states,
+DSC default diagonalizer
+PRP heat=28.96586:28.96586
+PRP ciheat=62.25721:62.25721
+PRP deltae=0.000000:0.000000:3.584885:5.364829:5.364829
+PRP deltae2=0.000000:0.000000:3.584885:5.364829:5.364829

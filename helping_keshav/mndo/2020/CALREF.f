@@ -1,0 +1,531 @@
+      SUBROUTINE CALREF (MOL,ICALL)
+C     *
+C     CALCULATE THE REFERENCE DATA FOR A GIVEN MOLECULE (MOL).
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     MOL       NUMBER OF THE CURRENT MOLECULE (I).
+C     ICALL     FLAG FOR STATUS OF PRECEDING CALCULATION (I).
+C     *
+C     MODIFICATIONS BY PAVLO O. DRAL, 2016, JANUARY.
+C     ATOMIZATION ENTHALPIES AT 298 K ARE NOW CALCULATED AS
+C     DIFFERENCES BETWEEN SUM OF ATOMIC HEATS OF FORMATION
+C     AND THE MOLECULAR HEAT OF FORMATION.
+C     PREVIOUSLY THEY WERE CALCULATED FROM SCF BINDING ENERGIES
+C     THAT DID NOT INCLUDE DISPERSION CORRECTIONS, WHICH
+C     INTRODUCED ERRORS FOR DISPERSION-CORRECTED METHODS.
+C     *
+      USE LIMIT, ONLY: LM1,LMX,LMV,LMZ,LMM,LMF,LMMR,MXNICS,LMPROP,
+     1                 LMSTAT
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (X180=180.0D0)
+      CHARACTER*30 KOMEXP,STEMP
+      CHARACTER*80 KTITLE,KOMENT,STEMP8
+      LOGICAL CALFRG
+      COMMON
+     ./ATOMC / COORD(3,LM1)
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CHARGE/ QI(LM1)
+     ./CHARGP/ POP(3,LM1)
+     ./CIPRP / CIPROP(LMPROP,LMSTAT),ICISYM(LMSTAT)
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./COSMO1/ EGAS,ESOLUT,ESOLV,EDISP,EDIE
+     ./DIPOL / DIPCAL,DIPXYZ(3),DIPABC(3)
+     ./ENERGT/ EE,ENUCLR,EAT,ATHEAT
+     ./ERG   / ENERGY,G(LMV),GNORM,CNORM
+     ./ERG1  / CNORM1
+     ./ERGREF/ H298,H0,HF298,HF0,HAT298,HAT0,D00,EVIB,SCFENR
+     ./FIELD3/ ALPHAD,ALPHAE,BETAD,BETAE,GAMMAD,GAMMAE
+     ./FLAG1 / KTITLE,KOMENT
+     ./INFOC / ITYPE,NEG,NTR,NVIB
+     ./INOPT2/ IN2(300)
+      COMMON
+     ./ORBENG/ EIGMO(LMX),NSYMO(LMX)
+     ./ORBITS/ NUMB,NORBS,NMOS,NALPHA,NBETA
+     ./PAR4  / EXCIT(20),NEXCIT,IEXCIT(4,20)
+     ./PAR14 / EREF(LMM),EHF298(LMM),ED00(LMM),ITHERM(LMM)
+     ./PAR21 / ID1(7,LMF),LITEXP(LMF)
+     ./PAR22 / XEXP(LMF),ERREXP(LMF),WEXP(LMF)
+     ./PAR23 / KOMEXP(LMF)
+     ./PAR24 / NREF1(LMM),NREF2(LMM)
+     ./PAR25 / XCALC(LMF)
+     ./PAR41 / COORDA(3,LM1),LASTAT,NUMATA,NFRGSI,CALFRG
+     ./PAR43 / EHEATP,IPHEXP
+     ./PAR44 / NCOEFS(LMF),IMOL(LMMR,LMF),ICOEFS(LMMR,LMF)
+     ./PARDER/ CORE(LMZ),EHEAT(LMZ),EISOL(LMZ)
+     ./PARM1 / AA(LM1,3),NABC(LM1,4),NATOMS
+     ./PAROPT/ USS(LMZ),UPP(LMZ),Z(LMZ),ZP(LMZ),BETAS(LMZ),BETAP(LMZ),
+     .         ALPHA(LMZ)
+     ./PSNMRR/ SHIFT(2,LM1+MXNICS),SIGMA(3,3,LM1+MXNICS)
+     ./SCFPRT/ EBIND(2),EIP,EIP2,SZ,S2,ITSAVE
+     ./VIBRAT/ WAVEVB(LMV),NSYMVB(LMV)
+      DIMENSION XSHIFT(2,LM1)
+C *** FLAGS AND COUNTERS.
+      NRFLAG = 0
+      IF(CALFRG) THEN
+         NFRGSI = NFRGSI + 1
+      ENDIF
+C *** INPUT OPTIONS.
+      JOP    = IN2(3)
+      NMR    = IN2(13)
+      IATERG = IN2(119)
+C *** CHECK FOR PROBLEMS IN PRECEDING CALCULATION.
+C     ICALL = -1  NO SCF CONVERGENCE (SINGLE-POINT OR OPTIMIZATION).
+C     ICALL = -2  NO SCF CONVERGENCE (FORCE CONSTANT CALCULATION).
+C     ICALL = -3  UNSUCCESSFUL OPTIMIZATION.
+C     ICALL = -4  NO PARAMETERS AVAILABLE.
+C     INDICATE CORRUPT DATA BY ID1(2,NR)=-90+ICALL.
+      IF(ICALL.EQ.-1 .OR. ICALL.EQ.-3 .OR. ICALL.EQ.-4) THEN
+         EREF(MOL)   = ZERO
+         EHF298(MOL) = ZERO
+         ED00(MOL)   = ZERO
+         NR1         = NREF1(MOL)
+         NR2         = NREF2(MOL)
+         DO 10 NR=NR1,NR2
+         ID1(2,NR) = -90+ICALL
+         XCALC(NR) = ZERO
+   10    CONTINUE
+         RETURN
+      ENDIF
+C *** RECALCULATE THE CARTESIAN COORDINATES (IF NECESSARY).
+      IF(NATOMS.GT.NUMAT) CALL GMETRY (+1)
+C *** SAVE TOTAL ENERGY OR HEAT OF FORMATION IN ANY EVENT.
+      EREF(MOL) = ENERGY
+C *** SAVE THERMOCHEMICAL PROPERTIES IF CALCULATED
+      IF(JOP.GE.2) THEN
+        ITHERM(MOL) = 1
+        EHF298(MOL) = HF298
+        ED00(MOL)   = D00
+      ELSE
+        ITHERM(MOL) = -1
+        EHF298(MOL) = ZERO
+        ED00(MOL)   = ZERO
+      ENDIF
+C     COMPUTE ENERGIES DIRECTLY IN CASE OF NEUTRAL ATOMS.
+C     THIS MAY AVOID ARTIFACTS WHEN TREATING HIGH-SPIN ATOMS BY UHF.
+      IF(NUMAT.EQ.1 .AND. IN2(65).EQ.0) THEN
+         NI  = NAT(1)
+         IF(IATERG.EQ.1) THEN
+            EREF(MOL) = EHEAT(NI)+EVCAL*(EATOM(NI,0,0,0)-EISOL(NI))
+            EHF298(MOL) = EREF(MOL)
+            ED00(MOL) = EVCAL*(EISOL(NI)-EATOM(NI,0,0,0))
+         ELSEIF(IATERG.EQ.-1) THEN
+            EREF(MOL) = EVCAL*EATOM(NI,0,0,0)
+            EHF298(MOL) = EHEAT(NI)+EVCAL*(EATOM(NI,0,0,0)-EISOL(NI))
+            ED00(MOL) = EVCAL*(EISOL(NI)-EATOM(NI,0,0,0))
+         ENDIF
+      ENDIF
+C     COMPUTE THERMOCHEMICAL PROPERTIES DIRECTLY IN CASE OF ATOMIC IONS.
+      IF(NUMAT.EQ.1 .AND. IN2(65).NE.0) THEN
+         NI  = NAT(1)
+         IF(IATERG.EQ.1) THEN
+            EHF298(MOL) = ENERGY
+            ED00(MOL) = EVCAL*EISOL(NI)-ENERGY
+         ELSEIF(IATERG.EQ.-1) THEN
+            EHF298(MOL) = EHEAT(NI)+ENERGY-EVCAL*EISOL(NI)
+            ED00(MOL) = EVCAL*EISOL(NI)-ENERGY
+         ENDIF
+      ENDIF
+C *** DEFINE INDEX OF FIRST AND LAST REFERENCE DATUM.
+      NR1    = NREF1(MOL)
+      NR2    = NREF2(MOL)
+C *** PREPROCESSING OF NMR CHEMICAL SHIFTS.
+C     AVERAGE OVER EQUIVALENT ATOMS.
+      IF(NMR.NE.0) THEN
+         CALL NMRAVG (ID1,NR1,NR2,LMF,30,SHIFT,XSHIFT,NUMAT)
+         CALL NMRAVG (ID1,NR1,NR2,LMF,31,SHIFT,XSHIFT,NUMAT)
+      ENDIF
+C *** SAVE CALCULATED VALUES OF REFERENCE DATA.
+      DO 20 NR=NR1,NR2
+      ID1ABS = ABS(ID1(1,NR))
+      ID4    = ID1(4,NR)
+      ID5    = ID1(5,NR)
+      ID6    = ID1(6,NR)
+      ID7    = ID1(7,NR)
+C     TOTAL ENERGIES, HEATS OF FORMATION AND DERIVED PROPERTIES.
+      IF(ID1ABS.EQ.1 .OR. (ID1ABS.GE.11 .AND. ID1ABS.LE.15)
+     1               .OR.  ID1ABS.EQ.43 .OR.  ID1ABS.EQ.45
+     2               .OR.  ID1ABS.EQ.48 .OR.  ID1ABS.EQ.49) THEN
+C     PROPERTIES DEPENDING ON HEATS OF FORMATION CALCULATED EXPLICITLY
+         IF(IATERG.EQ.-1 .AND. (ID1ABS.EQ.1 .OR.
+     1                          ID1ABS.EQ.11 .OR.
+     2                          ID1ABS.EQ.13)) THEN
+           XCALC(NR) = EHF298(MOL)
+           IF(ITHERM(MOL).EQ.-1 .AND. NUMAT.GT.1) ID1(2,NR) = -95
+           IF(ID4.GT.0) THEN
+              XCALC(NR) = XCALC(NR)-EHF298(ID4)
+              IF(ITHERM(ID4).EQ.-1) ID1(2,NR) = -95
+              IF(ID1ABS.LE.13) THEN
+                 IF(ID5.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)-EHF298(ID5)
+                    IF(ITHERM(ID5).EQ.-1) ID1(2,NR) = -95
+                 ENDIF
+                 IF(ID6.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)-EHF298(ID6)
+                    IF(ITHERM(ID6).EQ.-1) ID1(2,NR) = -95
+                 ENDIF
+                 IF(ID7.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)-EHF298(ID7)
+                    IF(ITHERM(ID7).EQ.-1) ID1(2,NR) = -95
+                 ENDIF
+              ENDIF
+           ENDIF
+C     PROPERTIES DEPENDING ON BACK-CORRECTED TOTAL ENERGIES AT 0 K
+         ELSE IF(IATERG.EQ.1 .AND. (ID1ABS.EQ.48 .OR.
+     1                              ID1ABS.EQ.49)) THEN
+           XCALC(NR) = -ED00(MOL)
+           IF(ITHERM(MOL).EQ.-1 .AND. NUMAT.GT.1) ID1(2,NR) = -95
+           IF(ID4.GT.0) THEN
+              XCALC(NR) = XCALC(NR)+ED00(ID4)
+              IF(ITHERM(ID4).EQ.-1) ID1(2,NR) = -95
+              IF(ID1ABS.EQ.48 .OR. ID1ABS.EQ.49) THEN
+                 IF(ID5.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)+ED00(ID5)
+                    IF(ITHERM(ID5).EQ.-1) ID1(2,NR) = -95
+                 ENDIF
+                 IF(ID6.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)+ED00(ID6)
+                    IF(ITHERM(ID6).EQ.-1) ID1(2,NR) = -95
+                 ENDIF
+                 IF(ID7.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)+ED00(ID7)
+                    IF(ITHERM(ID7).EQ.-1) ID1(2,NR) = -95
+                 ENDIF
+              ENDIF
+           ENDIF
+C     ALL OTHER PROPERTIES
+         ELSE
+           XCALC(NR) = EREF(MOL)
+           IF(ID4.GT.0) THEN
+              XCALC(NR) = XCALC(NR)-EREF(ID4)
+              IF(ID1ABS.LE.13 .OR. ID1ABS.EQ.48
+     1                        .OR. ID1ABS.EQ.49) THEN
+                 IF(ID5.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)-EREF(ID5)
+                 ENDIF
+                 IF(ID6.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)-EREF(ID6)
+                 ENDIF
+                 IF(ID7.GT.0) THEN
+                    XCALC(NR) = XCALC(NR)-EREF(ID7)
+                 ENDIF
+              ENDIF
+           ENDIF
+         ENDIF
+C
+C     SPECIAL ATOMIC PROPERTIES (NOT DEPENDING ON IATERG)
+         IF(ID4.EQ.0 .AND. NUMAT.EQ.1) THEN
+            IF(ID5.GT.0 .OR. ID6.GT.0 .OR. ID7.GT.0) THEN
+               NI  = NAT(1)
+               EIS = EATOM(NI,ID5,ID6,ID7)-EISOL(NI)
+               IF(ID1ABS.EQ.1) THEN
+                  XCALC(NR) = EHEAT(NI)+EVCAL*EIS
+               ELSE
+                  XCALC(NR) = EVCAL*EIS
+               ENDIF
+            ENDIF
+         ENDIF
+C
+C     ADDITIONAL CHECKS AND TERMS
+         IF(ID4.GT.0) THEN
+            IF((ID1(2,NREF1(ID4)).LT.-90).AND.
+     1         (ID1(2,NREF1(ID4)).GT.-95)) ID1(2,NR) = -95
+            IF(ID1ABS.LE.13) THEN
+               IF(ID5.GT.0) THEN
+                  IF((ID1(2,NREF1(ID5)).LT.-90).AND.
+     1               (ID1(2,NREF1(ID5)).GT.-95)) ID1(2,NR) = -95
+               ENDIF
+               IF(ID6.GT.0) THEN
+                  IF((ID1(2,NREF1(ID6)).LT.-90).AND.
+     1               (ID1(2,NREF1(ID6)).GT.-95)) ID1(2,NR) = -95
+               ENDIF
+               IF(ID7.GT.0) THEN
+                  IF((ID1(2,NREF1(ID7)).LT.-90).AND.
+     1               (ID1(2,NREF1(ID7)).GT.-95)) ID1(2,NR) = -95
+               ENDIF
+            ENDIF
+            IF(ID1ABS.EQ.43) THEN
+               IF (IATERG.EQ.1) THEN
+                  XCALC(NR) = XCALC(NR) - EHEATP
+               ELSE IF (IATERG.EQ.-1) THEN
+                  XCALC(NR) = XCALC(NR) - IPHEXP - EVCAL*USS(1)
+               END IF
+            END IF
+            IF(ID1ABS.EQ.12 .OR. ID1ABS.EQ.43) XCALC(NR) = -XCALC(NR)
+            IF(ID1ABS.EQ.45) XCALC(NR) = XCALC(NR)/EVCAL
+            IF(ID1(2,NR).EQ.-95) XCALC(NR) = ZERO
+         ENDIF
+C     BOND LENGTHS.
+      ELSE IF(ID1ABS.EQ.2) THEN
+         XCALC(NR) = SQRT( (COORD(1,ID4)-COORD(1,ID5))**2
+     1                    +(COORD(2,ID4)-COORD(2,ID5))**2
+     2                    +(COORD(3,ID4)-COORD(3,ID5))**2)
+C     BOND ANGLES.
+      ELSE IF(ID1ABS.EQ.3) THEN
+         CALL BANGLE (ID4,ID5,ID6,ANG1)
+         XCALC(NR) = ANG1
+C     DIHEDRAL ANGLES.
+      ELSE IF(ID1ABS.EQ.4) THEN
+         CALL DIHED (ID4,ID5,ID6,ID7,ANG2,SINANG)
+         XCALC(NR) = ANG2
+         DIFANG    = ANG2-XEXP(NR)
+         IF(DIFANG.LT.-X180) THEN
+            XCALC(NR) = ANG2+TWO*X180
+         ELSE IF(DIFANG.GT.X180) THEN
+            XCALC(NR) = ANG2-TWO*X180
+         ENDIF
+C     IONIZATION POTENTIALS.
+      ELSE IF(ID1ABS.EQ.5) THEN
+         XCALC(NR) = EIP
+C     EXCITATION ENERGIES.
+      ELSE IF(ID1ABS.EQ.6) THEN
+         XCALC(NR) = EXCIT(ID7)
+C     DIPOLE MOMENTS.
+      ELSE IF(ID1ABS.EQ.7 .OR. ID1ABS.EQ.25) THEN
+         XCALC(NR) = DIPCAL
+         IF(ID4.GE.1 .AND. ID4.LE.3) THEN
+            XCALC(NR) = ABS(DIPABC(ID4))
+         ENDIF
+C     POLARISABILITIES: ALPHA.
+      ELSE IF(ID1ABS.EQ.8) THEN
+         IF(ID4.EQ.0) THEN
+            XCALC(NR) = ALPHAE
+         ELSE IF(ID4.EQ.1) THEN
+            XCALC(NR) = ALPHAD
+         ENDIF
+C     HYPERPOLARISABILITIES: BETA.
+      ELSE IF(ID1ABS.EQ.9) THEN
+         IF(ID4.EQ.0) THEN
+            XCALC(NR) = BETAE
+         ELSE IF(ID4.EQ.1) THEN
+            XCALC(NR) = BETAD
+         ENDIF
+C     HYPERPOLARISABILITIES: GAMMA.
+      ELSE IF(ID1ABS.EQ.10) THEN
+         IF(ID4.EQ.0) THEN
+            XCALC(NR) = GAMMAE
+         ELSE IF(ID4.EQ.1) THEN
+            XCALC(NR) = GAMMAD
+         ENDIF
+C     VIBRATIONAL WAVENUMBERS.
+      ELSE IF(ID1ABS.EQ.16 .AND. JOP.GE.2) THEN
+         IF(ICALL.EQ.-2) THEN
+            ID1(2,NR) = -92
+            XCALC(NR) = ZERO
+         ELSE
+            I3N = 3*NUMAT
+            CALL SYMREF (XX,WAVEVB,NSYMVB,I3N,ID4,ID5,-1)
+            XCALC(NR) = XX
+         ENDIF
+C     ATOMIC CHARGES.
+      ELSE IF(ID1ABS.EQ.17) THEN
+         XCALC(NR) = QI(ID4)
+C     POPULATIONS (S,P,D).
+      ELSE IF(ID1ABS.EQ.18) THEN
+         XCALC(NR) = POP(ID5,ID4)
+C     SPIN EXCITATION VALUES.
+      ELSE IF(ID1ABS.EQ.19) THEN
+         XCALC(NR) = S2
+C     GRADIENT COMPONENTS OR NORMS.
+      ELSE IF(ID1ABS.EQ.20) THEN
+         IF(ID4.LT.0) THEN
+            XCALC(NR) = CNORM
+         ELSE IF(ID4.EQ.0) THEN
+            XCALC(NR) = GNORM
+         ELSE
+            XCALC(NR) = G(ID4)
+         ENDIF
+C     INTERNAL GRADIENT NORM.
+      ELSE IF(ID1ABS.EQ.21) THEN
+         XCALC(NR) = GNORM
+C     CARTESIAN GRADIENT NORM.
+      ELSE IF(ID1ABS.EQ.22) THEN
+         IF(JOP.GE.0) THEN
+            XCALC(NR) = CNORM1
+         ELSE
+            XCALC(NR) = CNORM
+         ENDIF
+C     HIGHER IONIZATION POTENTIALS.
+      ELSE IF(ID1ABS.EQ.23) THEN
+         CALL SYMREF (XX,EIGMO,NSYMO,NUMB,ID4,ID5,-1)
+         XCALC(NR) = -XX
+C     DIFFERENCES OF IONIZATION POTENTIALS.
+      ELSE IF(ID1ABS.EQ.24) THEN
+         XCALC(NR) = EIGMO(ID4)-EIGMO(ID5)
+C     NUMBER OF IMAGINARY FREQUENCIES.
+      ELSE IF(ID1ABS.EQ.26 .AND. JOP.GE.2) THEN
+         XCALC(NR) = NEG
+C     DIFFERENCES OF VIBRATIONAL WAVENUMBERS.
+      ELSE IF(ID1ABS.EQ.27 .AND. JOP.GE.2) THEN
+         IF(ICALL.EQ.-2) THEN
+            ID1(2,NR) = -92
+            XCALC(NR) = ZERO
+         ELSE
+            I3N = 3*NUMAT
+            CALL SYMREF (XX,WAVEVB,NSYMVB,I3N,ID4,ID5,-1)
+            CALL SYMREF (YY,WAVEVB,NSYMVB,I3N,ID6,ID7,-1)
+            XCALC(NR) = XX-YY
+         ENDIF
+C     ADIABATIC SOLVATION ENERGIES.
+      ELSE IF(ID1ABS.EQ.28 .AND. ID5.NE.0) THEN
+          XCALC(NR) = ENERGY+EDISP-EREF(ID4)
+          IF(ID1(2,NREF1(ID4)).LT.-90) ID1(2,NR) = -95
+C     VERTICAL SOLVATION ENERGIES.
+      ELSE IF(ID1ABS.EQ.29 .AND. ID5.NE.0) THEN
+          XCALC(NR) = ESOLUT+EDISP-EGAS
+C     NMR CHEMICAL SHIFTS FOR REAL ATOMS (POSSIBLY AVERAGED).
+      ELSE IF(ID1ABS.EQ.30 .OR. ID1ABS.EQ.31) THEN
+          XCALC(NR) = XSHIFT(ID1ABS-29,ID4)
+C     NMR CHEMICAL SHIFTS FOR NICS POINTS.
+      ELSE IF(ID1ABS.EQ.32) THEN
+          XCALC(NR) = SHIFT(1,NUMAT+ID4)
+C     GUGA-CI EXCITATION ENERGIES.
+      ELSE IF(ID1ABS.EQ.33) THEN
+          CALL GUGREF (XX,CIPROP(1,1),ICISYM,LMSTAT,ID4,ID5)
+          XCALC(NR) = (XX - EREF(ID6)) / EVCAL
+C     GUGA-CI ROTATIONAL STRENGTHS.
+      ELSE IF(ID1ABS.EQ.34) THEN
+          CALL GUGREF (XX,CIPROP(2,1),ICISYM,LMSTAT,ID4,ID5)
+          XCALC(NR) = XX
+C     GUGA-CI OSCILLATOR STRENGTHS.
+      ELSE IF(ID1ABS.EQ.35) THEN
+          IF(ID6.GE.1 .AND. ID6.LE.3) THEN
+              IP = ID6 + 2
+          ELSE
+              IP = 3
+          ENDIF
+          CALL GUGREF (XX,CIPROP(IP,1),ICISYM,LMSTAT,ID4,ID5)
+          XCALC(NR) = XX
+C     GUGA-CI DIPOLE AND TRANSITION MOMENTS.
+      ELSE IF(ID1ABS.GE.36 .AND. ID1ABS.LE.38) THEN
+          IP = 3*(ID1ABS-34)
+          IF(ID6.EQ.3) THEN
+             CALL GUGREF (XX1,CIPROP(IP+1,1),ICISYM,LMSTAT,ID4,ID5)
+             CALL GUGREF (XX2,CIPROP(IP+2,1),ICISYM,LMSTAT,ID4,ID5)
+             XCALC(NR) = XX1 - XX2
+          ELSE
+             CALL GUGREF (XX,CIPROP(IP+ID6,1),ICISYM,LMSTAT,ID4,ID5)
+             XCALC(NR) = XX
+          ENDIF
+C     GUGA-CI DIPOLE MOMENT AND COMPONENTS.
+      ELSE IF(ID1ABS.EQ.39) THEN
+         IF(ID6.EQ.0) THEN
+            CALL GUGREF (XX,CIPROP(6,1),ICISYM,LMSTAT,ID4,ID5)
+            XCALC(NR) = XX
+         ELSE
+            CALL GUGREF (XX,CIPROP(14+ID6,1),ICISYM,LMSTAT,ID4,ID5)
+            XCALC(NR) = XX
+         ENDIF
+C     ORBITAL ENERGIES AND THEIR DIFFERENCES.
+      ELSE IF(ID1ABS.EQ.40) THEN
+         IF(ID5.EQ.0) THEN
+            NORB = NORBS
+         ELSE
+            NORB = NUMB
+         ENDIF
+         CALL SYMREF (XX,EIGMO,NSYMO,NORB,ID4,ID5,-1)
+         XCALC(NR) = XX
+         IF(ID6.GT.0) THEN
+            LUMO  = NUMB+1
+            NVIRT = NORBS-NUMB
+            CALL SYMREF (YY,EIGMO(LUMO),NSYMO(LUMO),NVIRT,ID6,ID7,+1)
+            XCALC(NR) = YY-XX
+         ENDIF
+C     INTERACTION ENERGY OF TWO FRAGMENTS AT (NON-)OPTIMIZED GEOMETRIES.
+      ELSE IF(ID1ABS.EQ.41) THEN
+         IF(NFRGSI.EQ.0) THEN
+             NFRGSI    = NFRGSI + 1
+             CALFRG    = .TRUE.
+             NRFLAG    = NR
+             LASTAT    = ID4
+             NUMATA    = NUMAT
+             COORDA    = COORD(1:3,1:NUMAT)
+             STEMP8    = KTITLE
+         ELSE IF(NFRGSI.EQ.3) THEN
+             XCALC(NR) = EREF(MOL-2) - EREF(MOL-1) - ENERGY
+             KTITLE    = STEMP8
+         ENDIF
+C     ATOMIZATION ENERGIES AT 0 K WITHOUT ZPVE.
+      ELSE IF(ID1ABS.EQ.42) THEN
+         IF(IATERG.EQ.1) THEN
+            XCALC(NR) = D00
+         ELSEIF(IATERG.EQ.-1) THEN
+            XCALC(NR) = EVCAL*EAT-ENERGY
+         ENDIF
+C     REACTION ENERGIES.
+      ELSE IF(ID1ABS.EQ.44) THEN
+         XCALC(NR) = ZERO
+         DO 50 I=1,NCOEFS(NR)
+            XCALC(NR) = XCALC(NR)+ICOEFS(I,NR)*EREF(IMOL(I,NR))
+            IF((ID1(2,NREF1(IMOL(I,NR))).LT.-90).AND.
+     1         (ID1(2,NREF1(IMOL(I,NR))).GT.-95)) ID1(2,NR) = -95
+   50    CONTINUE
+         IF(ID1(2,NR).EQ.-95) XCALC(NR) = ZERO
+C     GEOMETRY CHECK USING SQUARED SUM OF ALL INTERATOMIC DISTANCES.
+C     COMPUTED IS THE SQUARE ROOT OF THE NORMALIZED SQUARED SUM.
+C     CORRESPONDING REFERENCE QUANTITY FROM EXPERIMENT OR THEORY.
+C     NOTE: EXPERIMENTAL OPTION. AN ALTERNATIVE WOULD BE RMSD.
+      ELSE IF(ID1ABS.EQ.46) THEN
+         XCALC(NR) = ZERO
+         DO 70 I=1,NUMAT
+            DO 60 J=I+1,NUMAT
+               XCALC(NR) = XCALC(NR) +(COORD(1,I)-COORD(1,J))**2
+     1                               +(COORD(2,I)-COORD(2,J))**2
+     2                               +(COORD(3,I)-COORD(3,J))**2
+   60       CONTINUE
+   70    CONTINUE
+         XCALC(NR) = SQRT((2.0D0/(NUMAT*(NUMAT-1)))*XCALC(NR))
+C     ATOMIZATION ENTHALPIES AT 298 K.
+      ELSE IF(ID1ABS.EQ.47) THEN
+         IF(IATERG.EQ.1) THEN
+            XCALC(NR) = ATHEAT-ENERGY
+         ELSEIF(IATERG.EQ.-1) THEN
+            XCALC(NR) = HAT298
+         ENDIF
+C     PRESENTLY UNAVAILABLE PROPERTIES.
+      ELSE
+         XCALC(NR) = ZERO
+      ENDIF
+   20 CONTINUE
+C *** REMOVE REFERENCE VALUES (IF NECESSARY).
+      IF(NRFLAG.GT.0) THEN
+         NREF1(MOL+2)      = NREF2(MOL)
+         NR41 = NRFLAG
+         DO 40 NR=NRFLAG+1,NREF1(MOL+2)
+            DO 30 I=1,7
+               ITEMP       = ID1   (I,NR)
+               ID1(I,NR)   = ID1   (I,NR41)
+               ID1(I,NR41) = ITEMP
+   30       CONTINUE
+            XCALC (NR41)   = XCALC (NR)
+            XCALC (NR)     = ZERO
+            RTEMP          = XEXP  (NR)
+            XEXP  (NR)     = XEXP  (NR41)
+            XEXP  (NR41)   = RTEMP
+            RTEMP          = ERREXP(NR)
+            ERREXP(NR)     = ERREXP(NR41)
+            ERREXP(NR41)   = RTEMP
+            RTEMP          = WEXP  (NR)
+            WEXP  (NR)     = WEXP  (NR41)
+            WEXP  (NR41)   = RTEMP
+            ITEMP          = LITEXP(NR)
+            LITEXP(NR)     = LITEXP(NR41)
+            LITEXP(NR41)   = ITEMP
+            STEMP          = KOMEXP(NR)
+            KOMEXP(NR)     = KOMEXP(NR41)
+            KOMEXP(NR41)   = STEMP
+            NR41           = NR
+   40    CONTINUE
+         NREF2(MOL)        = NREF2(MOL)-1
+         NRFLAG            = 0
+      ENDIF
+C     DEPENDENT RUN (ONLY FOR ID1=41).
+      IF(CALFRG .AND. (NFRGSI.EQ.3)) THEN
+         NFRGSI            = 0
+         CALFRG            = .FALSE.
+         NREF2(MOL)        = NREF1(MOL)
+      ENDIF
+C *** REMOVE DUMMY ATOMS (IF NECESSARY).
+      IF(NATOMS.GT.NUMAT) CALL GMETRY (-2)
+      RETURN
+      END

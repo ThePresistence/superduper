@@ -1,0 +1,10 @@
+This directory (~/mndo97/97) contains the distributed version of the
+general MNDO97 source code.
+
+Date: 08/04/98
+
+--------------------------------------------------------------------
+
+*.f             Source code for MNDO97 routines.
+Makefile        Makefile for compilation and library update.
+memx.c          C routines for memory management under UNICOS.

@@ -1,0 +1,3 @@
+DSC WATER, C2v, MNDO full CI, triplet state
+DSC Impose default values for ici1, ici2, iroot, and lroot
+DSC Detect incorrect input: multci and nciref incompatible

@@ -1,0 +1,14 @@
+DSC MNDO force constant analysis for a C28 fullerene. Combined
+DSC solution in the AO basis using locally orthogonal non-stabilized
+DSC gen-cg for six variables at once.
+DAT C28.dat
+OPT iprint=1
+OPT imix=3 idens=8 iqswap=3 inrhs=6 iprect=3 isolve=6 ikrsav=1
+PRP heat=871.02823 optcyc=9 intgrdopt=2.16060 cartgrdopt=2.16060
+PRP freqmem=372096 freqdisk=0 respvec=8.857
+PRP freq7=383.201 freq8=384.464 freq9=394.151 freq10=397.009
+PRP zpe=114.8206
+PRP modea=65 wavea=1377.687 ira=58.001
+PRP modeb=43 waveb=873.435  irb=44.248
+PRP modec=70 wavec=1454.306 irc=36.295
+PRP moded=66 waved=1404.286 ird=28.183

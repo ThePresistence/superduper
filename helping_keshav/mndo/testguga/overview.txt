@@ -1,0 +1,286 @@
+ 1   Ethylene    - formatted input
+ 2   Water       - test basic program features
+ 3   Biphenylene - test different active space sizes
+
+     Molecule                      Sym. Method  Jobtype  Level    Ref.  MOs/VOs  Select  iroot  lroot  Mult. Irrep. Diag.
+-------------------------------------------------------------------------------------------------------------------------------
+ 4a  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  ---   def.
+ 4b  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   tdiag
+ 4c  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   tred2/tql2
+ 4d  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   dspev
+ 4e  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   dspevx
+ 4f  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   dsyev
+ 4g  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   dsyevx
+ 4h  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   dspevd
+ 4i  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   dsyevd
+ 4j  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   evvrsp
+ 4k  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     4    def.  sing.  1     davidson
+ 4l  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     2    def.  sing.  6     davidson
+ 4m  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     2    def.  sing.  8     davidson
+ 4n  Benzene                       D6h	OM2     SP	 FCI      RHF     3/ 3   all pz   def.     1   sing.  1     rhp
+ 4o  Benzene                       D6h  OM2     SP	 FCI      RHF     3/ 3   all pz   def.     1   sing.  6     rhp
+ 4p  Benzene                       D6h  OM2     SP	 FCI      RHF     3/ 3   all pz   def.     2   sing.  6     rhp
+ 4q  Benzene                       D6h  OM2     SP	 FCI      RHF     3/ 3   all pz   def.     1   sing.  8     rhp
+ 4r  Benzene                       D6h  OM2     SP	 FCI      RHF     3/ 3   all pz   def.     2   sing.  8     rhp
+ 4s  Benzene                       D6h  OM2     SP+Prop  CIS      RHF     3/ 3   all pz     9      1   trip.  any   def.
+ 4t  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     9      1   trip.  any   def.
+ 4u  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     9      1   quin.  any   def.
+ 4v  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     1      1   sept.  any   def.
+ 4w  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz    10    def.  sing.  any   davidson
+ 4x  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     2/ 3   pz/jci     5    def.  sing.  any   def.
+ 4y  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 2   pz/jci     5    def.  sing.  any   def.
+ 4z  Benzene                       D6h  OM2     SP+Prop  FCI      RHF     2/ 2   pz/jci     5    def.  sing.  any   def.
+ 4za Benzene                       D6h  OM2     SP+Prop  FCI      RHF     2/ 3   pz/pop     5    def.  sing.  any   def.
+ 4zb Benzene                       D6h  OM2     SP+Prop  FCI      RHF     3/ 2   pz/pop     5    def.  sing.  any   def.
+ 4zc Benzene                       D6h  OM2     SP+Prop  FCI      RHF     2/ 2   pz/pop     5    def.  sing.  any   def.
+ 4zd Benzene (cichg=+1)            D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     5    def.  sing.  any   def.
+ 4ze Benzene (cichg=-1)            D6h  OM2     SP+Prop  FCI      RHF     3/ 3   all pz     5    def.  sing.  any   def.
+
+ 5a  Disulfide                     C2   AM1     SP+Prop  MR-CISD  RHF     4/ 3   number     3      1   sing.  any   def.
+ 5b  Disulfide                     C2   MNDO    SP+Prop  MR-CISD  RHF     4/ 3   number     3      1   sing.  any   def.
+ 5c  Disulfide                     C2   MNDO/d  SP+Prop  MR-CISD  RHF     4/ 3   number     3      1   sing.  any   def.
+ 5d  Disulfide                     C2   MNDO/d  SP+Grad  MR-CISD  RHF     4/ 3   number     3      1   sing.  any   def.
+ 5e  Disulfide                     C2   MNDO/d  SP+Grad  MR-CISD  RHF     4/ 3   number     3      2   sing.  any   def.
+ 5f  Disulfide                     C2   MNDO/d  SP+Grad  MR-CISD  RHF     4/ 3   number     3      3   sing.  any   def.
+
+ 6a  P-Hexahelicene                C2   MNDO    SP+Prop  CIS      RHF    13/13   auto      40      1   sing.  any   def.
+ 6b  P-Hexahelicene                C2   AM1     SP+Prop  CIS      RHF    13/13   auto       9      1   sing.  any   def.
+ 6c  P-Hexahelicene                C2   PM3     SP+Prop  CIS      RHF    13/13   auto       9      1   sing.  any   def.
+ 6d  P-Hexahelicene                C2   OM1     SP+Prop  CIS      RHF    13/13   auto       9      1   sing.  any   def.
+ 6e  P-Hexahelicene                C2   OM2     SP+Prop  CIS      RHF    13/13   auto       9      1   sing.  any   def.
+ 6f  P-Hexahelicene                C2   OM3     SP+Prop  CIS      RHF    13/13   auto       9      1   sing.  any   def.
+
+ 7a  Disilane                      D3   MNDO    SP+Prop  FCI      RHF     2/ 2   number     5      1   sing.  any   def.
+ 7b  Disilane                      D3   MNDO/d  SP+Prop  FCI      RHF     2/ 2   number     5      1   sing.  any   def.
+ 7c  Ethane                        D3   OM1     SP+Prop  FCI      RHF     2/ 2   number     5      1   sing.  any   def.
+
+ 8a  Cyclobutadiene                D4h  AM1     SP+Grad  FCI      RHF     def.   auto       3      1   sing.  any   def.
+ 8b  Cyclobutadiene                D4h  AM1     SP+Grad  FCI      RHF     def.   auto       3      2   sing.  any   def.
+ 8c  Cyclobutadiene                D4h  AM1     SP+Grad  FCI      RHF     def.   auto       3      3   sing.  any   def.
+ 8d  Cyclobutadiene                D4h  OM2     SP       FCI      RHF     def.   auto       3      1   sing.  any   def.
+ 8e  Cyclobutadiene                D4h  OM2     SP       FCI      RHF     def.   auto       3      2   sing.  any   def.
+ 8f  Cyclobutadiene                D4h  OM2     SP       FCI      RHF     def.   auto       3      3   sing.  any   def.
+ 8g  Cyclobutadiene                D4h  AM1     SP       FCI      ROHF    def.   auto       3      1   sing.  any   def.
+ 8h  Cyclobutadiene                D4h  AM1     SP       FCI      ROHF    def.   auto       3      2   sing.  any   def.
+ 8i  Cyclobutadiene                D4h  AM1     SP       FCI      ROHF    def.   auto       3      3   sing.  any   def.
+ 8j  Cyclobutadiene                D4h  OM2     SP       FCI      ROHF    def.   auto       3      1   sing.  any   def.
+ 8k  Cyclobutadiene                D4h  OM2     SP       FCI      ROHF    def.   auto       3      2   sing.  any   def.
+ 8l  Cyclobutadiene                D4h  OM2     SP       FCI      ROHF    def.   auto       3      3   sing.  any   def.
+ 8m  Cyclobutadiene                D4h  OM2     SP+Prop  CISD     ROHF    3/ 1   all pz     5      1   sing.  any   def.
+ 8n  Cyclobutadiene                D4h  OM2     SP+Prop  FCI      ROHF    3/ 1   all pz     5      1   sing.  any   def.
+ 8o  Cyclobutadiene                D4h  OM2     SP+Prop  FCI      trip.   3/ 1   all pz     5      1   trip.  any   def.
+
+ 9a  Benzyl radical                C2v  AM1     SP+Prop  CISDTQ   doub.   4/ 3   all pz     3      1   doub.  any   def.
+ 9b  Benzyl radical                C2v  AM1     SP+Grad  CISDTQ   doub.   4/ 3   all pz     1      1   doub.  3     davidson
+ 9c  Benzyl radical                C2v  AM1     SP+Grad  CISDTQ   doub.   4/ 3   all pz     2      2   doub.  3     davidson
+ 9d  Benzyl radical                C2v  AM1     SP+Grad  CISDTQ   doub.   4/ 3   all pz     1      1   doub.  2     davidson
+ 9e  Benzyl radical                C2v  AM1     Min+Frq  CISD     doub.   4/ 3   all pz     1      1   doub.  any   def.
+ 9f  Benzyl radical                C2   AM1     TS+Freq  CISD     doub.   3/ 3   auto       1      1   doub.  ---   def.
+ 9g  Benzyl radical                C2v  OM2     SP+Prop  CISDTQ   doub.   4/ 3   all pz     3      1   doub.  any   def.
+ 9h  Benzyl radical (cichg=-1)     C2v  AM1     SP+Grad  FCI      doub.   4/ 3   all pz     3      1   sing.  any   def.
+ 9i  Benzyl radical (cichg=-1)     C2v  AM1     Min      CISD     doub.   4/ 3   all pz     3      1   sing.  any   def.
+ 9j  Benzyl radical                C2v  AM1     Min+Frq  CISD     doub.   4/ 3   all pz*    1      1   doub.  any   def.
+                                                                               * use MO tracking.
+
+10a  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2      1   sing.  any   dspevx
+10b  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2     -1   sing.  any   dspevx
+10c  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2      1   sing.  any   davidson
+10d  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2     -1   sing.  any   davidson
+10e  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number   def.     1   sing.  any   rhp
+10f  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number   def.    -2   sing.  any   rhp
+10g  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2      2   sing.  any   dspevx
+10h  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2     -2   sing.  any   dspevx
+10i  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2      2   sing.  any   davidson
+10j  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number     2     -2   sing.  any   davidson
+10k  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number   def.     2   sing.  any   rhp
+10l  Penta-3,5-dieniminium cation  C1   AM1     SP+Grad  MR-CISD  RHF     5/ 5   number   def.    -1   sing.  any   rhp
+                                                                
+11a  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     4/ 4   auto       2      1   sing.  ---   def.
+11b  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     4/ 4   auto       2      2   sing.  ---   def.
+11c  Ethene                        D2   MNDO    TS+Freq  MR-CISD  RHF     4/ 4   auto       2      1   sing.  ---   def.
+11d  Ethene                        D2   MNDO    TS+Freq  MR-CISD  RHF     4/ 4   auto       2      2   sing.  ---   def.
+11e  Ethene                        D2   MNDO    Min+Frq  MR-CISD  ROHF    5/ 3   auto       2      1   sing.  ---   def.
+11f  Ethene                        D2   MNDO    Min+Frq  MR-CISD  ROHF    5/ 3   auto       2      2   sing.  ---   def.
+11g  Ethene                        D2   MNDO    TS+Freq  MR-CISD  ROHF    5/ 3   auto       2      1   sing.  ---   def.
+11h  Ethene                        D2   MNDO    TS+Freq  MR-CISD  ROHF    5/ 3   auto       2      2   sing.  ---   def.
+11i  Ethene                        D2   MNDO    SP+Grad  MR-CISD  RHF     4/ 4   auto       2      1   sing.  any   def.
+11j  Ethene                        D2   MNDO    SP+Grad  MR-CISD  RHF     4/ 4   auto       2      2   sing.  any   def.
+11k  Ethene                        D2   MNDO    SP+Grad  MR-CISD  ROHF    5/ 3   auto       2      1   sing.  any   def.
+11l  Ethene                        D2   MNDO    SP+Grad  MR-CISD  ROHF    5/ 3   auto       2      2   sing.  any   def.
+11m  Ethene                        D2   MNDO    SP+Grad  MR-CISD  trip.   5/ 3   auto       1      1   trip.  any   def.
+11n  Ethene                        D2   MNDO    Min+Frq  MR-CISD  trip.   5/ 3   auto       1      1   trip.  ---   def.
+11o  Ethene                        D2   MNDO    TS+Freq  MR-CISD  trip.   5/ 5   auto       1      1   trip.  any   davidson
+11p  Ethene                        D2   MNDO    TS+Freq  MR-CISD  trip.   5/ 5   auto*      1      1   trip.  any   davidson
+                                                                               * use MO tracking.
+
+12a  N-Methylacetamide             Cs   MNDO    Min+SP   FCI      RHF     3/ 1   auto       3      1   sing.  any   def.
+12b  N-Methylacetamide             Cs   AM1     Min+SP   FCI      RHF     3/ 1   auto       3      1   sing.  any   def.
+12c  N-Methylacetamide             Cs   OM1     SP       MR-CISD  RHF     5/ 3   pz/jci     3      1   sing.  any   def.
+12d  N-Methylacetamide             Cs   OM2     SP       MR-CISD  RHF     5/ 3   pz/jci     3      1   sing.  any   def.
+12e  N-Methylacetamide             Cs   MNDO    SP       MR-CISD  RHF     6/ 5   pz/jci     3      1   sing.  any   davidson
+12f  N-Methylacetamide             Cs   MNDO    SP       MR-CISD  RHF     6/ 5   pz/pop     3      1   sing.  any   davidson
+12g  N-Methylacetamide             Cs   MNDO    SP       MR-CISD  RHF     5/ 2   pz/jci     3      1   sing.  any   def.
+12h  N-Methylacetamide             Cs   MNDO    SP       MR-CISD  RHF     5/ 2   pz/pop     3      1   sing.  any   def.
+12i  N-Methylacetamide             Cs   ODM2    SP       MR-CISD  RHF     5/ 3   pz/jci     3      1   sing.  any   def.
+12j  N-Methylacetamide             Cs   ODM3    SP       MR-CISD  RHF     5/ 3   pz/jci     3      1   sing.  any   def.
+
+13a  Hydrogen molecule             D0h  OM2     SP+Prop  FCI      RHF     def.   auto       3      1   sing.  ---   def.
+13b  Hydrogen molecule             D0h  OM2     SP+Grad  FCI      RHF     def.   auto       3      1   sing.  ---   def.
+13c  Hydrogen molecule             D0h  OM2     SP+Grad  FCI      RHF     def.   auto       3      2   sing.  ---   def.
+13d  Hydrogen molecule             D0h  OM2     SP+Prop  FCI      ROHF    def.   auto       3      1   sing.  ---   def.
+13e  Hydrogen molecule             D0h  OM2     SP+Grad  FCI      ROHF    def.   auto       3      1   sing.  ---   def.
+13f  Hydrogen molecule             D0h  OM2     SP+Grad  FCI      ROHF    def.   auto       3      2   sing.  ---   def.
+
+14a  CP anion (cichg=9999)         D5h  OM2     SP+Prop  FCI      RHF     3/ 2   auto       5    def.  doub.  any   def.
+
+15a  Naphthaline                   D2h  MNDO    SP+Grad  MR-CISD  RHF     5/ 5   pz         5    def.  sing.  any   def.
+15b  Naphthaline                   D2h  MNDO    SP+Grad  MR-CISD  RHF     5/ 5   number     5    def.  sing.  any   def.
+15c  Naphthaline                   D2h  MNDO    SP+Grad  MR-CISD  RHF     5/ 5   numsym*    5    def.  sing.  any   def.
+15d  Naphthaline                   D2h  MNDO    SP+Grad  MR-CISD  RHF     5/ 5   numsym*    5    def.  sing.  any   def.
+15e  Naphthaline                   D2h  MNDO    SP+Grad  MR-CISD  RHF     5/ 5   numsym*    5    def.  sing.  any   def.
+                                                                               * Different order of orbitals.
+
+16a  Octatetraen                   C2h  OM2     SP+Prop  CISDTQ   RHF     4/ 4   all pz     5      3   sing.  any   liu
+16b  Octatetraen                   C2h  OM2     SP+Prop  CISDTQ   RHF     4/ 4   all pz    -1      3   sing.  1,4   liu
+16c  Octatetraen                   C2h  OM2     SP+Prop  MR-CISD* RHF     4/ 4   all pz     5      3   sing.  any   dspevx
+16d  Octatetraen                   C2h  OM2     SP+Prop  MR-CISD* RHF     4/ 4   all pz    -1      3   sing.  1,4   dspevx
+16e  Octatetraen                   C2h  OM2     SP+Prop  MR-CISD+ RHF     4/ 4   all pz     5     -2   sing.  any   dspevx
+16f  Octatetraen                   C2h  OM2     SP+Prop  MR-CISD+ RHF     4/ 4   all pz    -1     -2   sing.  1,4   dspevx
+                                              * Automatic selection of references starting from CISD.
+                                              + Automatic selection of references starting with 3 references.
+
+17a  Acetone*                      C2v  OM3     SP+Popul CISDTQ   RHF     5/ 3   all pz+2n -1      1   sing.  1,2,3 def.
+17b  Acetone*                      C2v  OM3     SP+Popul CISDTQ   RHF     5/ 3   all pz+2n -1      1   sing.  1,2,4 def.
+17c  Acetone*                      C2v  OM3     SP+Popul CISDTQ   RHF     5/ 3   all pz+2n -1      1   sing.  1,2,3 def.
+17d  Acetone                       C2v  OM3     SP+Popul CISDTQ   RHF     5/ 3   all pz+2n -1      2   sing.  1,2,3 def.
+17e  Acetone                       C2v  OM3     SP+Popul CISDTQ   RHF     5/ 3   all pz+2n -1      3   sing.  1,2,3 def.
+17f  Acetone                       C2v  OM3     SP+Popul CISDTQ   RHF     5/ 3   all pz+2n -1      4   sing.  1,2,3 def.
+                                 * Different orientations in the coordinate system.
+
+18a  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     4/ 4   auto       2      1   sing.  ---   def.
+18b  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     4/ 4   auto       2      2   sing.  ---   def.
+18c  Ethene                        D2   MNDO    TS+Freq  MR-CISD  RHF     4/ 4   auto       2      1   sing.  ---   def.
+18d  Ethene                        D2   MNDO    TS+Freq  MR-CISD  RHF     4/ 4   auto       2      2   sing.  ---   def.
+18e  Ethene                        D2   MNDO    Min+Frq  MR-CISD  ROHF    5/ 3   auto       2      1   sing.  ---   def.
+18f  Ethene                        D2   MNDO    Min+Frq  MR-CISD  ROHF    5/ 3   auto       2      2   sing.  ---   def.
+18g  Ethene                        D2   MNDO    TS+Freq  MR-CISD  ROHF    5/ 3   auto       2      1   sing.  ---   def.
+18h  Ethene                        D2   MNDO    TS+Freq  MR-CISD  ROHF    5/ 3   auto       2      2   sing.  ---   def.
+18i  Ethene                        D2   MNDO    SP+Grad  MR-CISD  RHF     4/ 4   auto       2      1   sing.  any   def.
+18j  Ethene                        D2   MNDO    SP+Grad  MR-CISD  RHF     4/ 4   auto       2      2   sing.  any   def.
+18k  Ethene                        D2   MNDO    SP+Grad  MR-CISD  ROHF    5/ 3   auto       2      1   sing.  any   def.
+18l  Ethene                        D2   MNDO    SP+Grad  MR-CISD  ROHF    5/ 3   auto       2      2   sing.  any   def.
+18m  Ethene                        D2   MNDO    SP+Grad  MR-CISD  trip.   5/ 3   auto       1      1   trip.  any   def.
+18n  Ethene                        D2   MNDO    Min+Frq  MR-CISD  trip.   5/ 3   auto       1      1   trip.  ---   def.
+18o  Ethene                        D2   MNDO    TS+Freq  MR-CISD  trip.   5/ 5   auto       1      1   trip.  any   davidson
+
+19a  Ethene                        D2   OM2     Min+Frq  MR-CISD  RHF     4/ 4   number     2      1   sing.  ---   def.
+19b  Ethene                        D2   OM2     Min+Frq  MR-CISD  RHF     4/ 4   number     2      2   sing.  ---   def.
+19c  Ethene                        D2   OM2     TS+Freq  MR-CISD  RHF     4/ 4   number     2      1   sing.  ---   def.
+19d  Ethene                        D2   OM2     TS+Freq  MR-CISD  RHF     4/ 4   number     2      2   sing.  ---   def.
+19e  Ethene                        D2   OM2     Min+Frq  MR-CISD  ROHF    5/ 3   number     2      1   sing.  ---   def.
+19f  Ethene                        D2   OM2     Min+Frq  MR-CISD  ROHF    5/ 3   number     2      2   sing.  ---   def.
+19g  Ethene                        D2   OM2     TS+Freq  MR-CISD  ROHF    5/ 3   number     2      1   sing.  ---   def.
+19h  Ethene                        D2   OM2     TS+Freq  MR-CISD  ROHF    5/ 3   number     2      2   sing.  ---   def.
+19i  Ethene                        D2   OM2     SP+Grad  MR-CISD  RHF     4/ 4   auto       2      1   sing.  any   def.
+19j  Ethene                        D2   OM2     SP+Grad  MR-CISD  RHF     4/ 4   auto       2      2   sing.  any   def.
+19k  Ethene                        D2   OM2     SP+Grad  MR-CISD  ROHF    5/ 3   auto       2      1   sing.  any   def.
+19l  Ethene                        D2   OM2     SP+Grad  MR-CISD  ROHF    5/ 3   auto       2      2   sing.  any   def.
+19m  Ethene                        D2   OM2     SP+Grad  MR-CISD  trip.   5/ 3   auto       1      1   trip.  any   def.
+19n  Ethene                        D2   OM2     Min+Frq  MR-CISD  trip.   5/ 3   number     1      1   trip.  ---   def.
+19o  Ethene                        D2   OM2     TS+Freq  MR-CISD  trip.   5/ 3   number     1      1   trip.  any   def.
+
+20b  Benzyl radical                C2v  AM1     SP+Grad  CISDTQ   doub.   4/ 3   all pz     1      1   doub.  3     davidson
+20c  Benzyl radical                C2v  AM1     SP+Grad  CISDTQ   doub.   4/ 3   all pz     2      2   doub.  3     davidson
+20d  Benzyl radical                C2v  AM1     SP+Grad  CISDTQ   doub.   4/ 3   all pz     1      1   doub.  2     davidson
+20e  Benzyl radical                C2v  AM1     Min+Frq  CISD     doub.   4/ 3   all pz     1      1   doub.  any   def.
+20f  Benzyl radical                C2   AM1     TS+Freq  CISD     doub.   3/ 3   auto       1      1   doub.  ---   def.
+20h  Benzyl radical (cichg=-1)     C2v  AM1     SP+Grad  FCI      doub.   4/ 3   all pz     3      1   sing.  any   def.
+20i  Benzyl radical (cichg=-1)     C2v  AM1     Min      CISD     doub.   4/ 3   all pz     3      1   sing.  any   def.
+20j  Benzyl radical                C2v  AM1     Min+Frq  CISD     doub.   4/ 3   all pz*    1      1   doub.  any   def.
+                                                                               * use MO tracking.
+
+21b  Benzyl radical                C2v  OM2     SP+Grad  CISDTQ   doub.   4/ 3   all pz     1      1   doub.  3     davidson
+21c  Benzyl radical                C2v  OM2     SP+Grad  CISDTQ   doub.   4/ 3   all pz     2      2   doub.  3     davidson
+21d  Benzyl radical                C2v  OM2     SP+Grad  CISDTQ   doub.   4/ 3   all pz     1      1   doub.  2     davidson
+21e  Benzyl radical                C2v  OM2     Min+Frq  CISD     doub.   4/ 3   all pz     1      1   doub.  any   def.
+21f  Benzyl radical                C2   OM2     TS+Freq  CISD     doub.   3/ 2   auto       1      1   doub.  ---   def.
+21h  Benzyl radical (cichg=-1)     C2v  OM2     SP+Grad  FCI      doub.   4/ 3   all pz     3      1   sing.  any   def.
+21i  Benzyl radical (cichg=-1)     C2v  OM2     Min      CISD     doub.   4/ 3   all pz     3      1   sing.  any   def.
+21j  Benzyl radical                C2v  OM2     Min+Frq  CISD     doub.   4/ 3   all pz*    1      1   doub.  any   def.
+                                                                               * use MO tracking.
+
+22a  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     4/ 4   auto+      1      1   sing.  ---   def.
+22b  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     4/ 4   auto%      1      1   sing.  ---   def.
+22c  Ethene                        D2   MNDO    Min      MR-CISD  RHF     4/ 4   numsym+    3      1   sing.  any   def.
+22d  Ethene                        D2   MNDO    Min      MR-CISD  RHF     4/ 4   numsym%    3      1   sing.  any   def.
+22e  Ethene                        D2   MNDO    Min      MR-CISD  RHF     3/ 3   numsym+    3      2   sing.  any   def.
+22f  Ethene                        D2   MNDO    Min      MR-CISD  RHF     3/ 3   numsym%    3      2   sing.  any   def.
+22g  Ethene                        D2   MNDO    Min      MR-CISD  RHF     3/ 3   number*+   3      2   sing.  any   def.
+22h  Ethene                        D2   MNDO    Min      MR-CISD  RHF     3/ 3   number*%   3      2   sing.  any   def.
+22i  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     3/ 3   number*+   3      2   sing.  ---   def.
+22j  Ethene                        D2   MNDO    Min+Frq  MR-CISD  RHF     3/ 3   number*%   3      2   sing.  ---   def.
+                                                                               * use MO tracking
+                                                                               + mciref=3
+                                                                               % mciref=4
+
+23a  Penta-3,5-dieniminium cation  Cs*  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-3    3    def.  sing.  any   def.
+23b  Penta-3,5-dieniminium cation  Cs*  OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=-3    3    def.  sing.  any   def.
+23c  Penta-3,5-dieniminium cation  Cs*  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-5    3    def.  sing.  any   def.
+23d  Penta-3,5-dieniminium cation  Cs*  OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=-5    3    def.  sing.  any   def.
+23e  Penta-3,5-dieniminium cation  C1+  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-5    3    def.  sing.  any   def.
+23f  Penta-3,5-dieniminium cation  C1+  OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=-5    3    def.  sing.  any   def.
+23g  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=1     3    def.  sing.  any   def.
+23h  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=1     3    def.  sing.  any   def.
+23i  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-5    3    def.  sing.  any   def.
+23j  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=-5    3    def.  sing.  any   def.
+23k  Penta-3,5-dieniminium cation  Cs*  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-3*   3    def.  sing.  any   def.
+23l  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-5*   3    def.  sing.  any   def.
+23m  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     2/ 1   movo=1     3    def.  sing.  any   def.
+23n  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     2/ 1   movo=-5+   3    def.  sing.  any   def.
+23o  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-5+   3    def.  sing.  any   def.
+23p  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-5+   3    def.  sing.  any   def.
+23q  Penta-3,5-dieniminium cation  C1%  OM2     SP+Grad  MR-CISD  RHF     3/ 3   movo=-5+   3    def.  sing.  any   def.
+23r  Penta-3,5-dieniminium cation  C1   OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=1     3    def.  sing.  any   def.
+23s  Penta-3,5-dieniminium cation  C1   OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=-5    3    def.  sing.  any   def.
+23t  Penta-3,5-dieniminium cation  C1   OM2     SP+Grad  MR-CISD  ROHF    4/ 3   movo=1     3    def.  sing.  any   def.
+23u  Penta-3,5-dieniminium cation  C1   OM2     SP+Grad  MR-CISD  ROHF    4/ 2   movo=1     3    def.  sing.  any   def.
+23v  Penta-3,5-dieniminium cation  C1   OM2     SP+Grad  MR-CISD  ROHF    4/ 3   movo=1     3    def.  sing.  any   def.
+                                  * planar, z=0                                 * nconj=6
+                                  + planar, not aligned with any axis           + nconj=3
+                                  % twisted around central double bond
+
+24a  Water, 2 point charges        C2v  OM2     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24b  Water, 2 point charges        C2v  OM3     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24c  Water, 2 point charges        C2v  OM1     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24d  Water, 2 point charges        C2v  MNDO    SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24e  Water, 2 point charges        C2v  AM1     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24f  Water, 2 point charges        C2v  PM3     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24g  Water, 4 point charges        C2v  OM2     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24h  Water, 4 point charges        C2v  OM3     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24i  Water, 4 point charges        C2v  OM1     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24j  Water, 4 point charges        C2v  MNDO    SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24k  Water, 4 point charges        C2v  AM1     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24l  Water, 4 point charges        C2v  PM3     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24m  Water, 8 point charges        C2v  OM2     SP+Grad* FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24n  Water, 8 point charges        C2v  OM3     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24o  Water, 8 point charges        C2v  OM1     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24p  Water, 8 point charges        C2v  MNDO    SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24q  Water, 8 point charges        C2v  AM1     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+24r  Water, 8 point charges        C2v  PM3     SP+Grad  FCI      RHF     def.   auto     def.   def.  sing.  any   def.
+                                              * Test mmskip.
+
+25a  Ammonium cation, 4 pt. chgs.  Td   OM2     SP+Grad* FCI      RHF     3/ 4   auto       8      5   sing.  any   def.
+25b  Ammonium cation, 4 pt. chgs.  Td   OM3     SP+Grad  FCI      RHF     3/ 4   auto       8      5   sing.  any   def.
+25c  Ammonium cation, 4 pt. chgs.  Td   OM1     SP+Grad  FCI      RHF     3/ 4   auto       8      5   sing.  any   def.
+25d  Ammonium cation, 4 pt. chgs.  Td   MNDO    SP+Grad  FCI      RHF     3/ 4   auto      10      8   sing.  any   def.
+25e  Ammonium cation, 4 pt. chgs.  Td   AM1     SP+Grad  FCI      RHF     3/ 4   auto      10      8   sing.  any   def.
+25f  Ammonium cation, 4 pt. chgs.  Td   PM3     SP+Grad  FCI      RHF     3/ 4   auto      10      8   sing.  any   def.
+                                              * Test mmskip.
+
+26a  Pentadienal, 90 deg twist     C1   MNDO    SP       FCI      FLOCC   7/12*  auto       3      2   sing.  any   def.
+26b  Pentadienal, 90 deg twist     C1   AM1     SP       FCI      FLOCC   7/12*  auto       3      2   sing.  any   def.
+26c  Pentadienal, 90 deg twist     C1   PM3     SP       FCI      FLOCC   7/12*  auto       3      2   sing.  any   def.
+26d  Pentadienal, 90 deg twist     C1   OM1     SP       FCI      FLOCC   7/12*  auto       3      2   sing.  any   def.
+26e  Pentadienal, 90 deg twist     C1   OM2     SP       FCI      FLOCC   7/12*  auto       3      2   sing.  any   def.
+26f  Pentadienal, 90 deg twist     C1   OM3     SP       FCI      FLOCC   7/12*  auto       3      2   sing.  any   def.
+                                         * Number of orbitals with floating/double occupation.

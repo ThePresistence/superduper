@@ -1,0 +1,14 @@
+DSC MNDO UHF force constants for doublet C2H5. Direct MO solution using
+DSC globally orthogonal ortres solver with floating shift conditioner and
+DSC basis vector sharing.
+DAT C2H5.dat
+OPT iprint=1
+OPT imix=2 idens=6 iqswap=2 inrhs=-3 iprect=3 idstrp=1 ikmode=1 isolve=3 ikrsav=10
+PRP heat=10.54555 intgrdopt=0.03941 cartgrdopt=0.06482 optcyc=6
+PRP freqmem=58420 freqdisk=5586 respvec=7.71
+PRP freq7=10.553 freq8=770.235 freq9=869.447 freq10=1028.234
+PRP zpe=39.50876
+PRP modea=8   wavea=770.235  ira=30.716
+PRP modeb=17  waveb=3241.613 irb=19.305
+PRP modec=10  wavec=1028.234 irc=18.762
+PRP moded=18  waved=3260.435 ird=17.592

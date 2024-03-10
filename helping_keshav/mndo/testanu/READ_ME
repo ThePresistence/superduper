@@ -1,0 +1,144 @@
+************************************************************************
+*** testanu/READ_ME ***
+************************************************************************
+
+This directory contains a suite of 14 benchmark jobs obtained from
+Ross Nobes (Australian National University, ANU, Canberra) in 1993.
+This suite was chosen at ANU to compare the performance of different
+program packages (MNDO93,MOPAC93,AMPAC,VAMP,SPARTAN,GAUSSIAN92) for 
+a selection of typical applications.
+
+The input files for the benchmark were received on September 1, 1993,
+by email. They have not been modified since then.
+
+Since this benchmark suite has been assembled independently,
+it seems well suited for comparing different program packages.
+It is recommended to become a standard benchmark to compare
+the performance of different hardware platforms and software
+packages in the field of semiempirical MO calculations.
+
+------------------------------------------------------------------------
+
+Files in this directory.
+
+READ_ME            This file
+bench*.inp         14 input files
+bench*.out         Corresponding output files from MNDO97
+bench.grep.cray    Summary of MNDO93 results for Cray Y-MP
+bench.grep.ibm     Summary of MNDO93 results for IBM RS/6000
+bench.grep.sgi     Summary of MNDO93 results for SGI Indigo 
+anu.grep           Summary of MNDO97 results for SGI Indigo
+testanugo          UNIX script for benchmarking with MNDO97
+OLD/               Subdirectory containing files from 1993
+  READ_ME          Old notes
+  cputimes         MNDO93 cpu times on Fujitsu, Cray, IBM, SGI
+  notes            Further notes on this benchmark
+
+
+************************************************************************
+*** notes ***
+************************************************************************
+
+Semiempirical benchmarks from Ross Nobes
+----------------------------------------
+
+Job Molecule   Symm  Method  Open-  Energy +  Geometry  Force  AOs  NVAR
+                             shell  gradient  optimiz.  const.
+
+ 1  C7NO2H16+  C1    AM1               x                        56
+ 2  C28N5O7H37 C1    AM1               x                       197
+ 3  C42H50     C2v   AM1               x                       216
+ 4  C60        Ih    MNDO              x                       240
+ 5  C120       Td    MNDO              x                       480
+ 6  C180       Ih    MNDO              x                       720
+ 7  C7NO2H16+  C1    AM1                         x                   72
+ 8  C42H50     C2v   AM1                         x                   75
+ 9  C60        Ih    MNDO                        x                    2
+10  C7NO2H16+  C1    AM1                                  x          78
+11  C60        Ih    MNDO                                 x        (180)
+12  C16H10+    D2h   MNDO      x       x                        74
+13  C16H10+    D2h   MNDO      x                 x                   13
+14  C16H10+    D2h   MNDO      x                          x         (78)
+
+The table above is self-explanatory for most entries. Open-shell systems
+are treated at the half-electron SCF level. NVAR refers to the number of
+variables in geometry optimizations, or to 3*NATOMS in force constant
+calculations, respectively. In the latter case, NVAR is given in (  )
+if there is symmetry so that certain columns of the force constant 
+matrix need not be evaluated.
+
+The keyword PRECISE is specified in jobs 1-13.
+
+
+************************************************************************
+*** cputimes ***
+************************************************************************
+
+Semiempirical benchmarks from Ross Nobes
+----------------------------------------
+
+The results from these benchmarks on a Fujitsu VP 2200 (3.2 ns)
+are included in a fax received from Ross Nobes on 30 August 1993.
+The input files were obtained from Ross Nobes on 1 September 1993,
+with the permission to use them freely in other benchmarks.
+
+Some additional benchmark calculations were done using MNDO93 on
+Cray, IBM, and SGI machines. A survey of MNDO93 timings on Fujitsu,
+Cray, IBM, and SGI machines is given below (cpu times in sec).
+MNDO97 timings have been added later.
+
+Source of the timings:
+Fujitsu                    Ross Nobes, fax  of 30 August 1993
+Cray Y-MP, rain, mndo93    Walter Thiel   , 15 September 1993
+IBM RS/6000                Walter Thiel   , 14 September 1993
+SGI Indigo R4000, mndo93   Walter Thiel   , 09 January   1994
+SGI Indigo R10000, mndo97  Walter Thiel   , 18 March     1998
+
+ Job    Fujitsu   Cray Y-MP   IBM RS/6000   SGI Indigo    SGI Indigo      Compaq
+        VP 2200    Eagan      Model 370     R4000 chip    R10000 chip     XP1000
+        3.2 ns     6.0 ns       
+        mndo91     mndo93       mndo93        mndo93        mndo97        mndo99
+
+ 1=1a      0.4        0.4          0.5           1.7           0.1           0.1
+ 2=1b      3.4        5.0         12.3          52.4           4.3           1.1
+ 3=1c      3.8        5.9          9.8          50.2           4.8           1.2
+ 4=1d      2.7        3.9         11.7          58.0           4.4           1.1
+ 5=1e     18.3       35.9        125.6         870.6          68.8          11.6
+ 6=1f     61.1       87.4          d             d           212.5          33.0
+ 7=2a     24.1       51.9         48.2         236.5          14.8           4.7
+ 8=2b     35.8       72.5        165.4         972.6          63.1          14.5
+ 9=2c      9.4       18.2         45.4         273.1          18.4           4.2
+10=3a     23.0       37.8         44.0         152.0           5.1           1.0
+11=3b    232.4      446.8       1180.8        6203.6         649.9         133.7
+12=4a      9.6        6.7         13.5          40.4           0.7           0.2
+13=4b    162.7      120.0        252.3         756.2          13.8           2.9
+14=4c   1176.8      829.6       1736.0        4994.4          26.6           5.4
+
+Remarks:
+a) Under "Job", both the old and new numbering are given.
+b) Details about Fujitsu runs not known.
+c) All Cray runs with NCPUS=1 on machine "rain" (7.0).
+d) Job 6=1f (C180) not done, small program used.
+e) Jobs 12-14 deserve special comment to avoid misleading conclusions.
+   These jobs perform half-electron calculations - MNDO93 numerical
+   gradient, MNDO97 analytical gradient. The cpu times for MNDO97 and
+   MNDO99 reflect the speed of the analytical half-electron gradient.
+f) Additional comments on the MNDO93 timings in jobs 12-14:
+   In these jobs, full diagonalizations use most of the cpu time.
+   These diagonalizations are all based on EISPACK-type routines,
+   but the implementation varies between different machines.
+   - Fujitsu: Fortran code for TQL2 and TRED2 (very stable numerically,
+     but not the fastest algorithms, faster diagonalization routines
+     not tested in the initial Fujitsu implementation).
+   - Cray: Optimized Cray library routines for the fastest EISPACK-type
+     routines.
+   - IBM and SGI: Fortran code for the fastest EISPACK-type routines.
+     Tests for jobs 12 and 13 on an IBM showed that the cpu times were
+     reduced by factors of 2.2 and 1.7, respectively, when using these
+     fast routines rather than TQL2 and TRED2 (Fortran code).
+   Hence, the Fujitsu timings for jobs 12-14 can easily be improved
+   by a factor of about 2 (or even more when using optimized library
+   routines as on the Cray).
+
+   The results obtained with different program versions and different
+   platforms are identical (within the usual tolerances).

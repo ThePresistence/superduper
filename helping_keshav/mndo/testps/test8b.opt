@@ -1,0 +1,16 @@
+DSC MNDO (G)ROHF gradients for doublet D6h benzene cation. Separate
+DSC AO solution using non-conditioned Pople's solver. CPHF is not 
+DSC necessary in this case, since the pi-orbital structure is completely 
+DSC fixed by symmetry.
+DAT C6H6.dat
+OPT iprint=1
+OPT imix=1 idens=7 iqswap=-1 inrhs=1 iprect=1 ihlst=1 ihlwrp=2 isolve=1
+PRP heat=231.64976
+PRP freqmem=33308 freqdisk=0 respvec=0
+PRP intgrd=6.09398 cartgrd=2.48786
+PRP cartgrda=1  cartgrdaX=-.25356 cartgrdaY=0.00000 cartgrdaZ=0.00000
+PRP cartgrdb=5  cartgrdbX=0.12678 cartgrdbY=0.21959 cartgrdbZ=0.00000
+PRP cartgrdc=9  cartgrdcX=0.98350 cartgrdcY=0.00000 cartgrdcZ=0.00000
+PRP cartgrdd=11 cartgrddX=-.49175 cartgrddY=0.85174 cartgrddZ=0.00000
+PRP intgrda=1 intgrdaX=-1.52137
+PRP intgrdb=2 intgrdbX=-5.90102

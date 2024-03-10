@@ -45,13 +45,15 @@
 * It would be amazing if there were a perfect code metric that could tell us exactly how maintainable or redable a particular block of code is, because if that were the case, we would almost never need to have humans in the loop during the code review process because our automated tools could just do the peer review for us, unfortunately there is no perfect metric and not matter the code analysis we use, at least we need humans.
 * **Radon** this is used for **cyclomatic complexity**.
 * We want to able to reduce the number of decisions that a block of code contains.
+* You can also integerate with flake8 for more customaizable code quality test.
 
     ```python
     pip install radon
     radon cc <file-name.py> -s ## cc -> cyclomatic complexity
     radon raw <file-name.py> ## raw metrics 
-    
+
 
     # you can check more about this in documentation.
     ```
+
 

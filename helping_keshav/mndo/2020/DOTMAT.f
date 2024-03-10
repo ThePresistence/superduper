@@ -1,0 +1,37 @@
+C     ******************************************************************
+      DOUBLE PRECISION FUNCTION DOTMAT (A,B,LM2,N,MODE)
+C     *
+C     DOT PRODUCT OF ALL MATRIX ELEMENTS IN THE FULL MATRIX (MODE=0)
+C     OR IN THE UPPER TRIANGLE OF A SYMMETRIC MATRIX (MODE=1).
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     A(LM2,*)  FIRST  MATRIX (I).
+C     B(LM2,*)  SECOND MATRIX (I).
+C     LM2       LEADING DIMENSION (I).
+C     N         NUMBER OF ORBITALS (I).
+C     MODE      EXTENT OF SUMMATIONS, SEE ABOVE (I).
+C     DOTMAT    DOT PRODUCT (O).
+C     *
+C     ON COMMENT LINES : FORTRAN CODE.
+C     ACYIVE STATEMENTS: CODE USING BLAS ROUTINE DDOT.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(LM2,N),B(LM2,N)
+      DOTMAT = 0.0D0
+      IF(MODE.EQ.0) THEN
+         DO 20 J=1,N
+C        DO 10 I=1,N
+C        DOTMAT = DOTMAT + A(I,J)*B(I,J)
+C  10    CONTINUE
+         DOTMAT = DOTMAT + DDOT(N,A(1,J),1,B(1,J),1)
+   20    CONTINUE
+      ELSE
+         DO 40 J=1,N
+C        DO 30 I=1,J
+C        DOTMAT = DOTMAT + A(I,J)*B(I,J)
+C  30    CONTINUE
+         DOTMAT = DOTMAT + DDOT(J,A(1,J),1,B(1,J),1)
+   40    CONTINUE
+      ENDIF
+      RETURN
+      END

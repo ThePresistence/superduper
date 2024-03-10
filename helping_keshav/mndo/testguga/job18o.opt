@@ -1,0 +1,16 @@
+DSC ETHENE, MNDO MRSD-CI for half-electron ROHF triplet
+DSC Active space: 5 MOs, 5 VOs - defined by default
+DSC Transition state optimization for triplet state 1
+DSC plus force constant analysis using numerical
+DSC integral derivatives
+PRP finalheat=48.90241
+PRP freq1=-525.12672
+PRP freq2=0
+PRP freq3=0
+PRP freq4=0
+PRP freq5=0
+PRP freq6=0
+PRP freq7=0
+PRP freq8=587.38329
+PRP freq9=755.66015
+PRP freq10=819.48048

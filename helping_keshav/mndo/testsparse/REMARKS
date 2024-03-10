@@ -1,0 +1,294 @@
+This file (~/mndo99/testsparse/REMARKS) documents the checks made for
+the sparse integral-direct linear-scaling code.
+
+Date: 01 Nov 2001
+
+==================================================================================
+
+The test jobs from sections 1-2 are done automatically using
+make clean
+make
+
+The test jobs from section 3 are done individually using
+mgo99 chno44.scf
+mgo99 chno44.frg
+
+==================================================================================
+
+1.    Standard test jobs (from ~/mndo99/testjobs)
+      -------------------------------------------
+
+      There are 50 input files for test jobs which are designed to
+      cover most of the major options in the program. These jobs are
+      grouped as follows.
+
+      job1*: Single-point SCF energy calculations for different methods.
+      job2*: Single-point SCF energy and gradient calculations.
+      job3*: SCF geometry optimizations and transition state searches.
+      job4*: Force constant analysis (combined with optimizations).
+      job5*: Reaction paths and grids.
+      job6*: Calculations with correlated wave functions.
+      job7*: Property evaluations.
+      job8*: Special features.
+
+      Description of standard test jobs:
+
+      job1a: MNDO, ethylene
+      job1b: AM1 , ethylene
+      job1c: PM3 , ethylene
+      job1d: OM1 , ethylene
+      job1e: OM2 , ethylene
+      job1f: MNDO, ethylene cation, UHF
+      job1g: CNDO/2, ethylene cation, half-electron
+      
+      job2a: MNDO, tetracene,  30 atoms,  84 aos
+      job2b: MNDO, C60      ,  60 atoms, 240 aos
+      job2c: MNDO, C50H100  , 150 atoms, 300 aos
+  
+      job3a: MNDO, ethylene, minimum, BFGS
+      job3b: MNDO, tetracene, minimum, BFGS
+      job3c: MNDO, oxygen triplet (UHF), minimum, BFGS
+      job3d: MNDO, H2CO->HCOH, TS, gradient norm minimization, internal  coords
+      job3e: MNDO, H2CO->HCOH, TS, gradient norm minimization, Cartesian coords
+      job3f: MNDO, H2CO->HCOH, TS, eigenvector following (EF), internal  coords
+      job3g: MNDO, H2CO->HCOH, TS, eigenvector following (EF), Cartesian coords
+      job3h: MNDO, ethylene, minimum, EF algorithm, pure Newton-Raphson
+      job3i: MNDO, ethylene, minimum, EF algorithm, Newton-Raphson + BFGS
+      job3j: MNDO/d, Cl2/ClF3/CHCl3, minima, BFGS
+      job3k: MNDO/d, Na - Hg compounds, minima, BFGS, parameter check
+      job3l: MNDO/d, Ti(CH3)4/CuCl/ZrF4/HPdOH, minima, BFGS, parameter check
+
+      job4a: MNDO, hydrogen
+      job4b: MNDO, water, C1
+      job4c: MNDO, water, Cs
+      job4d: MNDO, formaldehyde, C2v
+      job4e: MNDO, ethylene, optimization + force constants, D2h
+      job4f: MNDO, hydrogen peroxide, TS search + force constants, C2h
+      job4g: MNDO/d, CCl4, optimization a force constants
+
+      job5a: MNDO, methanol, path, internal rotation
+      job5b: MNDO, methanol, grid, explicit input
+      job5c: MNDO, methanol, grid, input of step size
+
+      job6a: MNDOC, ethylene, second-order perturbation theory (BWEN)
+      job6b: MNDOC, vinyl cation, BWEN, geometry optimization
+      job6c: MNDOC, vinyl cation, single-point BWEN after SCF optimization
+      job6d: MNDOC, methylene, BWEN1, geometry optimization
+      job6e: MNDO , tetracene, BWEN for pi-system only
+      job6f: MINDO/3, ethylene, minimal 3*3 CI
+
+      job7a: MNDO, ethylene, hyperpolarizability
+      job7b: AM1 , ethylene, single-point COSMO solvation energy
+      job7c: AM1 , glycine zwitterion, COSMO geometry optimization
+      job7d: MNDO, ethylene, NMR, single-point MNDO-B at input geometry
+      job7e: MNDO, ethylene, NMR, single-point MNDO-B after AM1 optimization
+
+      job8a: MNDO/d, phosphorus compds, evaluation with reference data
+      job8b: MNDO/H, water dimers, opt+force, evaluation with MP4 data
+      job8c: AM1, dimethylether, QM/MM, electrostatic potential and field
+      job8d: AM1, dimethylether, QM/MM, SCF with external points charges
+      job8e: MNDO, ethylene with special link atom for QM/MM, optimization
+      job8f: MNDO, water, keyword input, NMR and COSMO/NMR, MNDO-A
+      job8g: MNDO, ethylene, keyword input, DIIS in SCF
+
+
+      Options for running the standard test jobs:
+      ------------------------------------------
+      
+      The current implementation of integral-direct linear-scaling methods
+      using sparse matrices has the following limitations.
+
+      Integral-direct mode (intdir.ge.1) does not work for:
+      - Methods with orthogonalization corrections (OMx).
+      - Electron correlation.
+      - COSMO solvation treatment.
+      - External point charges.
+
+      Linear-scaling CG-DMS mode (lindms.ge.1) does not work for:
+      - Open-shell systems.
+
+      Linear-scaling CG-DMS mode requires:
+      - Final eigenvectors (lindia=1) for properties etc
+        which are currently not available for the sparse code (lindms=4).
+      - Special initial density guess (linfrg=1, inpfrg=-1) for MNDO/d
+        which is available for the sparse code (lindms=4).
+
+
+      File      intdir  lindms  lindia  linfrg  inpfrg  remarks 
+
+      job1a        4       4       0       0       0       a
+      job1b        4       4       0       0       0       a
+      job1c        4       4       0       0       0       a
+      job1d        0       1       0       0       0       c
+      job1e        0       1       0       0       0       c
+      job1f                                                f
+      job1g                                                f
+      
+      job2a        4       4       0       0       0       a
+      job2b        4       4       0       0       0       a
+      job2c        4       4       0       0       0       a
+  
+      job3a        4       4       0       0       0       a
+      job3b        4       4       0       0       0       a
+      job3c                                                f
+      job3d        4       4       0       0       0       a
+      job3e        4       4       0       0       0       a
+      job3f        4       4       0       0       0       a
+      job3g        4       4       0       0       0       a
+      job3h        4       4       0       0       0       a
+      job3i        4       4       0       0       0       a
+      job3j        4       4       0       1      -1       b
+      job3k        4       4       0       1      -1       b
+      job3l        4       4       0       1      -1       b
+
+      job4a        4       4       0       0       0       a
+      job4b        4       4       0       0       0       a
+      job4c        4       4       0       0       0       a
+      job4d        4       4       0       0       0       a
+      job4e        4       4       0       0       0       a
+      job4f        4       4       0       1      -1       a
+      job4g        4       4       0       1      -1       b
+
+      job5a        4       4       0       0       0       a
+      job5b        4       4       0       0       0       a
+      job5c        4       4       0       0       0       a
+
+      job6a        0       1       1       0       0       d
+      job6b        0       1       1       0       0       d
+      job6c        0       1       1       0       0       d
+      job6d        0       1       1       0       0       d
+      job6e        0       1       1       0       0       d
+      job6f        0       1       1       0       0       d
+
+      job7a        0       1       1       0       0       d
+      job7b        0       1       1       0       0       d
+      job7c        0       1       1       0       0       d
+      job7d        1       1       1       0       0       e
+      job7e        1       1       1       0       0       e
+
+      job8a        1       1       0       1      -1       f
+      job8b        4       4       0       0       0       a
+      job8c        1       1       0       0       0       g
+      job8d        0       1       0       0       0       c
+      job8e        4       4       0       0       0       a
+      job8f        0       1       1       0       0       d
+      job8g        4       4       0       0       0       a
+
+      a) Straight integral-direct linear-scaling calculation.
+      b) Integral-direct linear-scaling run with special initial
+         density guess (MNDO/d).
+      c) CG-DMS search, conventional integrals, do not run.
+      d) CG-DMS search, conventional integrals, final MOs needed,
+         do not run.
+      e) Integral-direct linear-scaling run, final MOs needed,
+         do not run.
+      f) Open-shell systems involved, do not run.
+      g) Standard density P(LM4) required for properties, do not run.
+
+      Note: Only cases covered by footnotes a-b can be run when
+      using intdir=4 and lindms=4 (as indicated in the table above).
+
+      Special problems compared with intdir=1 and lindms=1:
+      -  job4f: Block-diagonal guess for density required.
+
+      Summary:
+      -  32 out of 50 standard test jobs can be run presently.
+      -  24 jobs pass the comparisons with the reference data (intdir=lindms=0)
+         when using the standard criteria (see testjobs with intdir=lindms=0).
+      -  08 jobs do not pass these comparisons under these citeria, but the
+         deviations are minor and only reflect the limited numerical precision.
+      -  Therefore the criteria are relaxed for the current test jobs by using
+         higher thresholds (factor 5 for energies and 2 for gradient norms).
+         29 jobs pass the comparisons under these criteria, while 3 jobs fail
+         with slightly higher deviations.
+
+==================================================================================
+
+2.    Other test jobs
+      ---------------
+       
+      Specific test jobs for the integral-direct linear-scaling code include:
+
+      eth*  : MNDO, ethylene, energy and gradient, without SCF extrapolation.
+      ethx* : MNDO, ethylene, energy and gradient, with SCF extrapolation.
+
+      Options investigated:
+      eth44 : intdir=4, lindms=4, inp24=1, nstart=-1.
+      ethx44: intdir=4, lindms=4, inp24=1, nstart= 0.
+
+      Input options from section 2.4 are identical in both runs.
+      The ethylene test jobs are used to find basic errors in the code.
+
+      Both jobs pass the comparisons with the reference data (intdir=lindms=0)
+      under the standard criteria (see above).
+      
+
+==================================================================================
+
+3.    Standard CHNO test set
+      ----------------------
+
+      227 molecules, MNDO, single-point SCF energies
+      
+      Comparison with reference calculations (intdir=0, lindms=0)
+      using the standard input file $FS/eva/CHNO/chno/chno.inp
+
+      Options investigated:
+      chno44.scf*: intdir=4, lindms=4
+      chno44.frg*: intdir=4, lindms=4, linfrg=1, inpfrg=-1
+      
+      
+      Results with intdir=4, lindms=4
+      -------------------------------
+      
+      a) 201 molecules with correct results.
+      
+      b) 3 molecules which cannot work (half-electron SCF not available):
+         ethylene D2d
+         oxygen triplet
+         oxygen singlet
+      
+      c) 9 molecules without SCF convergence (50 iterations):
+         trans-diazodiisopropane
+         diethylperoxide C2
+         diethylperoxide C2h
+         nitrous acid trans
+         nitric acid HNO3
+         methylnitrite H3CONO
+         nitromethane  H3CNO2
+         nitrylamide Cs
+         nitrylamide plan C2v
+      
+      d) 14 molecules converging to a wrong SCF solution:
+         azomethane                  charge=-2
+         diazirene                   charge=-2  
+         ozone                       charge=-4
+         hydrogen peroxide C2        charge=-2
+         hydrogen peroxide C2v       charge=-2
+         hydrogen peroxide C2h       charge=-2
+         dimethylperoxide            charge=-2
+         N2O                         charge=-2
+         N2O2 cis                    charge=-6
+         N2O2 trans                  charge=-6
+         N2O4 D2                     charge=-6
+         N2O4 D2h                    charge=-6
+         N2O4 D2d                    charge=-6
+         nitrous acid cis            charge= 0 excited state
+      
+      
+      Results with intdir=4, lindms=4, linfrg=1, inpfrg=-1
+      ----------------------------------------------------
+      
+      a) 224 molecules with correct results.
+      
+      b) 3 molecules which cannot work (half-electron SCF not available):
+         ethylene D2d
+         oxygen triplet
+         oxygen singlet
+      
+      Obviously the use of a block-diagonal initial density matrix (obtained
+      from one standard SCF iteration) is sufficient to avoid convergence to
+      a wrong SCF solution.
+      
+         
+         

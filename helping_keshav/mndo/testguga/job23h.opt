@@ -1,0 +1,8 @@
+DSC PENTADIENIMINIUM CATION, OM2 (ROHF) MRSD-CI
+DSC Twisted around central double bond, movo=1
+DSC Explicit active space: 10 15 16 17 18 20
+DSC Single-point energy and gradient, ground state
+PRP heat=239.92012
+PRP ciheat=226.68874
+PRP cartgrd=184.15107
+PRP intgrd=184.15107

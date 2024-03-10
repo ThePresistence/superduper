@@ -1,0 +1,16 @@
+      SUBROUTINE ESCFP (EE,N,P,F,LM2,LMC)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+C     *
+C     CONTRIBUTIONS TO ELECTRONIC ENERGY.
+C     INCLUDE LMC COLUMNS FROM LOCAL ARRAY.
+C     *
+      DIMENSION P(LM2,*),F(LM2,*)
+      EE     = 0.0D0
+      DO 20 J=1,LMC
+      DO 10 I=1,N
+      EE     = EE + P(I,J)*F(I,J)
+   10 CONTINUE
+   20 CONTINUE
+      EE     = EE * 0.5D0
+      RETURN
+      END

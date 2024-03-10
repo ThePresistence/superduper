@@ -1,0 +1,5 @@
+DSC WATER, C2v, MNDO full CI for singlet state
+DSC Single-point energy calculation
+COM Impose default value for levexc
+PRP heat=-60.62044
+PRP ciheat=-65.04676

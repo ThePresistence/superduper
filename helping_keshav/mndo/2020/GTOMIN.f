@@ -1,0 +1,150 @@
+      SUBROUTINE GTOMIN (IGTO,ISCALE,JPRINT)
+C     *
+C     SET UP A MINIMAL BASIS OF CONTRACTED GAUSSIAN ORBITALS.
+C     THE PRESENT VERSION IS RESTRICTED TO SP BASIS SETS.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     IGTO      TYPE OF MINIMAL BASIS (I).
+C               = 0     ECP BASIS FOR USE IN OM1 OR OM2.
+C               = 1..6  STOnG BASIS SETS.
+C               FURTHER BASIS SETS MAY BE ADDED AS NEEDED.
+C     ISCALE    OPTION FOR SCALING THE BASIS (I).
+C               DONE BY DEFAULT USING THE EXPONENTS IN PAROPT.
+C               =-1     NO SUCH SCALING.
+C     JPRINT    PRINTING FLAG (I).
+C     *
+C     BASIS SET INFORMATION (O) IS SAVED IN THE COMMON BLOCKS
+C     GAUSS1:   SHELL INFORMATION.
+C     GAUSS3:   EXPONENTS AND CONTRACTION COEFFICIENTS.
+C     FURTHER SHELL INFORMATION IS AVAILABLE IN THE LOCAL ARRAYS
+C     KATOM AND KLOC WHICH MAY BE SAVED IN A COMMON BLOCK GAUSS8
+C     IF THIS INFORMATION IS NEEDED ELSEWHERE.
+C     *
+C     Notation:
+C     NSHELL    Number of shells
+C     NPRIM     Total number of primitives
+C     KSTART(M) Number of first primitive in a given shell
+C     KNG(M)    Number of Gaussian primitives for a given shell
+C     KTYPE(M)  Shell type: 0 s, 1 p, 2 d
+C     KATOM(M)  Number of atom where a given shell is located
+C     KLOC(M)   Number of first basis function for a given shell
+C     EXX(L)    Exponent of primitive
+C     C1(L)     s coefficient
+C     C2(L)     p coefficient
+C     C3(L)     d coefficient
+C     *
+      USE LIMIT, ONLY: LM1, LMGP, LMGS, LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./DNBND / III(LMZ),IIID(LMZ)
+     ./GAUSS1/ KSTART(LMGS),KNG(LMGS),KTYPE(LMGS),NSHELL,NPRIM
+     ./GAUSS3/ EXX(LMGP),C1(LMGP),C2(LMGP),C3(LMGP)
+     ./GAUSSP/ FXX(LMGP),DS(LMGP),DP(LMGP),DD(LMGP)
+     ./NBFILE/ NBF(20)
+     ./PAROPT/ USS(LMZ),UPP(LMZ),Z(LMZ),PARDUM(LMZ*4)
+      DIMENSION KATOM(LMGS),KLOC(LMGS)
+      DIMENSION E(6),CS(6),CP(6)
+C *** FILE NUMBERS.
+      NB6    = NBF(6)
+C *** INITIALIZATION.
+      MM     = 1
+      NORB   = 1
+      NSHELL = 0
+      NGAUSS = 3
+      IF(IGTO.GE.1 .AND. IGTO.LE.6) NGAUSS = IGTO
+C *** LOOP OVER ALL ATOMS TO PROVIDE UNSCALED PRIMITIVES.
+      DO 20 I=1,NUMAT
+      NI     = NAT(I)
+      IORBS  = NLAST(I)-NFIRST(I)+1
+      NMAIN  = III(NI)
+      NGS    = NGAUSS
+C     DEFINE PRIMITIVES.
+      IF(IGTO.LE.0 .AND. NI.GT.2) THEN
+         CALL ECPSET (E,CS,CP,NGS,NI)
+      ELSE
+         CALL STONG  (E,CS,CP,NGS,NMAIN)
+      ENDIF
+C     RENORMALIZE PRIMITIVES.
+      CALL RENORM (E,CS,NGS,0)
+      IF(IORBS.GE.4) THEN
+         CALL RENORM (E,CP,NGS,1)
+      ENDIF
+C     ADD PRIMITIVES TO THE MASTER ARRAYS.
+      DO 10 J=1,NGS
+      J1     = MM-1+J
+      EXX(J1)= E(J)
+      C1 (J1)= CS(J)
+      C2 (J1)= CP(J)
+   10 CONTINUE
+C     SAVE SHELL INFORMATION.
+      NSHELL = NSHELL+1
+      KSTART(NSHELL) = MM
+      KNG(NSHELL)    = NGS
+      KATOM(NSHELL)  = I
+      KLOC(NSHELL)   = NORB
+      IF(IORBS.LE.1) THEN
+         KTYPE(NSHELL) = 0
+      ELSE IF(IORBS.LE.4) THEN
+         KTYPE(NSHELL) = 1
+      ELSE
+         KTYPE(NSHELL) = 2
+      ENDIF
+      MM     = MM+NGS
+      NORB   = NORB+IORBS
+   20 CONTINUE
+      NPRIM  = MM-1
+C *** PRINTING SECTION, FIRST PART.
+      IF(JPRINT.GE.5) THEN
+         WRITE(NB6,500) NSHELL,NPRIM
+         DO 30 I=1,NSHELL
+         WRITE(NB6,510) I,KSTART(I),KNG(I),KTYPE(I),KATOM(I),KLOC(I)
+   30    CONTINUE
+         IF(JPRINT.GT.5) THEN
+            WRITE(NB6,520)
+            DO 40 I=1,NPRIM
+            WRITE(NB6,540) I,EXX(I),C1(I),C2(I)
+   40       CONTINUE
+         ENDIF
+      ENDIF
+C *** SCALE GAUSSIAN BASIS FUNCTIONS.
+      IF(ISCALE.GE.0) THEN
+         FAC    = (TWO/PI)**0.75D0
+         FAC2   = FAC*TWO
+         DO 60 I=1,NUMAT
+         NI     = NAT(I)
+         Z2     = Z(NI)**2
+         IA     = KSTART(I)
+         IB     = KNG(I)+IA-1
+         DO 50 IG=IA,IB
+         EXX(IG)= EXX(IG)*Z2
+         FXX(IG)= EXX(IG)
+         DS(IG) = C1 (IG)
+         DP(IG) = C2 (IG)
+         DD(IG) = ZERO
+         C1 (IG)= C1 (IG)*FAC *EXX(IG)**0.75D0
+         C2 (IG)= C2 (IG)*FAC2*EXX(IG)**1.25D0
+   50    CONTINUE
+   60    CONTINUE
+      ENDIF
+C *** PRINTING SECTION, SECOND PART.
+      IF(JPRINT.GE.5) THEN
+         WRITE(NB6,530)
+         DO 70 I=1,NPRIM
+         WRITE(NB6,540) I,EXX(I),C1(I),C2(I)
+   70    CONTINUE
+      ENDIF
+      RETURN
+  500 FORMAT(/// 1X,'GAUSSIAN BASIS',
+     1  //1X,'NUMBER OF SHELLS    : NSHELL =',I5,
+     2  / 1X,'NUMBER OF PRIMITIVES: NPRIM  =',I5,
+     1  //1X,'SHELL    FIRST    NUMBER OF   SHELL  LOCATED  NUMBER OF',
+     2  / 1X,'       PRIMITIVE  PRIMITIVES  TYPE   AT ATOM  FIRST AO',
+     3  / 1X,'  I      KSTART      KNG      KTYPE   KATOM     KLOC'/)
+  510 FORMAT(1X,I3,3I10,I8,I10)
+  520 FORMAT(// 1X,'ORIGINAL   EXPONENT  S-COEFFICIENT  P-COEFFICIENT'/)
+  530 FORMAT(// 1X,'SCALED     EXPONENT  S-COEFFICIENT  P-COEFFICIENT'/)
+  540 FORMAT(   1X,I4,7F15.8)
+      END

@@ -1,0 +1,8 @@
+DSC Cl2, MNDO/d RHF
+DSC ClF3, C2v, MNDO/d RHF
+DSC CHCl3, C3v, MNDO/d RHF
+DSC Geometry optimizations, standard BFGS
+PRP heat=-2.99599:-41.28873:-29.12241
+PRP optcyc=2:5:3
+PRP finalheat=-2.99599:-41.28873:-29.12241
+PRP intgrdopt=0.11254:0.28359:0.29822

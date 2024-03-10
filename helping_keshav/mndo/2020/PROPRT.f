@@ -1,0 +1,148 @@
+      SUBROUTINE PROPRT (C,P,V,I3N,NATOMS,LPRINT)
+*VOCL TOTAL,SCALAR
+C     *
+C     PROJECTION OPERATOR P(I3N,I3N) WHICH REMOVES TRANSLATIONAL
+C     AND ROTATIONAL COMPONENTS FROM THE FORCE CONSTANT MATRIX.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     C        CARTESIAN COORDINATES (I).
+C     P        PROJECTION OPERATOR MATRIX (O).
+C     V        ORTHONORMAL ROTATION-TRANSLATION VECTORS (O).
+C              FIRST VECTOR IS ZERO IF MOLECULE IS LINEAR.
+C     I3N      NUMBER OF CARTESIAN COORDINATES (I).
+C     NATOMS   NUMBER OF ATOMS (I).
+C     LPRINT   PRINTING FLAG (I).
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      CHARACTER*1 AXIS(3)
+      COMMON /NBFILE/ NBF(20)
+      DIMENSION C(3,NATOMS),P(I3N,I3N),V(I3N,6)
+      DIMENSION U(3,3),EIG(3),PDP(6),DUM(15)
+      DATA AXIS/'X','Y','Z'/
+      DATA TOL/1.0D-8/
+      DATA ZERO,ONE/0.0D0,1.0D0/
+C     *
+C     COMPUTE CENTER OF MOLECULE AND SCALE FACTORS BASED ON
+C     SECOND MOMENT ABOUT THE CENTER (NOT MASS WEIGHTED).
+C     ROTATIONS ARE ABOUT AXES THROUGH CENTER.
+      SCALE1 = 1.0D0/NATOMS
+      SCALE2 = SQRT(SCALE1)
+      C1     = ZERO
+      C2     = ZERO
+      C3     = ZERO
+      DO 10 K=1,NATOMS
+      C1     = C1+C(1,K)
+      C2     = C2+C(2,K)
+      C3     = C3+C(3,K)
+   10 CONTINUE
+      C1     = C1*SCALE1
+      C2     = C2*SCALE1
+      C3     = C3*SCALE1
+      RR     = ZERO
+      DO 20 K=1,NATOMS
+      RR     = RR + (C(1,K)-C1)**2 + (C(2,K)-C2)**2 + (C(3,K)-C3)**2
+   20 CONTINUE
+      SCALE3 = SQRT(1.5D0/RR)
+C     *
+C     P(I,1) = NON-ORTHONORMAL ROTATION ABOUT X AXIS
+C     P(I,2) = NON-ORTHONORMAL ROTATION ABOUT Y AXIS
+C     P(I,3) = NON-ORTHONORMAL ROTATION ABOUT Z AXIS
+C     V(I,4) = TRANSLATION ALONG X AXIS
+C     V(I,5) = TRANSLATION ALONG Y AXIS
+C     V(I,6) = TRANSLATION ALONG Z AXIS
+      DO 30 K=1,NATOMS
+      I      = 3*K-2
+      P(I,1) = ZERO
+      P(I,2) =( C(3,K)-C3)*SCALE3
+      P(I,3) =(-C(2,K)+C2)*SCALE3
+      V(I,4) = SCALE2
+      V(I,5) = ZERO
+      V(I,6) = ZERO
+   30 CONTINUE
+      DO 40 K=1,NATOMS
+      I      = 3*K-1
+      P(I,1) =(-C(3,K)+C3)*SCALE3
+      P(I,2) = ZERO
+      P(I,3) =( C(1,K)-C1)*SCALE3
+      V(I,4) = ZERO
+      V(I,5) = SCALE2
+      V(I,6) = ZERO
+   40 CONTINUE
+      DO 50 K=1,NATOMS
+      I      = 3*K
+      P(I,1) =( C(2,K)-C2)*SCALE3
+      P(I,2) =(-C(1,K)+C1)*SCALE3
+      P(I,3) = ZERO
+      V(I,4) = ZERO
+      V(I,5) = ZERO
+      V(I,6) = SCALE2
+   50 CONTINUE
+C     *
+C     CONSTRUCT ORTHONORMAL ROTATION VECTORS
+C     BY DIAGONALIZING PDP = P(DAGGER)*P.  THEN
+C     PUT THEM INTO FIRST THREE COLUMNS OF V MATRIX
+      IJ     = 0
+      DO 71 I=1,3
+      DO 70 J=1,I
+      IJ     = IJ+1
+      SUM    = ZERO
+      DO 60 K=1,I3N
+      SUM    = SUM+P(K,I)*P(K,J)
+   60 CONTINUE
+      PDP(IJ)= SUM
+   70 CONTINUE
+   71 CONTINUE
+      IF(ABS(PDP(2)).GT.TOL .OR. ABS(PDP(4)).GT.TOL .OR.
+     1   ABS(PDP(5)).GT.TOL) THEN
+         CALL TDIAG (PDP,U,EIG,DUM,6,3,3,3)
+      ELSE
+         DO 90 I=1,3
+         DO 80 J=1,3
+         U(I,J) = ZERO
+   80    CONTINUE
+         U(I,I) = ONE
+         K      = I*(I+1)/2
+         EIG(I) = PDP(K)
+   90    CONTINUE
+      ENDIF
+      IF(LPRINT.GT.4) THEN
+         NB6 = NBF(6)
+         WRITE(NB6,500) (EIG(J),J=1,3)
+         DO 100 I=1,3
+         WRITE(NB6,510) AXIS(I),(U(I,J),J=1,3)
+  100    CONTINUE
+      ENDIF
+      DO 120 J=1,3
+      IF(EIG(J).GE.TOL) THEN
+         FJ  = ONE/SQRT(EIG(J))
+      ELSE
+         FJ  = ZERO
+      ENDIF
+      DO 110 I=1,3
+      U(I,J) = FJ*U(I,J)
+  110 CONTINUE
+  120 CONTINUE
+CMXM  CALL MXM(P,I3N,U,3,V,3)
+      CALL ZZERO(I3N,3,V,I3N)
+      CALL DGEMM('N','N',I3N,3,3,ONE,P,I3N,U,3,ZERO,V,I3N)
+C     *
+C     P = PROJECTION OPERATOR = I - V*V(DAGGER)
+      DO 150 I=1,I3N
+      DO 140 J=1,I
+      SUM    = ZERO
+      DO 130 K=1,6
+      SUM    = SUM+V(I,K)*V(J,K)
+  130 CONTINUE
+      P(I,J) =-SUM
+      P(J,I) =-SUM
+  140 CONTINUE
+      P(I,I) = ONE+P(I,I)
+  150 CONTINUE
+      RETURN
+  500 FORMAT(///5X,'PROJECTION OPERATOR CONSTRUCTED FOR ',
+     1       /  5X,'ROTATIONS AND TRANSLATIONS          ',
+     2       /  5X,'RELATIVE MOMENTS OF INERTIA AND     ',
+     2       /  5X,'PRINCIPAL ROTATION AXES (NOT MASS WEIGHTED)',
+     3       // 6X,3F20.10/)
+  510 FORMAT(5X,A1,3F20.10)
+      END

@@ -1,0 +1,235 @@
+      SUBROUTINE ECPPOT (NI,LSKIP,LMAXP,NECORE,NBL,NLP,ZLP,CLP)
+C     *
+C     PREDEFINED EFFECTIVE CORE POTENTIALS (ECP) FROM
+C     W.J.STEVENS, H.BASCH, AND M.KRAUSS, J.CHEM.PHYS. 81, 6026 (1984).
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     NI        ATOMIC NUMBER (I).
+C     LSKIP     AVAILABILITY OF AN ECP FOR A GIVEN ELEMENT (O).
+C               = 0 IF AVAILABLE, = 1 OTHERWISE.
+C     LMAXP     HIGHEST L QUANTUM NUMBER IN CORE PLUS ONE (O).
+C               = 1 FOR S CORE, = 2 FOR P CORE, = 3 FOR SPD CORE.
+C     NECORE    NUMBER OF CORE ELECTRONS.
+C     NBL(L+1)  LENGTH OF EXPANSION FOR A GIVEN L QUANTUM NUMBER (O).
+C     NLP()     EXPONENTS OF R IN ECP EXPANSIONS (O).
+C     ZLP()     EXPONENTS OF GAUSSIAN TERMMS IN ECP EXPANSIONS (O).
+C     CLP()     COEFFICIENTS IN ECP EXPANSIONS (O).
+C     *
+C     NOTE THAT THE ARRAYS NLP(), ZLP(), AND CLP() CONTAIN THE DATA
+C     OF ALL ECP EXPANSIONS FOR A GIVEN ELEMENT, STORED CONSECUTIVELY
+C     FROM L=0 TO L=LMAXP.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON /NBFILE/ NBF(20)
+      DIMENSION NBL(5),NLP(40),ZLP(40),CLP(40)
+C *** EXIT FOR ELEMENTS H-He WITHOUT ECP
+      IF(NI.LE.2) THEN
+         LSKIP  = 1
+         LMAXP  = 0
+         NECORE = 0
+         RETURN
+      ENDIF
+C *** BRANCH ACCORDING TO ATOMIC NUMBER
+C     TREAT QM/MM CONNECTION ATOM LIKE CARBON
+      LSKIP  = 0
+      IF(NI.LE.10) GO TO 10
+      IF(NI.LE.18) GO TO 100
+      IF(NI.EQ.86) GO TO 10
+      GO TO 400
+C *** MAIN GROUP ELEMENTS Li-Ne
+   10 LMAXP  = 1
+      NECORE = 2
+      NBL(1) = 1
+      NBL(2) = 2
+      NBL(3) = 0
+      NBL(4) = 0
+      NBL(5) = 0
+      NLP(1) = 1
+      NLP(2) = 0
+      NLP(3) = 2
+      IGO    = NI-2
+      IF(NI.EQ.86) IGO=4
+      GO TO (20,30,40,50,60,70,80,90),IGO
+C     LITHIUM
+   20 ZLP(1) =  1.34306D+00
+      ZLP(2) =  0.61284D+00
+      ZLP(3) =  1.64881D+00
+      CLP(1) = -0.73063D+00
+      CLP(2) =  1.80131D+00
+      CLP(3) =  3.54971D+00
+      RETURN
+C     BERYLLIUM
+   30 ZLP(1) =  2.79347D+00
+      ZLP(2) =  1.19874D+00
+      ZLP(3) =  3.20738D+00
+      CLP(1) = -0.78970D+00
+      CLP(2) =  1.84229D+00
+      CLP(3) =  6.81169D+00
+      RETURN
+C     BORON
+   40 ZLP(1) =  5.64622D+00
+      ZLP(2) =  1.92061D+00
+      ZLP(3) =  5.55177D+00
+      CLP(1) = -0.88355D+00
+      CLP(2) =  1.89572D+00
+      CLP(3) = 10.97543D+00
+      RETURN
+C     CARBON
+   50 ZLP(1) =  8.56468D+00
+      ZLP(2) =  2.81497D+00
+      ZLP(3) =  8.11296D+00
+      CLP(1) = -0.89371D+00
+      CLP(2) =  1.92926D+00
+      CLP(3) = 14.88199D+00
+      RETURN
+C     NITROGEN
+   60 ZLP(1) = 11.99686D+00
+      ZLP(2) =  3.83895D+00
+      ZLP(3) = 11.73247D+00
+      CLP(1) = -0.91212D+00
+      CLP(2) =  1.93565D+00
+      CLP(3) = 21.73355D+00
+      RETURN
+C     OXYGEN
+   70 ZLP(1) = 16.11718D+00
+      ZLP(2) =  5.05348D+00
+      ZLP(3) = 15.95333D+00
+      CLP(1) = -0.92550D+00
+      CLP(2) =  1.96069D+00
+      CLP(3) = 29.13442D+00
+      RETURN
+C     FLUORINE
+   80 ZLP(1) = 20.73959D+00
+      ZLP(2) =  6.60488D+00
+      ZLP(3) = 18.24092D+00
+      CLP(1) = -0.93258D+00
+      CLP(2) =  2.03649D+00
+      CLP(3) = 27.86279D+00
+      RETURN
+C     NEON
+   90 ZLP(1) = 26.01666D+00
+      ZLP(2) =  8.28047D+00
+      ZLP(3) = 22.44102D+00
+      CLP(1) = -0.94098D+00
+      CLP(2) =  2.09952D+00
+      CLP(3) = 31.46718D+00
+      RETURN
+C *** MAIN GROUP ELEMENTS Na-Ar
+  100 LMAXP  = 2
+      NECORE = 10
+      NBL(1) = 1
+      NBL(2) = 2
+      NBL(3) = 2
+      NBL(4) = 0
+      NBL(5) = 0
+      NLP(1) = 1
+      NLP(2) = 0
+      NLP(3) = 2
+      NLP(4) = 0
+      NLP(5) = 2
+      IGO    = NI-10
+      GO TO (110,120,130,140,150,160,170,180),IGO
+C     SODIUM
+  110 ZLP(1) =  0.90009D+00
+      ZLP(2) =  5.37232D+00
+      ZLP(3) =  1.11959D+00
+      ZLP(4) =  1.29158D+00
+      ZLP(5) =  0.65791D+00
+      CLP(1) = -2.38446D+00
+      CLP(2) =  6.23415D+00
+      CLP(3) =  9.08374D+00
+      CLP(4) =  3.23971D+00
+      CLP(5) =  2.53514D+00
+      RETURN
+C     MAGNESIUM
+  120 ZLP(1) =  1.39220D+00
+      ZLP(2) =  6.96291D+00
+      ZLP(3) =  1.55458D+00
+      ZLP(4) =  1.89177D+00
+      ZLP(5) =  0.98235D+00
+      CLP(1) = -2.77296D+00
+      CLP(2) =  6.41029D+00
+      CLP(3) = 14.12727D+00
+      CLP(4) =  3.24762D+00
+      CLP(5) =  4.33012D+00
+      RETURN
+C     ALUMINIUM
+  130 ZLP(1) =  1.95559D+00
+      ZLP(2) =  7.78858D+00
+      ZLP(3) =  1.99025D+00
+      ZLP(4) =  2.83146D+00
+      ZLP(5) =  1.38479D+00
+      CLP(1) = -3.03055D+00
+      CLP(2) =  6.04650D+00
+      CLP(3) = 18.87509D+00
+      CLP(4) =  3.29465D+00
+      CLP(5) =  6.87029D+00
+      RETURN
+C     SILICON
+  140 ZLP(1) =  2.46272D+00
+      ZLP(2) =  9.46338D+00
+      ZLP(3) =  2.44408D+00
+      ZLP(4) =  3.82585D+00
+      ZLP(5) =  1.83026D+00
+      CLP(1) = -2.98240D+00
+      CLP(2) =  6.00558D+00
+      CLP(3) = 23.77642D+00
+      CLP(4) =  3.20345D+00
+      CLP(5) =  9.86438D+00
+      RETURN
+C     PHOSPHORUS
+  150 ZLP(1) =  3.18945D+00
+      ZLP(2) = 11.79328D+00
+      ZLP(3) =  2.95330D+00
+      ZLP(4) =  4.96368D+00
+      ZLP(5) =  2.31865D+00
+      CLP(1) = -3.16361D+00
+      CLP(2) =  6.20760D+00
+      CLP(3) = 29.40024D+00
+      CLP(4) =  3.24084D+00
+      CLP(5) = 13.10778D+00
+      RETURN
+C     SULFUR
+  160 ZLP(1) =  3.98930D+00
+      ZLP(2) = 15.58064D+00
+      ZLP(3) =  3.50176D+00
+      ZLP(4) =  6.88540D+00
+      ZLP(5) =  2.90690D+00
+      CLP(1) = -3.29839D+00
+      CLP(2) =  6.44496D+00
+      CLP(3) = 35.62708D+00
+      CLP(4) =  3.35704D+00
+      CLP(5) = 17.54237D+00
+      RETURN
+C     CHLORINE
+  170 ZLP(1) =  4.87483D+00
+      ZLP(2) = 17.00367D+00
+      ZLP(3) =  4.10380D+00
+      ZLP(4) =  8.90029D+00
+      ZLP(5) =  3.52648D+00
+      CLP(1) = -3.40738D+00
+      CLP(2) =  6.50966D+00
+      CLP(3) = 42.27785D+00
+      CLP(4) =  3.42860D+00
+      CLP(5) = 22.15256D+00
+      RETURN
+C     ARGON
+  180 ZLP(1) =  5.82303D+00
+      ZLP(2) = 25.93841D+00
+      ZLP(3) =  4.73780D+00
+      ZLP(4) = 11.41178D+00
+      ZLP(5) =  4.20476D+00
+      CLP(1) = -3.48806D+00
+      CLP(2) =  7.67855D+00
+      CLP(3) = 49.92637D+00
+      CLP(4) =  3.52500D+00
+      CLP(5) = 27.41686D+00
+      RETURN
+C *** ERROR EXIT FOR HEAVIER ELEMENTS WITHOUT ECP
+  400 CONTINUE
+      NB6 = NBF(6)
+      WRITE(NB6,500) NI
+      STOP 'ECPPOT'
+  500 FORMAT(/10X,'INPUT ERROR IN SUBROUTINE ECPPOT.',
+     1       /10X,'NO EFFECTIVE POTENTIAL AVAILABLE FOR ELEMENT',I3/)
+      END

@@ -1,0 +1,4 @@
+DSC BENZYL RADICAL, C2v, AM1 doublet reference, singlet CISD with cichg=-1
+DSC Active space: 4 MO, 3 VO - defined via pz population (movo=-3)
+DSC Geometry optimization for ground state, default diagonalizer
+PRP finalheat=2.08217

@@ -1,0 +1,8 @@
+DSC Ti(CH3)4, CuCl, ZrF4, HPdOH
+DSC MNDO/d RHF, check of preliminary parameters (MNDO99)
+DSC Geometry optimizations, standard BFGS
+PRP heat=10.18033:26.86269:-400.00203:44.24945
+PRP optcyc=5:2:1:4
+PRP finalheat=10.18033:26.86269:-400.00203:44.24945
+PRP intgrdopt=0.02482:0.00373:0.10329:0.15664
+

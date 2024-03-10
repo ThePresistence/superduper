@@ -1,0 +1,8 @@
+DSC CYCLOBUTADIENE, D4h, OM2 triplet full CI with triplet reference
+DSC Active space: 3 MO, 1 VO - defined via pz population (movo=-3)
+DSC Single-point energy calculation for the 5 lowest states
+PRP ciheat=106.79820:106.79820
+PRP deltae=0.000000:3.163640:3.163640:6.570641:6.570641
+PRP dipole=0.000000:0.000000:0.000000:0.000000:0.000000
+PRP deltae2=0.000000:3.163640:3.163640:6.570641:6.570641
+PRP dipole2=0.000000:0.000000:0.000000:0.000000:0.000000

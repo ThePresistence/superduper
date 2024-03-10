@@ -1,0 +1,11 @@
+DSC PM3 force constants for CH3NH2. Combined AO solution using 
+DSC locally orthogonal ortres solver with fixed shift conditioner.
+DAT CH3NH2.dat
+OPT iprint=1
+OPT imix=3 idens=8 iqswap=2 inrhs=-1 iprect=2 idstrp=7 isolve=5 ikrsav=1
+PRP heat=-5.18588 intgrdopt=0.15707 cartgrdopt=0.18619 optcyc=4
+PRP freqmem=14571 freqdisk=0 respvec=5.190
+PRP freq7=243.118 freq8=917.447 freq9=951.687 zpe=39.35888
+PRP modea=7  wavea=243.118  ira=35.591
+PRP modeb=11 waveb=1168.460 irb=34.416
+PRP modec=9  wavec=951.687  irc=16.325

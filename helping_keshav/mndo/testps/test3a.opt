@@ -1,0 +1,11 @@
+DSC PM3 force constants for CH3NH2. Direct MO CPHF solution using 
+DSC non-conditioned globally orthogonal minres solver.
+DAT CH3NH2.dat
+OPT iprint=1
+OPT imix=3 idens=6 iqswap=-1 inrhs=-1 iprect=1 irows=9 idstrp=7 ikmode=2 isolve=2 ikrsav=0
+PRP heat=-5.18588 intgrdopt=0.15707 cartgrdopt=0.18619 optcyc=4
+PRP freqmem=196143 freqdisk=0 respvec=2.00
+PRP freq7=243.098 freq8=917.446 freq9=951.684 zpe=39.35878
+PRP modea=7  wavea=243.098  ira=35.592
+PRP modeb=11 waveb=1168.447 irb=34.427
+PRP modec=9  wavec=951.684  irc=16.332

@@ -1,0 +1,15 @@
+DSC MNDO force constant analysis for a C28 fullerene. Solution in
+DSC AO basis for all variables at once using globally orthogonal ortres
+DSC with Coulomb conditioner. Failure of this test should be expected for
+DSC small memory configurations.
+DAT C28.dat
+OPT iprint=1
+OPT imix=3 idens=7 iqswap=-1 inrhs=-1 iprect=6 isolve=3 ikrsav=1
+PRP heat=871.02823 optcyc=9 intgrdopt=2.16060 cartgrdopt=2.16060
+PRP freqmem=8986192 freqdisk=0 respvec=5.536
+PRP freq7=383.201 freq8=384.464 freq9=394.150 freq10=397.008
+PRP zpe=114.8206
+PRP modea=65 wavea=1377.687 ira=58.001
+PRP modeb=43 waveb=873.436  irb=44.249
+PRP modec=70 wavec=1454.306 irc=36.291
+PRP moded=66 waved=1404.286 ird=28.184

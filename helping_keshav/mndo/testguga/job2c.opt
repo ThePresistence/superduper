@@ -1,0 +1,3 @@
+DSC WATER, C2v, CI with too many reference configurations
+DSC Impose default values for ici1, ici2, multci, and iroot
+DSC Detect incorrect input for nciref and stop

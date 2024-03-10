@@ -1,0 +1,24 @@
+ iop=-4 jop=-1 nmr=1 icosmo=0 imode=-1 +
+ iscf=9 iplscf=9 jprint=0 iprec=100 +
+ ipsprt=-1 nmrlev=3 intctl=14 nmrnuc=1 +
+ iuhf=-1 nprint=-1 ifast=2 ksym=1 nstart=-1
+ Water, MNDO-A, single-point NMR
+
+ 8
+ 1          0.961954   1                                               1
+ 1          0.961954   0       103.82100   1                           1 2
+ 0
+ 2  1                3
+ 0
+ iop=-4 jop=-1 nmr=1 icosmo=1 imode=-1 +
+ iscf=9 iplscf=9 jprint=0 iprec=100 +
+ ipsprt=-1 nmrlev=3 intctl=14 nmrnuc=1 +
+ iuhf=-1 nprint=-1 ifast=2 ksym=1 nstart=-1
+ Water, MNDO-A, single-point NMR
+
+ 8
+ 1          0.961954   1                                               1
+ 1          0.961954   0       103.82100   1                           1 2
+ 0
+ 2  1                3
+ 0

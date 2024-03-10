@@ -1,0 +1,13 @@
+DSC MNDO ROHF force constants for doublet NO2 from numerical differentiation 
+DSC of gradients. Direct MO solution using globally orthogonal minres solver
+DSC with fixed shift conditioner and basis vectors sharing.
+DAT NO2.dat
+OPT iprint=1
+OPT imix=1 idens=6 iqswap=2 inrhs=-1 irows=4 iprect=2 ihlst=2 ihlwrp=2 isolve=2
+PRP heat=-4.54099 intgrdopt=0.03204 cartgrdopt=0.02389 optcyc=4
+PRP freqmem=9017 freqdisk=35
+PRP freq7=676.192 freq8=1830.356 freq9=2287.163
+PRP zpe=6.85288
+PRP modea=9  wavea=2287.163 ira=642.559
+PRP modeb=7  waveb=676.192  irb=20.519 
+PRP modec=8  wavec=1830.356 irc=0.933  

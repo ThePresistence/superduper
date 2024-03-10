@@ -1,0 +1,6 @@
+DSC ETHYLENE, D2h, MNDO RHF
+DSC Geometry optimization, standard BFGS
+PRP heat=15.40471
+PRP optcyc=3
+PRP finalheat=15.40471
+PRP intgrdopt=0.26949

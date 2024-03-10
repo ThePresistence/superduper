@@ -1,0 +1,10 @@
+DSC MNDO force constants for C2H4. Packed in-core MO solution using locally
+DSC orthogonal gen-cg solver with Coulomb conditioner.
+DAT C2H4.dat
+OPT iprint=1
+OPT imix=2 idens=4 iqswap=2 inrhs=2 iprect=6 idstrp=1 ikmode=1 isolve=6 ikrsav=1
+PRP heat=15.40476 intgrdopt=0.48996 cartgrdopt=0.61077 optcyc=3
+PRP freqmem=2422 freqdisk=2052 respvec=4.44
+PRP freq7=854.496 freq8=869.404 freq9=1098.305 zpe=33.5133
+PRP modea=9 wavea=1098.305 ira=28.908 modeb=7 waveb=854.496 irb=4.154 
+PRP modec=16 wavec=3409.850 irc=9.287

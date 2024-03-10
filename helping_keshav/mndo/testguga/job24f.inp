@@ -1,0 +1,42 @@
+ PM3 SYM jop=-2 iform=1 iscf=10 iplscf=10 mminp=2 numatm=2 mmcoup=2 +
+ icuts=-1 icutg=-1 nprint=1 kci=5 ioutci=2
+ Fully analytic gradient.
+ Water with two point charges, C2v (C2=x).
+ O    0.00000 0      0.00000 0      0.0 0    0  0  0
+ XX   1.00000 0      0.00000 0      0.0 0    1  0  0
+ H    0.97961 1     51.46234 1      0.0 0    1  2  0
+ H    0.97961 0     51.46234 0    180.0 0    1  2  3
+
+ 3  1  4
+ 3  2  4
+ 0  0  0
+  -2.800000   0.0000000   0.0000000  0.1000
+   3.300000   0.0000000   0.0000000 -0.1000
+ PM3 SYM jop=-2 iform=1 iscf=10 iplscf=10 mminp=2 numatm=2 mmcoup=2 +
+ icuts=-1 icutg=-1 nprint=1 igrad=-3 kci=5 ioutci=2
+ Semi-analytic gradient.
+ Water with two point charges, C2v (C2=x).
+ O    0.00000 0      0.00000 0      0.0 0    0  0  0
+ XX   1.00000 0      0.00000 0      0.0 0    1  0  0
+ H    0.97961 1     51.46234 1      0.0 0    1  2  0
+ H    0.97961 0     51.46234 0    180.0 0    1  2  3
+
+ 3  1  4
+ 3  2  4
+ 0  0  0
+  -2.800000   0.0000000   0.0000000  0.1000
+   3.300000   0.0000000   0.0000000 -0.1000
+ PM3 SYM jop=-2 iform=1 iscf=10 iplscf=10 mminp=2 numatm=2 mmcoup=2 +
+ icuts=-1 icutg=-1 nprint=1 igrad=1 lfac=1 kci=5 ioutci=2
+ Fully numerical gradient.
+ Water with two point charges, C2v (C2=x).
+ O    0.00000 0      0.00000 0      0.0 0    0  0  0
+ XX   1.00000 0      0.00000 0      0.0 0    1  0  0
+ H    0.97961 1     51.46234 1      0.0 0    1  2  0
+ H    0.97961 0     51.46234 0    180.0 0    1  2  3
+
+ 3  1  4
+ 3  2  4
+ 0  0  0
+  -2.800000   0.0000000   0.0000000  0.1000
+   3.300000   0.0000000   0.0000000 -0.1000

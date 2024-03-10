@@ -1,0 +1,626 @@
+      SUBROUTINE PPCPE(ETA,NU,RES,P,N,NCPE)
+      INTEGER N,NC,NCPE,NP
+      DOUBLE PRECISION ETA,NU,RES,P
+      DIMENSION ETA(NCPE,NCPE),NU(NCPE),RES(NCPE)
+      DIMENSION P(N,N)
+      INTEGER I,J
+      WRITE(6,*)"ENTERED PPCPE"
+      NP = 0
+      DO 10 I=1,N-1
+         DO 20 J=I+1,N
+            IF ( P(I,J).GT.1.D-10 ) NP=NP+1
+ 20      CONTINUE
+ 10   CONTINUE
+      IF ( NP.EQ.0 ) NP=1
+c      NP = N*(N-1)/2
+      NC = NP+3*N
+      CALL PSSCPE(ETA,NU,RES,P,N,NCPE,NC,NP)
+      END SUBROUTINE
+      SUBROUTINE PSSCPE(ETA,NU,RES,P,N,NCPE,NC,NP)
+      INTEGER N,NC,NCPE,NP
+      DOUBLE PRECISION ETA,NU,RES,P,CON,ETAI,PPI,CONI
+      DOUBLE PRECISION CONU,CONUI,NN,RR,DD,ETAINU,ETAIDV,DV
+      DOUBLE PRECISION CNN,EICNN
+      DIMENSION ETA(NCPE,NCPE),NU(NCPE),RES(NCPE)
+      DIMENSION P(N,N)
+      DIMENSION CON(NCPE,NC)
+c      INTEGER NP
+      INTEGER I,J,IBLK,JBLK,COL,K
+      DIMENSION ETAI(NCPE,NCPE)
+      DIMENSION PPI(NC,NC),CONI(NC,NCPE)
+      DIMENSION CONU(NCPE,NC),CONUI(NCPE,NC)
+      DIMENSION NN(NC),RR(NC),DD(NC)
+      DIMENSION ETAINU(NCPE),ETAIDV(NCPE),DV(NCPE)
+      DOUBLE PRECISION NUMER,DENOM,LAMBDA
+      DIMENSION CNN(NCPE,NC),EICNN(NCPE)
+      LOGICAL DPRINT
+      DPRINT = .TRUE.
+      DPRINT = .FALSE.
+c      NP = N*(N-1)/2
+      CALL CLRM(NCPE,CON,NC)
+      CALL CLRM(NCPE,CONU,NC)
+      CALL CLRV(DV,NCPE)
+      DO 5 I=1,NCPE,4
+         DV(I) = 1.0D0
+ 5    CONTINUE
+      IF(DPRINT)CALL PTV(DV,NCPE,4,"DV",6,.FALSE.)
+      CALL SYMINV(ETA,NCPE,ETAI)
+      CALL YSV(NCPE,ETAI,DV,ETAIDV)
+      CALL DOTPRD(ETAIDV,NCPE,DV,DENOM)
+      COL=0
+      DO 10 I=1,N-1
+         IBLK = (I-1)*4+1
+         DO 20 J=I+1,N
+            JBLK = (J-1)*4+1
+            IF ( P(I,J) .GT. 1.0D-10 ) THEN
+               COL=COL+1
+               CON(IBLK,COL)  =  P(I,J)
+               CON(JBLK,COL)  = -P(I,J)
+c            IF ( P(I,J) .GT. 1.0D-10 ) THEN
+               CONU(IBLK,COL) =  1.0D0
+               CONU(JBLK,COL) = -1.0D0
+            END IF
+ 20      CONTINUE
+ 10   CONTINUE
+      DO 30 I=1,N
+         IBLK = (I-1)*4+1
+         K = (I-1)*3
+         DO 40 J=1,3
+C     NP BRINGS US TO THE START OF THE DIPOLE BLOCK
+C     K BRINGS US TO THE SUBBLOCK OF THE I'TH ATOM
+C     J LOOPS THROUGH THE 3 DIPOLES
+C     IBLK BRINGS US TO THE MONOPOLE ROW
+            CON(IBLK+J,NP+K+J) = 1.0D0
+            CONU(IBLK+J,NP+K+J) = 1.0D0
+ 40      CONTINUE
+ 30   CONTINUE
+c      IF(DPRINT)CALL PTM(NCPE,CON,NC,NCPE,NC,"CON",6,.FALSE.)
+      OPEN(UNIT=58)
+c      CALL PTM(NCPE,CON,NC,NCPE,NC,"CON",58,.FALSE.)
+      DO 2000 I=1,NC
+         WRITE(58,'(1000F6.2)')(CON(J,I),J=1,NCPE)
+         WRITE(58,*)
+ 2000 CONTINUE
+      CLOSE(UNIT=58)
+C      CALL ABORT()
+C      STOP
+C     PPI = MATMUL(TRANSPOSE(CON),MATMUL(ETAI),CON))
+      CALL YCSA(NCPE,ETAI,CON,NC,PPI)
+c$$$      DO 300 I=1,N-1
+c$$$         DO 301 J=I+1,N
+c$$$            IF ( P(I,J) .GT. 1.0D-10 ) THEN
+c$$$               PPI(I,I) = PPI(I,I)/P(I,J)
+c$$$            ELSE
+c$$$               PPI(I,I) = 5000.0D0
+c$$$            END IF
+c$$$ 301     CONTINUE
+c$$$ 300  CONTINUE
+      OPEN(UNIT=59)
+      DO 2001 I=1,NC
+         WRITE(59,'(1000F6.2)')(PPI(J,I),J=1,NC)
+         WRITE(59,*)
+ 2001 CONTINUE
+      CLOSE(UNIT=59)
+c      IF(DPRINT)CALL PTM(NC,PPI,NC,NC,NC,"PPI",6,.FALSE.)
+C     CONI = SvdInverse(CON)
+      write(6,*)"SVDINV"
+c      CALL ABORT()
+      CALL SVDINV(NCPE,CON,NC,CONI)
+      WRITE(6,*)"RET"
+      IF(DPRINT)CALL PTM(NC,CONI,NCPE,NC,NCPE,"CONI",6,.FALSE.)
+C     NN = MATMUL(CONI,NU)
+      CALL YAV(NC,CONI,NCPE,NU,NN)
+      IF(DPRINT)CALL PTV(NN,NC,NC,"NN ",6,.FALSE.)
+C     NUMER = DOT_PRODUCT(DV,MATMUL(ETAI,MATMUL(CON,NN)))
+      CALL YAV(NCPE,CON,NC,NN,CNN)
+      CALL YSV(NCPE,ETAI,CNN,EICNN)
+      CALL DOTPRD(DV,NCPE,EICNN,NUMER)
+      LAMBDA = NUMER/DENOM
+      CALL YAV(NC,PPI,NC,NN,RR)
+      IF(DPRINT)CALL PTV(RR,NC,NC,"RR",6,.FALSE.)
+      CALL YCV(NC,CON,NCPE,ETAIDV,DD)
+      IF(DPRINT)CALL PTV(DD,NC,NC,"DD",6,.FALSE.)
+      CALL ADDVV(LAMBDA,DD,NC,-1.0D0,RR,RR)
+      IF(DPRINT)CALL PTV(RR,NC,NC,"RR",6,.FALSE.)
+      CALL SVDINV(NCPE,CONU,NC,CONUI)
+      IF(DPRINT)CALL PTM(NC,CONUI,NCPE,NC,NCPE,"CONUI",6,.FALSE.)
+      CALL YCV(NCPE,CONUI,NC,RR,RES)
+c      CALL YCV(NCPE,CONI,NC,RR,RES)
+      IF(DPRINT)CALL PTV(RES,NCPE,4,"RESPONSE",6,.FALSE.)
+      END SUBROUTINE
+      SUBROUTINE SSCPE(CPERES,CPEINV,CPENU,EIGVEC,EIGVAL,ICON,LCON)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (LM1=600)
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+      DIMENSION CPEINV(NUMAT*4,NUMAT*4),CPENU(NUMAT*4)
+      DIMENSION CPERES(NUMAT*4)
+      DIMENSION EIGVEC(NUMAT,NUMAT),EIGVAL(NUMAT)
+      DIMENSION CONMT(NUMAT*4,LCON)
+      DIMENSION GAMMA(LCON,LCON),GAMMAI(LCON,LCON)
+      DIMENSION WORKT(NUMAT*4,LCON)
+      DIMENSION ETAIN(NUMAT*4),ETAID(NUMAT*4),CPED(NUMAT*4)
+      DIMENSION CONMUV(LCON),CONWRK(LCON)
+      DIMENSION DUB(NUMAT*4),EIDUB(NUMAT*4),WRKV(NUMAT*4)
+      DIMENSION WT(LCON),UDEDUB(LCON)
+      LOGICAL DPRINT
+      DPRINT = .TRUE.
+      N = NUMAT
+      NCPE = N*4
+c      EIGVAL(7) = TWO
+c      EIGVAL(8) = TWO
+c$$$      IF ( DPRINT ) THEN
+c$$$         WRITE(6,*)"ENTERED SSCPE WITH ",LCON," CONSTRAINTS"
+c$$$         WRITE(6,*)"CORRESPONDING TO EIGENVECTORS",
+c$$$     %        ICON+1," TO",ICON+LCON
+c$$$         DO 15 I=1,LCON
+c$$$            IC = ICON+I
+c$$$            WRITE(6,'(I3,6F3.0)')IC,(EIGVEC(J,IC),J=1,N)
+c$$$ 15      CONTINUE
+c$$$      END IF
+      DO 1 I=1,LCON
+         IC = ICON+I
+c$$$         IF ( DPRINT ) THEN
+c$$$            WRITE(6,*)"CONSTRUCT CONSTRAINT",I," FROM EIGENVEC",IC
+c$$$         END IF
+         DO 2 J=1,N
+            JC = (J-1)*4+1
+            CONMT(JC,I) = EIGVEC(J,IC)
+            DO 3 K=JC+1,JC+3
+               CONMT(K,I) = ZERO
+ 3          CONTINUE
+ 2       CONTINUE
+ 1    CONTINUE
+         DO 5 I=1,NCPE,1
+            CPED(I)=ZERO
+ 5       CONTINUE
+         DO 6 I=1,NCPE,4
+            CPED(I)=ONE
+ 6       CONTINUE
+c$$$      IUNIT = 28
+c$$$      OPEN(FILE="SSCPE.DATA",UNIT=IUNIT)
+c$$$      WRITE(IUNIT,*)NCPE,LCON
+c$$$      DO 1000 I=1,NCPE
+c$$$         DO 1001 J=1,NCPE
+c$$$            WRITE(IUNIT,'(E23.16)')CPEINV(I,J)
+c$$$ 1001    CONTINUE
+c$$$ 1000 CONTINUE
+c$$$      DO 1002 I=1,NCPE
+c$$$         WRITE(IUNIT,'(E23.16)')CPENU(I)
+c$$$ 1002 CONTINUE
+c$$$      DO 1003 I=1,LCON
+c$$$         DO 1004 J=1,NCPE
+c$$$            WRITE(IUNIT,'(E23.16)')CONMT(J,I)
+c$$$ 1004    CONTINUE
+c$$$ 1003 CONTINUE
+c$$$      CLOSE(UNIT=IUNIT)
+      IF ( DPRINT ) THEN
+         WRITE(6,*)"CONSTRAINT MATRIX"
+         WRITE(6,'(20F7.3)')(EIGVAL(J+ICON),J=1,LCON)
+         WRITE(6,*)"---------------------------------------"
+         DO 10 I=1,NCPE
+            WRITE(6,'(20F7.3)')(CONMT(I,J),J=1,LCON)
+ 10      CONTINUE
+      END IF
+      CALL DSYMM ("L","U",NCPE,LCON,ONE,CPEINV,NCPE,CONMT,NCPE,
+     $     ZERO,WORKT,NCPE)
+c$$$      IF ( DPRINT ) THEN
+c$$$         WRITE(6,*)"WORKT"
+c$$$         DO 12 I=1,NCPE
+c$$$            WRITE(6,'(20F7.3)')(WORKT(I,J),J=1,LCON)
+c$$$ 12      CONTINUE
+c$$$      END IF
+      CALL DGEMM ("T","N",LCON,LCON,NCPE,ONE,CONMT,NCPE,WORKT,NCPE,
+     $     ZERO, GAMMA, LCON )
+c$$$      IF ( DPRINT ) THEN
+c$$$         WRITE(6,*)"GAMMA"
+c$$$         DO 14 I=1,LCON
+c$$$            WRITE(6,'(20F7.3)')(GAMMA(I,J),J=1,LCON)
+c$$$ 14      CONTINUE
+c$$$      END IF
+      INFO=0
+c      CALL SYMINV(GAMMA,GAMMAI,LCON,INFO)
+      CALL SYMINV(GAMMA,LCON,GAMMAI)
+c$$$      IF ( DPRINT ) THEN
+c$$$         WRITE(6,*)"GAMMA INVERSE"
+c$$$         DO 16 I=1,LCON
+c$$$            WRITE(6,'(20F7.3)')(GAMMAI(I,J),J=1,LCON)
+c$$$ 16      CONTINUE
+c$$$      END IF
+C     ETAI.N
+      CALL DSYMV("U",NCPE,ONE,CPEINV,NCPE,CPENU,1,ZERO,ETAIN,1)
+C      IF ( DPRINT ) THEN
+C         WRITE(6,*)"ETAI.NU"
+C         DO 18 I=1,NCPE
+C            WRITE(6,'(F7.3)')ETAIN(I)
+C 18      CONTINUE
+C      END IF
+      CALL DGEMV("T",NCPE,LCON,ONE,CONMT,NCPE,ETAIN,1,
+     $     ZERO,CONWRK,1 )
+      CALL DSYMV("U",LCON,ONE,GAMMAI,LCON,CONWRK,1,ZERO,CONMUV,1)
+      IF ( DPRINT ) THEN
+         WRITE(6,*)"CONSTRAINT VECTOR"
+         WRITE(6,'(20E12.3)')(CONMUV(I),I=1,LCON)
+      END IF
+C     D.U.Beta
+      CALL DGEMV("N",NCPE,LCON,ONE,CONMT,NCPE,CONMUV,1,
+     $     ZERO,DUB,1 )
+C     ETAI.D.U.Beta
+      CALL DSYMV("U",NCPE,ONE,CPEINV,NCPE,DUB,1,ZERO,EIDUB,1)
+      DO 2520 I=1,NCPE
+         WRKV(I) = EIDUB(I) - ETAIN(I)
+ 2520 CONTINUE
+C     U.D. (ETAI.D.U.Beta - ETAI.N)
+      CALL DGEMV("T",NCPE,LCON,ONE,CONMT,NCPE,WRKV,1,ZERO,UDEDUB,1)
+      DO 2500 I=1,NCPE
+         CPERES(I) = EIDUB(I) - ETAIN(I)
+ 2500 CONTINUE
+      DELTAN = ZERO
+      DO 2510 I=1,NUMAT
+         IC = (I-1)*4+1
+         DELTAN = DELTAN + CPERES(IC)
+c         CPED(IC) = CPERES(IC)
+ 2510 CONTINUE
+c$$$C     THE CONSTRAINT VECTOR WILL FULLY ENFORCE
+c$$$C     *ALL* THE CONSTRAINTS
+c$$$C     BUT WE DON'T WANT TO ENFORCE A CONSTRAINT
+c$$$C     IF IT'S EIGENVALUE IS SMALL
+c$$$C     NOW ADD UP THE SUM OF THE ABSOLUTE VALUES
+c$$$C     LOOP OVER SUBSYSTEMS
+c$$$      DO 8000 I = 1,LCON
+c$$$         IC = I+ICON
+c$$$         WTA = EIGVAL(IC)/N
+c$$$C     LOOP OVER ROWS OF THE I'TH EIGENVECTOR
+c$$$         DO 8010 J = 1,N
+c$$$            EIGVEC(J,IC) = EIGVEC(J,IC)*WTA
+c$$$ 8010     CONTINUE
+c$$$ 8000  CONTINUE
+c$$$
+c$$$      DO 8150 J = 1,N
+c$$$         ABSUM = 0.0D0
+c$$$         DO 8160 I=1,LCON
+c$$$            ABSUM = ABSUM + ABS( EIGVEC(J,I+ICON) )
+c$$$ 8160     CONTINUE
+c$$$C     "NORMALIZE" THE ROWS
+c$$$         DO 8170 I=1,LCON
+c$$$            EIGVEC(J,I+ICON) = EIGVEC(J,I+ICON)/ABSUM
+c$$$ 8170     CONTINUE
+c$$$ 8150  CONTINUE
+c$$$      SUM2 = ZERO
+c$$$      DO 200 I=1,LCON
+c$$$         SUM = ZERO
+c$$$         IC = ICON+I
+c$$$         DO 210 J=1,N
+c$$$c           IF ( ABS(EIGVEC(J,IC)).GT.0.0001D0 ) SUM=SUM+ONE
+c$$$            SUM = SUM + ABS(EIGVEC(J,IC))
+c$$$ 210     CONTINUE
+c$$$c         WT(I) = SUM
+c$$$         WT(I) = SUM
+c$$$ 200  CONTINUE
+c$$$      WRITE(6,'(20E12.3)')(WT(I),I=1,LCON)
+c$$$C     RECONSTRUCT THE D VECTOR SO IT MAKES SENSE
+c$$$C     RELATIVE TO THE DAMPING WE JUST APPLIED
+c$$$      SUMWTD = ZERO
+c$$$      DO 230 I=1,NUMAT
+c$$$         ICPE = (I-1)*4+1
+c$$$         CPED(ICPE) = ZERO
+c$$$         DO 240 J=1,LCON
+c$$$            JC = ICON+J
+c$$$            CPED(ICPE) = CPED(ICPE) + WT(J)*ABS(EIGVEC(I,JC))
+c$$$c     A           *ABS(EIGVAL(JC))/EIGVAL(JC)
+c$$$ 240     CONTINUE
+c$$$         SUMWTD = SUMWTD + CPED(ICPE)
+c$$$C         WRITE(6,'(A,I3,F12.5)')"CPED",I,CPED(ICPE)
+c$$$ 230  CONTINUE
+c$$$C     MAKE SURE D IT IS NORMALIZED TO THE NUMBER OF ATOMS
+c$$$      WRITE(6,*)"SUMWTD = ",SUMWTD
+c$$$c      SYSNRM = N/SUMWTD
+      DO 250 I=1,NUMAT
+         IC = (I-1)*4+1
+         CPED(IC) = ONE
+ 250  CONTINUE
+      DO 260 I=1,LCON
+         IC = I+ICON
+C     DETERMINE THE MINIMUM AND MAXIMUM VALUES
+C     THIS EIGEN VALUE CAN POSSIBLY ATTAIN
+         EVA = ZERO
+         EVB = ZERO
+         DO 720 J=1,N
+            EVA = EVA + EIGVEC(J,IC)**2
+            SUM = ZERO
+            DO 730 K=1,N
+               SUM = SUM + EIGVEC(K,IC)
+ 730        CONTINUE
+            EVB = EVB + EIGVEC(J,IC)*SUM
+ 720     CONTINUE
+         IF ( EVA.GT.EVB ) THEN
+            EMAX = EVA
+            EMIN = EVB
+         ELSE
+            EMAX = EVB
+            EMIN = EVA
+         END IF
+         WRITE(6,*)"MAX POSSIBLE FOR EIGVEC",I," =",
+     A        EMAX
+         WRITE(6,*)"MIN POSSIBLE FOR EIGVEC",I," =",
+     A        EMIN
+         WRITE(6,*)"EIGENVALUE   FOR EIGVEC",I," =",
+     A        EIGVAL(IC)
+c         IF ( ABS(EMAX - EMIN).LT.0.001D0 ) THEN
+c            EWT = ONE
+c         ELSE
+         IF ( ABS(EIGVAL(IC)) .LT. EMIN ) THEN
+            EWT = EMIN
+         ELSE IF ( ABS(EIGVAL(IC)) .GT. EMAX ) THEN
+            EWT = EMAX
+         ELSE
+            EWT = (ABS(EIGVAL(IC))-EMIN)/(EMAX-EMIN)
+         END IF
+         IF ( ABS(EMAX - EMIN).LT.0.001D0 ) THEN
+            EWT = EMAX
+         END IF
+         IF ( EWT .LT. ZERO ) EWT = ZERO
+         IF ( EIGVAL(IC) .EQ. ZERO ) EWT = ZERO
+c         END IF
+c         IF ( I .EQ. 5 ) THEN
+c            EWT = ZERO
+c         END IF
+c         IF ( I .EQ. 6 ) THEN
+c            EWT = ZERO
+c         END IF
+         WT(I) = EWT
+         WRITE(6,'(A,I3,F12.5)')"WT",I,WT(I)
+ 260  CONTINUE
+      DO 220 I=1,LCON
+c         DOTPRD = ZERO
+c         DO 223 J=1,N
+c            DOTPRD = DOTPRD+ABS(EIGVEC(J,I+ICON))
+c 223     CONTINUE
+c         CONMUV(I) = CONMUV(I)*ABS(DOTPRD/EIGVAL(I+ICON))
+c         CONMUV(I) = CONMUV(I)*ABS(EIGVAL(I+ICON)/DOTPRD)
+         CONMUV(I) = CONMUV(I)*WT(I)
+ 220  CONTINUE
+      IF ( DPRINT ) THEN
+         WRITE(6,*)"DAMPED CONSTRAINT VECTOR"
+         WRITE(6,'(20E12.3)')(CONMUV(I),I=1,LCON)
+      END IF
+C     SOLVE FOR GLOBAL NORMALIZATION LAGRANGE MULTIPLIER
+C     ETAI.d
+      CALL DSYMV("U",NCPE,ONE,CPEINV,NCPE,CPED,1,ZERO,ETAID,1)
+C     D.U.Beta
+      CALL DGEMV("N",NCPE,LCON,ONE,CONMT,NCPE,CONMUV,1,
+     $     ZERO,DUB,1 )
+C     ETAI.D.U.Beta
+      CALL DSYMV("U",NCPE,ONE,CPEINV,NCPE,DUB,1,ZERO,EIDUB,1)
+      DO 2020 I=1,NCPE
+         WRKV(I) = EIDUB(I) - ETAIN(I)
+ 2020 CONTINUE
+C     U.D. (ETAI.D.U.Beta - ETAI.N)
+      CALL DGEMV("T",NCPE,LCON,ONE,CONMT,NCPE,WRKV,1,ZERO,UDEDUB,1)
+      DO 2000 I=1,NCPE
+         CPERES(I) = EIDUB(I) - ETAIN(I)
+ 2000 CONTINUE
+      DELN = ZERO
+      DO 2010 I=1,NUMAT
+         IC = (I-1)*4+1
+         DELN = DELN + CPERES(IC)
+C         CPED(IC) = CPERES(IC)
+ 2010 CONTINUE
+      WRITE(6,'(A,30F12.5)')"DELN,DELTAN,DNVEC",DELN,DELTAN,
+     A     (UDEDUB(I),I=1,LCON)
+      DED    = ZERO
+      DEIN   = ZERO
+      DEIDUB = ZERO
+      DO 1000 I=1,NCPE
+         DED    = DED    + CPED(I)*ETAID(I)
+         DEIN   = DEIN   + CPED(I)*ETAIN(I)
+         DEIDUB = DEIDUB + CPED(I)*EIDUB(I)
+ 1000 CONTINUE
+      CPEMU = (DEIN-DEIDUB)/DED
+      WRITE(6,*)"CPEMU = ",CPEMU
+c      CPEMU = ZERO
+C     SOLVE FOR RESPONSE COEFFICIENTS
+      DO 5000 I=1,NCPE
+         WRITE(6,'(4F12.5)')CPEMU*ETAID(I), - ETAIN(I),EIDUB(I),CPED(I)
+         CPERES(I) = CPEMU*ETAID(I) + EIDUB(I) - ETAIN(I)
+ 5000 CONTINUE
+      DELTAN = ZERO
+      DO 5510 I=1,NUMAT
+         IC = (I-1)*4+1
+         DELTAN = DELTAN + CPERES(IC)
+c         CPED(IC) = CPERES(IC)
+ 5510 CONTINUE
+      WRITE(6,'(A,E15.7)')"CPE TOTAL SYSTEM CHARGE = ",DELTAN
+C      STOP
+      RETURN
+      END SUBROUTINE
+      SUBROUTINE CPELIN(A,N,B,X,DMAT,NC,C)
+C!!****f* LINEQ/SYMLIN
+C!!
+C!! NAME
+C!!   SYMLIN -- SOLVES A.X = B FOR X
+C!! USAGE
+C!!    CALL SYMLIN(A,N,B,X,DMAT,NC,C)
+C!! DESCRIPTION
+C!!    GIVEN SYMMETRIC MATRIX A(N,N) AND RESULT B(N),
+C!!    LINEQ SOLVES VOR VECTOR X(N) UNDER THE CONSTRAINTS
+C!!    DMAT(N,NC) (WHICH ARE CONSTRAINED TO VALUES C(NC))
+C!!
+C!!    IF NC=0, THEN THE SOLUTION IS A^{-1}.B = X
+C!!    IF THE CONSTRAINTS ARE OVER DETERMINED, THEN
+C!!    AN SVD ALGORITHM IS USED.
+C!! INPUTS
+C!!     DOUBLE PRECISION A(N,N),B(N),DMAT(N,NC),C(NC)
+C!!     INTEGER N,NC
+C!!
+C!! OUTPUT
+C!!     DOUBLE PRECISION X(N)
+C!! USES
+C!!   INVERT/SVDINV
+C!!   EIGSYS/SVDKMP
+C!!   MATMUL/YSA
+C!!   MATMUL/YAV
+C!!   MATMUL/YSV
+C!!   MATMUL/YCV
+C!!   MATMUL/YCSA
+C!!   MATMUL/TRANSP
+C!!   INIT/CPYV
+C!!   ERROR/I1ERR
+C!!***
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      INTEGER N,NC
+      DIMENSION A(N,N),B(N),X(N)
+      DIMENSION C(NC)
+      DIMENSION DMAT(N,NC)
+c---------------------------------
+      DIMENSION U(N,N),W(N),VT(N,N),V(N,N)
+      DIMENSION AINV(N,N)
+      DIMENSION DNN(N,N)
+C----------------------------
+      DIMENSION AC(NC,NC),AIB(N),ACAIB(NC)
+      DOUBLE PRECISION LAMBDA(NC)
+      DOUBLE PRECISION CONDEN,CONNUM
+      DOUBLE PRECISION AIDV(N),DV(N)
+C----------------------------
+      INTEGER I,J
+C     RETURN IF INPUT IS STUPID
+      IF ( N .LT. 1 ) THEN
+          CALL I1ERR("LINEQ.src77","SLEQ0",
+     1                "IF ( N .LT. 1 ) THEN",
+     1                "ARRAY SIZE INVALID",
+     1                .TRUE.,.TRUE.,
+     1                "N",N)
+      END IF
+      IF ( NC .LT. 0 ) THEN
+           CALL I1ERR("LINEQ.src77","SLEQ0",
+     1                "IF ( NC .LT. 0 ) THEN",
+     1                "NUMBER OF CONSTRAINTS INVALID",
+     1                .TRUE.,.TRUE.,
+     1                "NC",NC)
+      END IF
+C     RETURN THE SIMPLE ANSWER IF THERE ARE NO CONSTRAINTS
+      IF ( NC.EQ.0 ) THEN
+C     CALCULATE A INVERSE
+         CALL SYMINV(A,N,AINV)
+         CALL YSA(N,AINV,B,X)
+         RETURN
+C     RETURN A DIFFERENT SIMPLE ANSWER IF THERE IS ONLY 1 CONSTRAINT
+      ELSE IF ( NC.EQ.1 ) THEN
+         DO 5 I=1,N
+              DV(I) = DMAT(I,1)
+ 5      CONTINUE
+         CALL SYMINV(A,N,AINV)
+         CALL YSV(N,AINV,DV,AIDV)
+         CALL YSV(N,AINV,B,AIB)
+         CALL DOTPRD(DV,N,AIDV,CONDEN)
+         CALL DOTPRD(DV,N,AIB,CONNUM)
+         LAMBDA(1) = -CONNUM/CONDEN
+         CALL ADDVV(LAMBDA(1),AIDV,N,1.0D0,AIB,X)
+         RETURN
+      END IF
+C
+C     CALCULATE THE EIGENVALUES/VECTORS OF THE CONSTRAINT MATRIX
+C     COPY THE FIRST NC COLUMNS OF DMAT INTO DNN
+      DO 10 I=1,N
+         DO 20 J=1,NC
+         DNN(I,J) = DMAT(I,J)
+ 20      CONTINUE
+         DO 25 J=NC+1,N
+            DNN(I,J) = 0.0000D0
+ 25      CONTINUE
+ 10   CONTINUE
+      CALL SVDKMP(N,DNN,N, U,W,VT)
+      CALL TRANSP(N,VT,N, V)
+C     CALL PTV(W,N,N,"W",6,.FALSE.)
+C     COUNT THE NUMBER OF REDUNDENT CONSTRAINTS
+      J=0
+      DO 30 I=1,N
+         IF ( W(I) .LT. 1.0D-8 ) J=J+1
+ 30   CONTINUE
+      NFREE = J
+      IF ( NFREE.EQ.0 ) THEN
+C     WE DON'T DO ANY FANCY SVD STUFF
+C     AC = MATMUL(TRANSPOSE(DMAT),MATMUL(AINV,DMAT))
+         CALL SYMINV(A,N,AINV)
+C     AC = SVDINVERSE(AC)
+         CALL YCSA(N,AINV,DMAT,NC , AC)
+C     LAMBDA = MATMUL(AC,C-MATMUL(TRANSPOSE(DMAT),MATMUL(AINV,B)))
+         CALL SVDINV(NC,AC,NC,  AC)
+         CALL YSV( N,AINV,B, AIB )
+         CALL YCV(NC,DMAT,N,AIB, ACAIB)
+         DO 40 I=1,NC
+            ACAIB(I) = C(I) - ACAIB(I)
+ 40      CONTINUE
+         CALL YAV(NC,AC,NC,ACAIB, LAMBDA)
+C     X = MATMUL(AINV,B+MATMUL(DMAT,LAMBDA))
+         CALL YAV(N,DMAT,NC,LAMBDA, AIB)
+         DO 50 I=1,N
+            AIB(I) = AIB(I) + B(I)
+ 50      CONTINUE
+         CALL YSV(N,AINV,AIB, X)
+         RETURN
+      ELSE
+C     DO THE REST WITHIN THE DRIVER
+         CALL LINSVD(N,NC,NFREE,A,B,X,DNN,U,W,V,C)
+      END IF
+      END SUBROUTINE
+        SUBROUTINE CPESVD(N,NC,NFREE,A,B,X,DNN,U,W,V,C)
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+        INTEGER N,NC,NFREE
+        DIMENSION A(N,N),B(N),X(N)
+        DIMENSION C(NC)
+        DIMENSION DNN(N,N),U(N,N),W(N),V(N,N)
+C---------------------------------------------
+        DIMENSION LAMBDA(NC)
+        DIMENSION CR(N,NFREE)
+        DIMENSION CB(NC)
+        DIMENSION CA(N,NC)
+        DIMENSION CT(N)
+        DIMENSION AP(NFREE,NFREE)
+        DIMENSION BP(NFREE),XP(NFREE)
+        INTEGER I,J,K,L
+        DIMENSION ACT(N)
+        CALL CPYV(C,NC,CB)
+        DO 10 I=1,N
+           L=0
+           DO 20 J=N-NFREE+1,N
+              L=L+1
+              CR(I,L) = 0.0D0
+              DO 30 K=1,N
+                 IF(W(K).LT.1.0D-8) THEN
+                    CR(I,L)=CR(I,L)+U(I,K)*V(J,K)
+                 END IF
+ 30           CONTINUE
+ 20        CONTINUE
+ 10     CONTINUE
+        DO 50 I=1,N
+           DO 60 J=1,NC
+              CA(I,J) = 0.0D0
+              DO 70 K=1,N
+                 IF(W(K).GT.1.0D-8) THEN
+                    CA(I,J)=CA(I,J)+U(I,K)*V(J,K)/W(K)
+                 END IF
+ 70           CONTINUE
+ 60        CONTINUE
+ 50     CONTINUE
+C       CT = MATMUL(CA,CB)
+        CALL YAV(N,CA,NC,CB, CT)
+C       AP = MATMUL(TRANSPOSE(CR),MATMUL(A,CR))
+        CALL YCSA(N,A,CR,NFREE, AP)
+C       BP = MATMUL(TRANSPOSE(CR),
+C                       (B-MATMUL(A,CT)))
+        CALL YSV(N,A,CT, ACT)
+        DO 80 I=1,N
+           ACT(I) = B(I) - ACT(I)
+ 80     CONTINUE
+        CALL YCV(NFREE,CR,N,ACT, BP)
+C       XP = MATMUL(SVDINV(AP),BP)
+        CALL SVDINV(NFREE,AP,NFREE,AP)
+        CALL YAV(NFREE,AP,NFREE,BP,  XP)
+C       C = MATMUL(CR,XP)+CT
+        CALL YAV(N,CR,NFREE,XP, X)
+        DO 90 I=1,N
+           X(I)=X(I)+CT(I)
+ 90     CONTINUE
+        END SUBROUTINE

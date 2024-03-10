@@ -1,0 +1,14 @@
+DSC sloppy degrees of freedom test
+PRP finalheat=-170.76254
+PRP intgrdopt=0.04801
+PRP cartgrdopt=0.09227
+PRP freq1=0
+PRP freq2=0
+PRP freq3=0
+PRP freq4=0
+PRP freq5=0
+PRP freq6=0
+PRP freq7=95.77146
+PRP freq8=142.59483
+PRP freq9=164.97082
+PRP freq10=210.97753

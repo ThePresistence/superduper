@@ -1,0 +1,10 @@
+DSC ETHYLENE, D2h, ODM2 RHF
+DSC Geometry optimization followed by force constant analysis
+PRP toten=-7189.32178
+PRP optcyc=3
+PRP finaltoten=-7189.32178
+PRP zeroheat=14.77309
+PRP roomheat=12.85206
+PRP zpe=32.82243
+PRP intgrdopt=0.09879
+

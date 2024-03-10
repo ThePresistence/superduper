@@ -1,0 +1,6 @@
+DSC OXYGEN MOLECULE, TRIPLET, MNDO UHF
+DSC Geometry optimization, standard BFGS
+PRP heat=-15.98748
+PRP optcyc=2
+PRP finalheat=-15.98748
+PRP intgrdopt=0.00582

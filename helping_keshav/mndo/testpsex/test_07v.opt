@@ -1,0 +1,14 @@
+DSC Ethene, D2, 88 deg twist, OM2 MR-CISD for HE-ROHF singlet
+DSC Multiple state gradient and interstate coupling calculation
+DSC Full expression for the non-adiabatic coupling matrix elements
+DSC Fully numerical evaluation of the second term
+DSC Not using molecular symmetry, four point charges
+PRP mulstates=1:2:3
+PRP mulheats=60.25970:99.37340:103.64131
+PRP mulqmnorms=137.18906:39.25732:28.69293
+PRP mulqmmmnorms=137.21129:39.33517:28.81358
+PRP muloptnorms=137.18906:39.25732:28.69293
+PRP gicvstates=2,1:3,1:3,2
+PRP gicvqmnorms=2.76664:0.41214:19.06583
+PRP gicvqmmmnorms=2.76664:0.41223:19.08960
+PRP gicvoptnorms=2.76664:0.41214:19.06583

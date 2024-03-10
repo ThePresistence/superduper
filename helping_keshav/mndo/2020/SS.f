@@ -1,0 +1,176 @@
+      FUNCTION SS (NA,LA,MM,NB,LB,ALPHA,BETA,A,B)
+C     *
+C     OVERLAP INTEGRALS BETWEEN SLATER TYPE ORBITALS.
+C     *
+C     QUANTUM NUMBERS (NA,LA,MM) AND (NB,LB,MM).
+C     NA AND NB MUST BE POSITIVE AND LESS THAN OR EQUAL TO 7.
+C     LA, LB AND ABS(MM) MUST BE LESS THAN OR EQUAL TO 5.
+C     FURTHER RESTRICTIONS ARE LA.LE.NA, LB.LE.NB,
+C     MM.LE.LA, AND MM.LE.LB.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(15),B(15)
+      DIMENSION IAD(8),IBINOM(36),C(21,3),FC(15)
+C     DEFINE ADDRESSES FOR INDEX PAIRS (00,10,20,30,40,50,60,70).
+      DATA IAD/1,2,4,7,11,16,22,29/
+C     DEFINE BINOMIAL COEFFICIENTS (00,10,11,20,...,77).
+      DATA IBINOM/1,1,1,1,2,1,1,3,3,1,1,4,6,4,1,1,5,10,10,5,1,
+     1            1,6,15,20,15,6,1,1,7,21,35,35,21,7,1/
+C     DEFINE C COEFFICIENTS FOR ASSOCIATE LEGENDRE POLYNOMIALS.
+      DATA C/  8.0D0,  8.0D0,  4.0D0, -4.0D0,  4.0D0,  4.0D0,
+     1       -12.0D0, -6.0D0, 20.0D0,  5.0D0,  3.0D0,-30.0D0,
+     2       -10.0D0, 35.0D0,  7.0D0, 15.0D0,  7.5D0,-70.0D0,
+     3       -17.5D0, 63.0D0, 10.5D0,3*0.0D0, 12.0D0,2*0.0D0,
+     4        20.0D0, 30.0D0,2*0.0D0,-30.0D0, 70.0D0, 70.0D0,
+     5       2*0.0D0,-70.0D0,-105.D0,210.0D0,157.5D0,2*0.0D0,
+     6      10*0.0D0, 35.0D0,4*0.0D0, 63.0D0,157.5D0,4*0.0D0/
+C     DEFINE FACTORIALS FC(I) OF (I-1).
+      DATA FC /1.0D0,1.0D0,2.0D0,6.0D0,24.0D0,120.0D0,720.0D0,5040.0D0,
+     1         40320.0D0,362880.0D0,3628800.0D0,39916800.0D0,
+     2         4.790016D+08,6.2270208D+09,8.71782912D+10/
+C *** INITIALIZATION.
+      M      = ABS(MM)
+      NAB    = NA+NB+1
+      X      = 0.0D0
+C *** FIND A AND B INTEGRALS.
+C     P      = (ALPHA + BETA)*0.5
+C     PT     = (ALPHA - BETA)*0.5
+C     CALL AINTGS(A,P,NA+NB)
+C     CALL BINTGS(B,PT,NA+NB)
+C *** SECTION USED FOR OVERLAP INTEGRALS INVOLVING S FUNCTIONS.
+      IF((LA.GT.0).OR.(LB.GT.0)) GO TO 100
+      IADA   = IAD(NA+1)
+      IADB   = IAD(NB+1)
+      DO 20 I=0,NA
+      IBA    = IBINOM(IADA+I)
+      DO 10 J=0,NB
+      IBB    = IBA*IBINOM(IADB+J)
+      IF(MOD(J,2).EQ.1) IBB=-IBB
+      IJ     = I+J
+      X      = X+IBB*A(NAB-IJ)*B(IJ+1)
+   10 CONTINUE
+   20 CONTINUE
+      SS     = X  * 0.5D0
+      SS     = SS * SQRT( ALPHA**(2*NA+1)*BETA**(2*NB+1)/
+     1                    (FC(2*NA+1)*FC(2*NB+1)) )
+      RETURN
+C *** SECTION USED FOR OVERLAP INTEGRALS INVOLVING P FUNCTIONS.
+C *** SPECIAL CASE M=0, S-P(SIGMA), P(SIGMA)-S, P(SIGMA)-P(SIGMA).
+  100 IF(LA.GT.1 .OR. LB.GT.1) GO TO 300
+      IF(M.GT.0) GO TO 200
+      IU     = MOD(LA,2)
+      IV     = MOD(LB,2)
+      NAMU   = NA-IU
+      NBMV   = NB-IV
+      IADNA  = IAD(NAMU+1)
+      IADNB  = IAD(NBMV+1)
+      DO 140 KC=0,IU
+      IC     = NAB-IU-IV+KC
+      JC     = 1+KC
+      DO 130 KD=0,IV
+      ID     = IC+KD
+      JD     = JC+KD
+      DO 120 KE=0,NAMU
+      IBE    = IBINOM(IADNA+KE)
+      IE     = ID-KE
+      JE     = JD+KE
+      DO 110 KF=0,NBMV
+      IBF    = IBE*IBINOM(IADNB+KF)
+      IF(MOD(KD+KF,2).EQ.1) IBF=-IBF
+      X      = X+IBF*A(IE-KF)*B(JE+KF)
+  110 CONTINUE
+  120 CONTINUE
+  130 CONTINUE
+  140 CONTINUE
+      SS     = X  * SQRT( (2*LA+1)*(2*LB+1)*0.25D0 )
+C     COMPUTE OVERLAP INTEGRAL FROM REDUCED OVERLAP INTEGRAL.
+      SS     = SS * SQRT( ALPHA**(2*NA+1)*BETA**(2*NB+1)/
+     1                    (FC(2*NA+1)*FC(2*NB+1)) )
+      IF(MOD(LB,2).EQ.1) SS=-SS
+      RETURN
+C *** SECTION USED FOR OVERLAP INTEGRALS INVOLVING P FUNCTIONS.
+C *** SPECIAL CASE LA=LB=M=1, P(PI)-P(PI).
+  200 IADNA  = IAD(NA)
+      IADNB  = IAD(NB)
+      DO 220 KE=0,NA-1
+      IBE    = IBINOM(IADNA+KE)
+      IE     = NAB-KE
+      JE     = KE+1
+      DO 210 KF=0,NB-1
+      IBF    = IBE*IBINOM(IADNB+KF)
+      IF(MOD(KF,2).EQ.1) IBF=-IBF
+      I      = IE-KF
+      J      = JE+KF
+      X      = X+IBF*(A(I)*B(J)-A(I)*B(J+2)-A(I-2)*B(J)+A(I-2)*B(J+2))
+  210 CONTINUE
+  220 CONTINUE
+      SS     = X  * 0.75D0
+C     COMPUTE OVERLAP INTEGRAL FROM REDUCED OVERLAP INTEGRAL.
+      SS     = SS * SQRT( ALPHA**(2*NA+1)*BETA**(2*NB+1)/
+     1                    (FC(2*NA+1)*FC(2*NB+1)) )
+      IF(MOD(LB+MM,2).EQ.1) SS=-SS
+      RETURN
+C *** SECTION USED FOR OVERLAP INTEGRALS INVOLVING NON-S FUNCTIONS.
+C *** GENERAL CASE LA.GT.1 OR LB.GT.1, M.GE.0.
+  300 LAM    = LA-M
+      LBM    = LB-M
+      IADA   = IAD(LA+1)+M
+      IADB   = IAD(LB+1)+M
+      IADM   = IAD(M+1)
+      IU1    = MOD(LAM,2)
+      IV1    = MOD(LBM,2)
+      IUC    = 0
+      DO 380 IU=IU1,LAM,2
+      IUC    = IUC+1
+      CU     = C(IADA,IUC)
+      NAMU   = NA-M-IU
+      IADNA  = IAD(NAMU+1)
+      IADU   = IAD(IU+1)
+      IVC    = 0
+      DO 370 IV=IV1,LBM,2
+      IVC    = IVC+1
+      NBMV   = NB-M-IV
+      IADNB  = IAD(NBMV+1)
+      IADV   = IAD(IV+1)
+      SUM    = 0.0D0
+      DO 360 KC=0,IU
+      IBC    = IBINOM(IADU+KC)
+      IC     = NAB-IU-IV+KC
+      JC     = 1+KC
+      DO 350 KD=0,IV
+      IBD    = IBC*IBINOM(IADV+KD)
+      ID     = IC+KD
+      JD     = JC+KD
+      DO 340 KE=0,NAMU
+      IBE    = IBD*IBINOM(IADNA+KE)
+      IE     = ID-KE
+      JE     = JD+KE
+      DO 330 KF=0,NBMV
+      IBF    = IBE*IBINOM(IADNB+KF)
+      IFF    = IE-KF
+      JFF    = JE+KF
+      DO 320 KA=0,M
+      IBA    = IBF*IBINOM(IADM+KA)
+      I      = IFF-2*KA
+      DO 310 KB=0,M
+      IBB    = IBA*IBINOM(IADM+KB)
+      IF(MOD(KA+KB+KD+KF,2).EQ.1) IBB=-IBB
+      J      = JFF+2*KB
+      SUM    = SUM+IBB*A(I)*B(J)
+  310 CONTINUE
+  320 CONTINUE
+  330 CONTINUE
+  340 CONTINUE
+  350 CONTINUE
+  360 CONTINUE
+      X      = X+SUM*CU*C(IADB,IVC)
+  370 CONTINUE
+  380 CONTINUE
+      SS     = X*(FC(M+2)/8.0D0)**2* SQRT( (2*LA+1)*FC(LA-M+1)*
+     1         (2*LB+1)*FC(LB-M+1)/(4.0D0*FC(LA+M+1)*FC(LB+M+1)))
+C     COMPUTE OVERLAP INTEGRAL FROM REDUCED OVERLAP INTEGRAL.
+      SS     = SS * SQRT( ALPHA**(2*NA+1)*BETA**(2*NB+1)/
+     1                    (FC(2*NA+1)*FC(2*NB+1)) )
+      IF(MOD(LB+MM,2).EQ.1) SS=-SS
+      RETURN
+      END

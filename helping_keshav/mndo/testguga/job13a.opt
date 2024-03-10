@@ -1,0 +1,17 @@
+DSC HYDROGEN MOLECULE, OM2 full CI for closed-shell singlet
+DSC Single-point energy calculation, 3 lowest states,
+DSC no usage of symmetry, default diagonalizer
+PRP heat=-3.21262:-3.21262
+PRP ciheat=-4.95972:-4.95972
+PRP deltae=0.000000:7.293950:12.636869
+PRP dipole=0.000000:0.000000:0.000000
+PRP fr=0.206660:0.000000
+PRP fp=1.457813:0.000000
+PRP frp=0.548883:0.000000
+PRP rot=0.000000:0.000000
+PRP deltae2=0.000000:7.293950:12.636869
+PRP dipole2=0.000000:0.000000:0.000000
+PRP fr2=0.206660:0.000000
+PRP fp2=1.457813:0.000000
+PRP frp2=0.548883:0.000000
+PRP rot2=0.000000:0.000000

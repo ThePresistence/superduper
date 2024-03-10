@@ -1,0 +1,8 @@
+DSC PENTADIENIMINIUM CATION, OM2 (ROHF) MRSD-CI
+DSC Near-planar geometry, movo=1
+DSC Explicit active space: 10 15 16 17 18 19 22
+DSC Inclusion of orbital 19 gives reasonable gradient
+DSC Single-point energy and gradient, ground state
+PRP heat=341.78840
+PRP ciheat=220.97107
+PRP cartgrd=352.80018

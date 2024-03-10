@@ -1,0 +1,6 @@
+DSC HYDROGEN MOLECULE, AM1 full CI for open-shell singlet
+DSC Single-point energy and gradient for state 1,
+DSC no usage of symmetry, default diagonalizer
+PRP ciheat=-6.22293:-6.22293
+PRP cartgrd=235.41805:235.41805
+PRP intgrd=166.46570:166.46570

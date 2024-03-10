@@ -1,0 +1,9 @@
+DSC H2O2, C2h, MNDO RHF
+DSC Transition state search followed by force constant analysis
+PRP heat=-38.24232
+PRP optcyc=2
+PRP finalheat=-38.24232
+PRP zeroheat=-37.32243
+PRP zpe=18.40498
+PRP intgrdopt=0.11369
+

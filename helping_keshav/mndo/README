@@ -1,0 +1,51 @@
+This directory contains the distributed version of MNDO2020.
+
+Date: 18 May 2022.
+
+---------------------------------------------------------------------
+
+Files:
+README        This file.
+MNDO2020.f    Main program for MNDO2020.
+LIMIT.f90     Parameters defining maximum array sizes.
+configure.ac  Configure script for the generation of the Makefile's.
+Makefile.am   Makefile templates for the generation of the Makefile's.
+mndo99.doc    Program documentation (out-dated, revision required).
+mndo2020.txt  Input description.
+
+Subdirectories:
+2020/         General MNDO source code.
+BIN/          Latest precompiled binary.
+BLAS/         Source code for BLAS routines.
+CGDMS/        Source code for conjugate gradient density matrix search.
+DFTB/         Source code for density functional based tight binding.
+ES/           Source code for spin-flip (extended) CIS excited states.
+GUGACI/       Source code for GUGA-CI routines.
+HDLCOPT/      Source code for HDLC optimizer.
+LAPACK/       Source code for LAPACK routines.
+MACHINE/      Source code of machine-dependent and dummy routines.
+PS/           Source code for analytic derivatives and NMR.
+PSEX/         Source code for surface crossing/hopping methods.
+SCOSMO/       Source code for smooth COSMO solvation model.
+SPARSE/       Source code for sparse DMS.
+VB/           Source code for valence bond module.
+testjobs/     Standard MNDO test jobs (formatted input).
+testkeys/     Standard MNDO test jobs (keyword input).
+testmopac6/   Test jobs from MOPAC(6.0).
+testps/       Test jobs for analytic derivatives and NMR.
+testes/       Test jobs for spin-flip (extended) CIS excited states.
+testguga/     Test jobs for GUGA-CI module.
+testhdlc/     Test jobs for HDLC optimizer.
+testpsex/     Test jobs for surface crossing/hopping methods.
+testlindir/   Test jobs for direct density matrix search (full matrices).
+testsparse/   Test jobs for sparse conjugate gradient density matrix search.
+testscosmo/   Test jobs for smooth COSMO solvation model.
+testvb/       Test jobs for VB module.
+testdftb/     Test jobs for density functional based tight binding.
+
+See READ_ME files in these subdirectories for further information.
+
+---------------------------------------------------------------------
+
+The installation and validation of MNDO is described in the program
+documentation (mndo99.doc, section 3).

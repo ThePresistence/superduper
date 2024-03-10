@@ -1,0 +1,98 @@
+      SUBROUTINE DIAPRC (FS,JFS,IFS,PS,JPS,IPS,GS,JGS,IGS,N,FILT,CUTM)
+C     *
+C     DIAGONAL PRECONDITIONING.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     FS(*)     FOCK MATRIX (I), UNCHANGED.
+C     GS(*)     GRADIENT MATRIX (I), UNCHANGED.
+C     PS(*)     DENSITY MATRIX (I), UNCHANGED.
+C     IX(N+1)   POINTERS FOR SPARSE MATRICES IN CSR FORMAT (S).
+C               X=FS,GS,PS.
+C     JX(*)     COLUMN INDICES FOR SPARSE MATRICES IN CSR FORMAT (S).
+C               X=FS,GS,PS.
+C     N         NUMBER OF ORBITALS (I).
+C     FILT      FLAG FOR REMOVING SMALL ELEMENTS IN PRODUCT A*B (I).
+C     CUTM      CUTOFF FOR SMALL MATRIX ELEMENTS (I).
+C     *
+      USE module3
+C     IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      IMPLICIT NONE
+      LOGICAL :: FILT,DONT
+      COMMON
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+      INTEGER :: N,N4,I,ie,J,K
+      DOUBLE PRECISION :: ZERO,ONE,THREE,FOUR,TWO,CUTM,PT5,PT25,TINY
+      INTEGER, ALLOCATABLE ::IW(:)
+      DOUBLE PRECISION, DIMENSION (:), POINTER :: GS,FS,PS,Q9,Q8
+      INTEGER, DIMENSION (:), POINTER :: IGS,JGS,IFS,JFS,IPS,JPS,IQ9,
+     +                                   JQ9,IQ8,JQ8
+      PARAMETER (TINY=1.D-10)
+C
+C *** COMPUTE PRODUCT OF FOCK AND DENSITY MATRIX (Q9=FS*PS).
+      ALLOCATE (Q9(N),JQ9(N),IQ9(N+1),STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DIAPRC','Q9',N+1,0)
+      IQ9(N+1)=N+1
+      DO 10 I=1,N
+      Q9(I)=ZERO
+      DO 20 J=IFS(I),IFS(I+1)
+      DO 30 K=IPS(I),IPS(I+1)
+      IF(JFS(J).EQ.JPS(K)) THEN
+         Q9(I)=Q9(I)+FS(J)*PS(K)
+         GO TO 20
+      ENDIF
+   30 CONTINUE
+   20 CONTINUE
+      Q9(I)=TWO*Q9(I)
+      JQ9(I)=I
+      IQ9(I)=I
+   10 CONTINUE
+C
+C *** COMPUTE DIFFERENCE MATRIX FS-[FS*PS+(FS*PS)t].
+C     ADDITION (Q9=FS-Q9).
+      DONT=.FALSE.
+      DO 40 I=1,N
+      DO 50 J=IFS(I),IFS(I+1)
+      IF(JFS(J).EQ.I) THEN
+         Q9(I)=Q9(I)-FS(J)
+         IF(ABS(Q9(I)).GT.TINY) THEN
+            Q9(I) = ONE/(Q9(I)*6.0D0)
+         ELSE
+            DONT=.TRUE.
+         ENDIF
+         GO TO 40
+      ENDIF
+   50 CONTINUE
+   40 CONTINUE
+C
+C *** COMPUTE PRODUCT OF DIAGONAL MATRIX (Q9) AND GRADIENT (GS).
+      IF (.NOT.DONT) THEN
+         ALLOCATE (IW(N),IQ8(N+1),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DIAPRC','IW',N,0)
+C        SYMBOLIC MULTIPLICATION TO GET NUMBER OF ELEMENTS (N4).
+         CALL amubdgp (N,JQ9,IQ9,JGS,IGS,N4,IW)
+         ALLOCATE (Q8(N4),JQ8(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DIAPRC','Q8',N4,0)
+C        ACTUAL MULTIPLICATION (Q8=Q9*GS).
+         CALL amubp (N,Q9,JQ9,IQ9,GS,JGS,IGS,Q8,JQ8,IQ8,N4,IW,ie)
+            IF(ie.NE.0) CALL XERSPA (ie,'amub','DIAPRC',1)
+C        REMOVE SMALL ELEMENTS (Q8).
+         IF(FILT) THEN
+            CALL filterp (N,1,CUTM,Q8,JQ8,IQ8,Q8,JQ8,IQ8,N4,ie)
+               IF(ie.ne.0) CALL XERSPA (ie,'filter','DIAPRC',1)
+         ENDIF
+         DEALLOCATE (GS,JGS,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DIAPRC','GS',N,1)
+         NULLIFY (GS,JGS)
+         N4=IQ8(N+1)-1
+         ALLOCATE (GS(N4),JGS(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DIAPRC','GS',N4,0)
+C        COPY PRECONDITIONED GRADIENT (Q8->GS).
+         CALL copmatp (N,Q8,JQ8,IQ8,GS,JGS,IGS,1)
+         DEALLOCATE (Q8,JQ8,IQ8,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DIAPRC','Q8',N4,1)
+      ENDIF
+C
+      DEALLOCATE (Q9,JQ9,IQ9,STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DIAPRC','Q9',N,1)
+      RETURN
+      END

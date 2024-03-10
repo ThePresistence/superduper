@@ -1,0 +1,28 @@
+C     ******************************************************************
+      DOUBLE PRECISION FUNCTION TRACE3 (A,B,LM2,N)
+C     *
+C     TRACE OF MATRIX PRODUCT A(transpose)*B.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     A(LM2,*)  INPUT MATRIX (I).
+C     B(LM2,*)  INPUT MATRIX (I).
+C     LM2       LEADING DIMENSION (I).
+C     N         NUMBER OF ORBITALS (I).
+C     TRACE3    TRACE OF THE MATRIX PRODUCT (O).
+C     *
+C     ON COMMENT LINES : FORTRAN CODE.
+C     ACYIVE STATEMENTS: CODE USING BLAS ROUTINE DDOT.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(LM2,N),B(LM2,N)
+      TRACE3 = 0.0D0
+C     DO 20 I=1,N
+C     DO 10 K=1,N
+C     TRACE3 = TRACE3 + A(K,I)*B(K,I)
+C  10 CONTINUE
+C  20 CONTINUE
+      DO 30 I=1,N
+      TRACE3 = TRACE3 + DDOT(N,A(1,I),1,B(1,I),1)
+   30 CONTINUE
+      RETURN
+      END

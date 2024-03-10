@@ -1,0 +1,26 @@
+      SUBROUTINE WSTORP (CC,W,LM6,LM7,NB3)
+C     *
+C     STORE MNDO TWO-ELECTRON AO INTEGRALS FOR AO-MO TRANSFORMATION.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION CC(LM7),W(LM6,LM6)
+      LMAX   = LM7/LM6
+      LMAX   = MIN(LMAX,LM6)
+C     KTOT   = LM6*LMAX
+      LREC   = 1+(LM6-1)/LMAX
+      IF(LREC.GT.1) REWIND NB3
+      DO 30 L=1,LREC
+      JA     = LMAX*(L-1)+1
+      JB     = LMAX*L
+      IF(L.EQ.LREC) JB=LM6
+      KK     = 0
+      DO 20 J=JA,JB
+      DO 10 I=1,LM6
+      KK     = KK+1
+      CC(KK) = W(I,J)
+   10 CONTINUE
+   20 CONTINUE
+      IF(LREC.GT.1) WRITE(NB3) CC
+   30 CONTINUE
+      RETURN
+      END

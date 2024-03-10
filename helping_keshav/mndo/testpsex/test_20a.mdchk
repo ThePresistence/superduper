@@ -1,0 +1,63 @@
+#
+# This test job checks that hopping occurs at mdsteps
+# 3->4
+#
+CHECK: hopping
+mdstep:      1   state: 2   ordered: 2
+energy      369.94106      378.27077      468.61015
+energy differences
+        8.32970
+       98.66908       90.33938
+coupling
+     -499.56479
+      -40.38829      -28.12965
+population   probability
+  0.06379      0.00583
+  0.60030      0.00000
+  0.33591      0.00000
+rnd number 0.84942
+ ---------------------------------
+mdstep:      4   state: 2   ordered: 2
+energy      371.78922      378.19537      467.52567
+energy differences
+        6.40616
+       95.73645       89.33029
+coupling
+     -909.08155
+      -41.78359      -11.90581
+population   probability
+  0.09291      0.02166
+  0.77258      0.00000
+  0.13451      0.00000
+rnd number 0.00084
+ ---------------------------------
+mdstep:      5   state: 1   ordered: 1
+energy      372.52747      378.15584      467.33826
+energy differences
+        5.62836
+       94.81078       89.18242
+coupling
+    -1613.09667
+      -54.14283       10.00086
+population   probability
+  0.18041      0.00000
+  0.72305      0.00000
+  0.09654      0.00220
+rnd number 0.41527
+ ---------------------------------
+mdstep:     15   state: 1   ordered: 1
+energy      372.72427      380.94872      459.95135
+energy differences
+        8.22444
+       87.22707       79.00263
+coupling
+      299.00321
+       26.43654      -55.93255
+population   probability
+  0.94655      0.00000
+  0.04956      0.00000
+  0.00390      0.00010
+rnd number 0.50091
+ ---------------------------------
+ENDCHECK
+#

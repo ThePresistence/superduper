@@ -1,0 +1,11 @@
+DSC BENZENE, D6h, OM2 full CI for closed-shell singlet
+DSC Single surface optimisation with multiple gradients
+DSC calculated at each point
+DSC States specified (1,10,12,2)
+DSC State 2 specified to be optimised
+PRP finalheat=102.17389
+PRP intgrdopt=0.00905
+PRP mulstates=1:10:12:2
+PRP mulheats=4.12538:211.37715:232.42278:102.17389
+PRP mulqmnorms=91.17255:61.04244:84.45088:0.00308
+PRP muloptnorms=223.28863:149.48613:206.78143:0.00905

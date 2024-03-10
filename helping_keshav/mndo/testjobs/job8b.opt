@@ -1,0 +1,10 @@
+DSC Water and two water dimers, MNDO/H RHF
+DSC Water (C2v), water dimer linear (Cs), water dimer bifurcated (C2v)
+DSC Geometry optimization followed by force constant analysis
+DSC Evaluation with MP4 reference data
+PRP heat=-60.93823:-126.46306:-123.90920
+PRP optcyc=3:13:9
+PRP finalheat=-60.93823:-126.46306:-123.90920
+PRP zeroheat=-60.37263:-124.53755:-122.21899
+PRP zpe=14.42654:31.33254:30.27834
+PRP intgrdopt=0:0:0

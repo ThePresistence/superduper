@@ -1,0 +1,42 @@
+C     ******************************************************************
+      SUBROUTINE MATDEV (A,B,LM2,N,MODE,DEVMAX,DEVRMS)
+C     *
+C     EVALUATE DEVIATIONS BETWEEN TWO MATRICES A AND B.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     A(LM2,*)  FIRST  INPUT MATRIX (I).
+C     B(LM2,*)  SECOND INPUT MATRIX (I).
+C     LM2       LEADING DIMENSION (I).
+C     N         NUMBER OF ORBITALS (I).
+C     MODE      OPTION FOR RANGE OF CHECKS (I).
+C               = 0 CHECK FULL UPPER TRIANGLE.
+C               = 1 CHECK ONLY DIAGONAL ELEMENTS.
+C     DEVMAX    MAXIMUM ABSOLUTE DEVIATION (O).
+C     DEVRMS    RMS DEVIATION (O).
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(LM2,N),B(LM2,N)
+      DEVMAX = 0.0D0
+      DEVRMS = 0.0D0
+C *** CHECK FULL UPPER TRIANGLE.
+      IF(MODE.EQ.0) THEN
+         DO 20 J=1,N
+         DO 10 I=1,J
+         ABDIF  = A(I,J)-B(I,J) 
+         DEVMAX = MAX(DEVMAX,ABS(ABDIF))
+         DEVRMS = DEVRMS + ABDIF**2
+   10    CONTINUE
+   20    CONTINUE
+         NTOTAL = (N*(N+1))/2
+         DEVRMS = SQRT(DEVRMS/NTOTAL)
+C *** CHECK ONLY DIAGONAL ELEMENTS.
+      ELSE
+         DO 30 I=1,N
+         ABDIF  = A(I,I)-B(I,I) 
+         DEVMAX = MAX(DEVMAX,ABS(ABDIF))
+         DEVRMS = DEVRMS + ABDIF**2
+   30    CONTINUE
+         DEVRMS = SQRT(DEVRMS/N)
+      ENDIF
+      RETURN
+      END

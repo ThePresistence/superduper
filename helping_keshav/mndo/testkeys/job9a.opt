@@ -1,0 +1,12 @@
+DSC Phosphorus compounds, AM1/d-CB1
+DSC P2, PH triplet, PH2 radical (C2v), PH3 (C3v), PH3 planar (D3h)
+DSC HPO (Cs), PO radical
+DSC Geometry optimizations followed by force constant analysis
+DSC Evaluation with reference data
+PRP heat=89.24588:49.20995:23.06427:-4.88835:15.69033:-33.76378:-21.25515
+PRP optcyc=4:2:4:4:3:6:2
+PRP finalheat=89.24588:49.20995:23.06427:-4.88835:15.69033:-33.76378:-21.25515
+PRP zeroheat=89.71731:49.42849:23.97825:-3.00121:17.60060:-32.94924:-21.13719
+PRP zpe=1.56980:4.34600:10.00511:17.04485:15.78332:7.84094:2.47397
+PRP intgrdopt=0:0:0:0:0:0:0
+PRP cartgrdopt=0:0:0:0:0:0:0

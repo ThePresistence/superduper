@@ -1,0 +1,10 @@
+DSC MNDO ROHF force constants for triplet oxygen from numerical differentiation 
+DSC of gradients. LAPACK solver.
+COM Note that inrhs is ignored for LAPACK solver
+DAT O2.dat
+OPT iprint=1
+OPT imix=1 idens=3 iqswap=1 inrhs=1 ihlst=1 ihlwrp=2 ikmode=2
+PRP heat=-15.33476 intgrdopt=0.00359 cartgrdopt=0.00508 optcyc=3
+PRP freqmem=1200 freqdisk=17
+PRP freq6=2476.536
+PRP zpe=3.54035

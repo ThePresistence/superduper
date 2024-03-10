@@ -1,0 +1,244 @@
+      SUBROUTINE INCONI (IFORM,JPRINT)
+C     *
+C     INPUT OF SPECIFIC OPTIONS FOR CONICAL INTERSECTION SEARCH.
+C     *
+      USE LIMIT, ONLY: LMGRD, LMYL, LM1
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      CHARACTER LINE*132
+      COMMON
+     ./ATOMC / COORD(3,LM1)
+     ./GRDORG/ IGRST(LMGRD),ISTATE,JSTATE,ISTMUL(LMGRD)
+     ./INOPT2/ IN2(300)
+     ./INOPT3/ XN3(50)
+     ./INOPT4/ XN4(50)
+     ./NBFILE/ NBF(20)
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./YARCON/ YLGCV(LMYL),YLGCT(LMYL),IYLGC(5,LMYL)
+     ./YARLAG/ YLVAL(LMYL),YLGRD(LMYL),YLD(LMYL),NYL
+      DIMENSION LTEMP(40),VALUE(40)
+C *** FILE NUMBERS.
+      NB5    = NBF(5)
+      NB6    = NBF(6)
+C *** INPUT VARIABLES.
+      JOP    = IN2(3)
+      IEF    = IN2(8)
+      IMULT  = IN2(66)
+      MULTCI = IN2(142)
+      NCIGRD = IN2(159)
+      ICROSS = IN2(160)
+C     STOP IF EIGF ROUTINE NOT SELECTED WITH YARKONY CI SEARCH
+C     OR FLEPO ROUTINE NOT SELECTED WITH BEARPARK CI SEARCH
+      IF(ICROSS.EQ.5 .AND. IEF.LE.0) GO TO 1000
+      IF(ICROSS.EQ.4 .AND. IEF.NE.0) GO TO 1005
+C *** READ INPUT AND INITIALIZE COMMON BLOCKS.
+      IF(NCIGRD.GE.1 .AND. NCIGRD.LE.LMGRD) THEN
+         IF(IFORM.LE.0) THEN
+            READ(NB5,500) (IGRST(I),I=1,NCIGRD)
+         ELSE
+            READ(NB5,*)   (IGRST(I),I=1,NCIGRD)
+         ENDIF
+      ELSE
+         IN2(159) = 2
+         IGRST(1) = 1
+         IGRST(2) = 2
+      ENDIF
+C *** SPECIAL CASE OF TWO STATES WITH VARYING MULTIPLICITIES
+      IF(MULTCI.EQ.-1) THEN
+         IF(IFORM.LE.0) THEN
+            READ(NB5,500) (ISTMUL(I),I=1,2)
+         ELSE
+            READ(NB5,*)   (ISTMUL(I),I=1,2)
+         ENDIF
+C        DEFAULT CASE
+         IF(ISTMUL(1).LE.0) ISTMUL(1) = IMULT
+         IF(ISTMUL(2).LE.0) ISTMUL(2) = IMULT
+C        RESET MULTCI IN THE CASE THAT MULTIPLICITIES ARE THE SAME
+         IF(ISTMUL(1).EQ.ISTMUL(2)) IN2(142) = ISTMUL(1)
+      ENDIF
+C *** FURTHER OPTIONS: NINTH LINE
+C     NOTE XN3(27), "GAPCON", IS NO LONGER USED
+      XN3(27) = 0.0D0
+C     CIMINELLI/YARKONY BOTH HAVE TWO OPTIONS
+      IF(ICROSS.EQ.3 .OR. ICROSS.EQ.5) THEN
+         IF(NCIGRD.GE.1 .AND. NCIGRD.LE.LMGRD) THEN
+            IF(IFORM.LE.0) THEN
+               READ(NB5,510) (XN3(I),I=25,26)
+            ELSE
+               READ(NB5,*)   (XN3(I),I=25,26)
+            ENDIF
+         ELSE
+            XN3(25:26) = 0.0D0
+         ENDIF
+         XN4(25:27) = XN3(25:27)
+      ENDIF
+C *** BEARPARK HAS FOUR OPTIONS
+      IF(ICROSS.EQ.4) THEN
+         IF(NCIGRD.GE.1 .AND. NCIGRD.LE.LMGRD) THEN
+            IF(IFORM.LE.0) THEN
+               READ(NB5,510) XN3(25), XN3(26), XN3(36), XN3(37)
+            ELSE
+               READ(NB5,*)   XN3(25), XN3(26), XN3(36), XN3(37)
+            ENDIF
+         ELSE
+            XN3(25:26) = 0.0D0
+C           DEFAULT IS TRUST REGION AND SCALING OFF
+            XN3(36:37) = 0.0D0
+         ENDIF
+         XN4(25:27) = XN3(25:27)
+         XN4(36:37) = XN3(36:37)
+      ENDIF
+C *** READ YARKONY CI SEARCH GEOMETRICAL CONSTRAINTS
+      IF(ICROSS.EQ.5) THEN
+         IF(NCIGRD.GE.1 .AND. NCIGRD.LE.LMGRD) THEN
+            IF(IFORM.LE.0) THEN
+               READ(NB5,520) NYGEOM
+            ELSE
+               READ(NB5,*) NYGEOM
+            ENDIF
+            NYL = 2+NYGEOM
+            IF (NYL.GT.LMYL) GO TO 1010
+            IF (NYGEOM.NE.0) THEN
+               DO 10 I=1,NYGEOM
+                  IF(IFORM.EQ.0) THEN
+                     READ(NB5,530) (IYLGC(J,I),J=1,5)
+                     NVALUE = IYLGC(1,I)+2
+                     READ(NB5,540) YLGCT(I)
+                  ELSE
+                     READ(NB5,'(A)') LINE
+                     CALL NUCHAR (LINE,VALUE,NVALUE)
+                     DO 20 J=1,NVALUE
+                        IYLGC(J,I) = NINT(VALUE(J))
+ 20                  CONTINUE
+                     READ(NB5,*) YLGCT(I)
+                  ENDIF
+C                 CHECK FOR SIMPLE INPUT ERRORS
+                  IF(IYLGC(1,I).LE.0 .OR. IYLGC(1,I).GT.3) GO TO 1020
+                  DO 30 J=2,NVALUE
+                     IF(IYLGC(J,I).LE.0 .OR. IYLGC(J,I).GT.NUMAT)
+     1                   GO TO 1020
+ 30               CONTINUE
+C                 ADJUST DIHEDRAL CONSTRAINT IF NECESSARY
+                  IF(IYLGC(1,I).EQ.3) THEN
+                     IF(YLGCT(I).LT.-180.0D0 .OR.
+     1                  YLGCT(I).GT.360.0D0) GOTO 1030
+                     IF(YLGCT(I).LT.180.0D0) YLGCT(I)=YLGCT(I)+360.0D0
+                  ENDIF
+C                 CALCULATE INITIAL VALUE FOR PRINTING
+                  IF(IYLGC(1,I).EQ.1) THEN
+                     J = IYLGC(2,I)
+                     K = IYLGC(3,I)
+                     YLGCV(I) = SQRT( (COORD(1,K)-COORD(1,J))**2
+     1                               +(COORD(2,K)-COORD(2,J))**2
+     2                               +(COORD(3,K)-COORD(3,J))**2 )
+                  ELSE IF(IYLGC(1,I).EQ.2) THEN
+                     CALL BANGLE(IYLGC(2,I),IYLGC(3,I),IYLGC(4,I),
+     1                           YLGCV(I))
+                  ELSE IF(IYLGC(1,I).EQ.3) THEN
+                     CALL DIHED(IYLGC(2,I),IYLGC(3,I),IYLGC(4,I),
+     1                          IYLGC(5,I),YLGCV(I),SINANG)
+                     IF((YLGCT(I)-180.0D0).GT.YLGCV(I)) THEN
+                        YLGCV(I) = YLGCV(I) + 360.0D0
+                     ENDIF
+                  ENDIF
+ 10            CONTINUE
+            ENDIF
+         ELSE
+            NYL = 2
+         ENDIF
+      ENDIF
+C *** SET DEFAULT VALUES FOR SEARCH
+C     FOR CIMINELLI/BEARPARK: (CALPHA,CBETA)
+C     FOR YARKONY:            (YLVAL[1],YLVAL[2])
+C     CIMINELLI SEARCH.
+      IF(ICROSS.EQ.3) THEN
+         IF(XN4(25).EQ.0.0D0) XN4(25)=5.0D0
+         IF(XN4(26).EQ.0.0D0) XN4(26)=5.0D0
+C     BEARPARK SEARCH.
+      ELSE IF(ICROSS.EQ.4) THEN
+         IF(XN4(25).EQ.0.0D0) XN4(25)=1.0D0
+         IF(XN4(26).EQ.0.0D0) XN4(26)=0.9D0
+C     YARKONY SEARCH
+      ELSE IF(ICROSS.EQ.5) THEN
+         DO 40 I=1,NYL
+            YLVAL(I) = 0.0D0
+            YLGRD(I) = 0.0D0
+ 40      CONTINUE
+         IF(XN4(25).EQ.0.0D0) XN4(25)=1.0D-4
+         IF(XN4(26).EQ.0.0D0) XN4(26)=1.0D0
+C     REDEFINE DEFAULTS FOR IEF=1
+C     NOTE ALSO THAT THE "DEFAULT" IGTHES=0 IS NOT
+C     OVERRIDDEN IN GETHES FOR YARKONY CI SEARCH
+         IF(IEF.EQ.1) THEN
+C           FORCE NEWTON-RAPHSON DIRECTIONS
+            IN2(84) = 2
+C           DO NOT ALLOW DYNAMICAL TRUST RADIUS UPDATES
+            IN2(88) = 1
+         ENDIF
+      ENDIF
+C *** SET STATE LABELS TO ZERO TO FLAG START OF CALCULATION.
+      ISTATE = 0
+      JSTATE = 0
+C *** PRINTING SECTION.
+      IF(JPRINT.GT.-5) THEN
+         WRITE(NB6,100)
+         IF(ICROSS.EQ.3) THEN
+            WRITE(NB6,110) (XN4(I),I=25,26)
+         ELSE IF(ICROSS.EQ.4) THEN
+            WRITE(NB6,115) (XN4(I),I=25,26)
+            WRITE(NB6,125) (XN4(I),I=36,37)
+         ELSE IF(ICROSS.EQ.5) THEN
+            WRITE(NB6,120) (XN4(I),I=25,26)
+         ENDIF
+         WRITE(NB6,130) IN2(159),(IGRST(I),I=1,IN2(159))
+         IF(MULTCI.EQ.-1) WRITE(NB6,135) (ISTMUL(I),I=1,IN2(159))
+         IF(NCIGRD.LE.0 .OR. NCIGRD.GT.LMGRD) WRITE(NB6,140)
+         IF(ICROSS.EQ.5 .AND. NYGEOM.NE.0) THEN
+            WRITE(NB6,150)
+            DO 50 I=1,NYGEOM
+               WRITE(NB6,160) IYLGC(1,I),YLGCV(I),YLGCT(I),
+     1                       (YLGCV(I)-YLGCT(I)),
+     2                       (IYLGC(J,I),J=2,(IYLGC(1,I)+2))
+ 50         CONTINUE
+         ENDIF
+      ENDIF
+      RETURN
+C
+C *** ERROR SECTION.
+ 1000 WRITE(NB6,2000)
+      STOP 'INCONI'
+ 1005 WRITE(NB6,2005)
+      STOP 'INCONI'
+ 1010 WRITE(NB6,2010) NYL
+      STOP 'INCONI'
+ 1020 WRITE(NB6,2020) I
+      WRITE(NB6,530) (IYLGC(J,I),J=1,NVALUE)
+      WRITE(NB6,540) YLGCT(I)
+      STOP 'INCONI'
+ 1030 WRITE(NB6,2030) I
+      WRITE(NB6,540) YLGCT(I)
+      STOP 'INCONI'
+C
+  100 FORMAT(///1X,'*** OPTIONS FOR CONICAL INTERSECTION SEARCH ***',
+     1       /  1X,'*** DEFINED EITHER EXPLICITLY OR BY DEFAULT ***')
+  110 FORMAT(/  1X,'PF C1  =',F10.5,2X,'PF C2  =',F10.5)
+  115 FORMAT(/  1X,'GP C3  =',F10.5,2X,'GP C4  =',F10.5)
+  120 FORMAT(/  1X,'LN T1  =',F10.5,2X,'LN T2  =',F10.5)
+  125 FORMAT(   1X,'TRUST RADIUS =',F10.5,2X,'STEP SCALE =',F10.5)
+  130 FORMAT(// 1X,'NUMBER OF CI GRADIENT VECTORS COMPUTED:  ',I3,
+     1       /  1X,'LABELS OF THE ASSOCIATE CI STATES:    ',2I3)
+  135 FORMAT(   1X,'SPIN MULTIPLICITIES OF THE CI STATES: ',2I3)
+  140 FORMAT(/  1X,'OPTIONS AND CI STATES SELECTED BY DEFAULT')
+  150 FORMAT(/  1X,'GEOMETRY CONSTRAINTS SPECIFIED',
+     1     // 1X,'TYPE     (START)       TARGET         DIFF     ATOMS')
+  160 FORMAT(2X,I2,3X,F10.5,3X,F10.5,3X,F10.5,3X,4I3)
+  500 FORMAT(20I4)
+  510 FORMAT(8F10.5)
+  520 FORMAT(I4)
+  530 FORMAT(I2,4I3)
+  540 FORMAT(F10.5)
+ 2000 FORMAT(///5X,'**** MUST SPECIFY IEF > 0 FOR YARKONY CI SEARCH')
+ 2005 FORMAT(///5X,'**** MUST SPECIFY IEF = 0 FOR BEARPARK CI SEARCH')
+ 2010 FORMAT(///5X,'**** TOO MANY CONSTRAINTS. MAXIMUM IS',I4/)
+ 2020 FORMAT(///5X,'**** WRONG INPUT OF GEOMETRY CONTRAINT', I4/)
+ 2030 FORMAT(///5X,'**** DIHEDRAL TARGET OUT OF RANGE', I4/)
+      END

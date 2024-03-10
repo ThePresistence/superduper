@@ -1,0 +1,24 @@
+     Molecule              Sym. Method  Jobtype  Level      Ref.  MOs/VOs  Select  iroot  lroot  Mult. Irrep. Diag.
+--------------------------------------------------------------------------------------------------------------------
+ 7a  Ethene                D2   OM2     SP+NAC   CISD       RHF     1/ 1   energy     3    def.  sing.  any   def.
+ 7b  Ethene                D2   OM2     SP+NAC   CISD       RHF     1/ 1   energy     3    def.  sing.  ---   def.
+ 7c  Ethene                D2   OM2     SP+NAC   CISD       ROHF    2/ 0   energy     3    def.  sing.  any   def.
+ 7d  Ethene                D2   OM2     SP+NAC   CISD       ROHF    2/ 0   energy     3    def.  sing.  ---   def.
+ 7e  Ethene                D2   OM2     SP+NAC   MR-CISD    RHF     5/ 5   energy    -1    def.  sing.  1,3   def.
+ 7f  Ethene                D2   OM2     SP+NAC   MR-CISD    RHF     5/ 5   energy     3    def.  sing.  ---   def.
+ 7g  Ethene                D2   OM2     SP+NAC   MR-CISD    ROHF    6/ 4   energy    -1    def.  sing.  1,3   def.
+ 7h  Ethene                D2   OM2     SP+NAC   MR-CISD    ROHF    6/ 4   energy     3    def.  sing.  ---   def.
+ 7i  Ethene                D2   OM2     SP+NAC   MR-CISDTQ  RHF     6/ 6   all       -1    def.  sing.  1,3   def.
+ 7j  Ethene                D2   OM2     SP+NAC   MR-CISDTQ  ROHF    7/ 5   all       -1    def.  sing.  1,3   def.
+ 7k  Ethene+point charges  D2   OM2     SP+NAC   MR-CISD    RHF     5/ 5   energy    -1    def.  sing.  1,3   def.
+ 7l  Ethene+point charges  D2   OM2     SP+NAC   MR-CISD    RHF     5/ 5   energy     3    def.  sing.  ---   def.
+ 7m  Ethene+point charges  D2   OM2     SP+NAC   MR-CISD    ROHF    6/ 4   energy    -1    def.  sing.  1,3   def.
+ 7n  Ethene+point charges  D2   OM2     SP+NAC   MR-CISD    ROHF    6/ 4   energy     3    def.  sing.  ---   def.
+ 7o  Benzene               D6h  OM2     SP+NAC   FCI        RHF     3/ 3   all pz    10    def.  sing.  any   def.
+ 7p  Benzene               D6h  OM2     SP+NAC   FCI        RHF     3/ 3   all pz    10    def.  sing.  ---   def.
+ 7q  like 7c, but fully numerical evaluation of the second term of the non-adiabatic coupling matrix elements
+ 7r  like 7d, but fully numerical evaluation of the second term of the non-adiabatic coupling matrix elements
+ 7s  like 7g, but fully numerical evaluation of the second term of the non-adiabatic coupling matrix elements
+ 7t  like 7h, but fully numerical evaluation of the second term of the non-adiabatic coupling matrix elements
+ 7u  like 7m, but fully numerical evaluation of the second term of the non-adiabatic coupling matrix elements
+ 7v  like 7n, but fully numerical evaluation of the second term of the non-adiabatic coupling matrix elements

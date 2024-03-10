@@ -1,0 +1,34 @@
+************************************************************************
+*** testjobs/READ_ME ***
+************************************************************************
+
+This subdirectory contains a suite of 50 standard test jobs
+which are used for validation of MNDO2004. These test jobs cover 
+all important options of the program. If all of them are completed 
+successfully, the first condition for the acceptance of a new 
+program version is met.
+
+Note that these jobs require very little cpu time and are thus not 
+suitable for benchmarking and performance measurements.
+
+The test jobs and the validation procedure are described in the 
+documentation (see file mndo2004.doc).
+
+The input files in subdirectories testjobs and testkeys are equivalent.
+Standard formatted input is used in testjobs.
+MNDO-type keyword  input is used in testkeys.
+
+------------------------------------------------------------------------
+
+READ_ME     This file.
+*.inp       Input files for standard test jobs.
+*.opt       Reference results used by check.awk for comparison.
+
+------------------------------------------------------------------------
+
+The reference results were generated using MNDO97 on a Silicon
+Graphics workstation (R10000, IRIX(6.2)). The executable uses
+machine library routines for BLAS2 and dgemm.
+
+The test jobs combined require less than 60 seconds of cpu time
+with this setup.

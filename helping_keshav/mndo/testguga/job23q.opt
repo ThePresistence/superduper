@@ -1,0 +1,9 @@
+DSC PENTADIENIMINIUM CATION, OM2 (RHF) MRSD-CI
+DSC Twisted geometry, movo=-5, nconj=3 (atoms 4-6)
+DSC Failsafe behaviour for jci1=n, jci2=n
+DSC Expected active space: 11 14 16 18 20 26
+DSC Single-point energy and gradient, ground state
+PRP heat=229.94775
+PRP ciheat=224.69539
+PRP cartgrd=156.89319
+PRP intgrd=156.89319

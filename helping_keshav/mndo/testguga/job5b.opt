@@ -1,0 +1,21 @@
+DSC DISULFIDE (H2S2), P helix, C2, MNDO MRSD-CI for closed-shell singlet
+DSC Active space: 4 MOs, 3 VOs - defined explicitly via input
+DSC Single-point energy calculation, 3 lowest states.
+DSC Transition 1->2 (A) must have a negative rotational strength.
+DSC Transition 1->3 (B) must have a positive rotational strength.
+PRP heat=13.87207:13.87207
+PRP ciheat=8.93569:8.93569
+PRP deltae=0.000000:2.743153:2.760747
+PRP dipole=0.440654:0.018061:0.388903
+PRP fr=0.000031:0.001060
+PRP fp=0.043892:0.057477
+PRP frp=0.001159:0.004847
+PRP rot=-1.308507:1.079438
+PRP calref=-1.308507:1.079438
+PRP deltae2=0.000000:2.743153:2.760747
+PRP dipole2=0.440654:0.018061:0.388903
+PRP fr2=0.000031:0.001060
+PRP fp2=0.043892:0.057477
+PRP frp2=0.001159:0.004847
+PRP rot2=-1.308507:1.079438
+PRP calref2=-1.308507:1.079438

@@ -1,0 +1,15 @@
+This directory contains the Fortran BLAS routines from netlib.org, in the
+version of April 19, 2011 (downloaded from "http://www.netlib.org/blas/").
+The files in this directory have been generated the following way:
+
+  tar xzvf blas1.tgz
+  tar xzvf blas2.tgz
+  tar xzvf blas3.tgz
+  tar xzvf blas.tgz
+  mv BLAS3/dgemm.f .
+  cat BLAS1/d*.f BLAS1/idamax.f > dblas1.f
+  cat BLAS2/d*.f > dblas2.f
+  cat BLAS3/d*.f > dblas3.f
+  cat BLAS/z*.f BLAS1/izamax.f > zblas.f
+
+lsame.f and xerbla.f have been moved here from the LAPACK distribution.

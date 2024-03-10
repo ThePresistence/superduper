@@ -1,0 +1,190 @@
+      SUBROUTINE GTPREP (IGTO,IOPPRT)
+C     *
+C     PRECALCULATE TERMS FOR GAUSSIAN INTEGRALS INVOLVING ATOMS H,C.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     IGTO      TYPE OF GAUSSIAN BASIS (I).
+C               = 0  STO-3G FOR H, STANDARD ECP BASIS FOR C (ECPSET).
+C               = n  STO-nG BASIS FOR H AND C, n = 2..6
+C     IOPPRT    PRINTING FLAG (I).
+C     *
+      USE LIMIT, ONLY: LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (PT7853=0.785398163397448D0)
+C     PARAMETER (PT7853=PI/4.0D0)
+      PARAMETER (XX3498=34.9868366552497D0)
+C     PARAMETER (XX3498=SQRT(PI)*PI*PI*2.0D0)
+      COMMON
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./NBFILE/ NBF(20)
+     ./PAROPT/ USS(LMZ),UPP(LMZ),Z(LMZ),PARDUM(LMZ*4)
+     ./PGEOM1/ GPH(9),EPH(9),DP00PH(9),GPC(9),EPC(9),DP00PC(9),
+     .         DP10PC(9),DP11PC(9),SQ1HH(9,9),SQ2HH(9,9),SQ1HC(9,9),
+     .         SQ2HC(9,9),SQ1CC(9,9),SQ2CC(9,9)
+     ./PGEOM2/ NHH,NHC,NCC
+      DIMENSION EH(6),CSH(6),CPH(6)
+      DIMENSION EC(6),CSC(6),CPC(6)
+C *** INITIALIZATION.
+      IF(IGTO.GE.2 .AND. IGTO.LE.6) THEN
+         NGSH = IGTO
+         NGSC = IGTO
+      ELSE
+         NGSH = 3
+         NGSC = 3
+      ENDIF
+      FAC    = (TWO/PI)**0.75D0
+      FAC2   = FAC*TWO
+C *** DEFINE STO3G BASIS FOR HYDROGEN.
+      CALL STONG  (EH,CSH,CPH,NGSH,1)
+      CALL RENORM (EH,CSH,NGSH,0)
+      Z2     = Z(1)**2
+      DO 10 I=1,NGSH
+      EH(I)  = EH(I)*Z2
+      CSH(I) = CSH(I)*FAC*EH(I)**0.75D0
+   10 CONTINUE
+C *** PRECALCULATE TERMS (PINF) FOR HYDROGEN.
+      NHH    = NGSH*NGSH
+      IND    = 0
+      DO 21 I=1,NGSH
+      DO 20 J=1,NGSH
+      IND    = IND+1
+      GAB    = EH(I)+EH(J)
+      EAB    = ONE/GAB
+      X      = XX3498*EAB
+      GPH(IND) = GAB
+      EPH(IND) = EAB
+      DP00PH(IND) = X*CSH(I)*CSH(J)
+   20 CONTINUE
+   21 CONTINUE
+C *** DEFINE GAUSSIAN BASIS FOR CARBON.
+C     DEFINE PRIMITIVES.
+      IF(IGTO.LE.0) THEN
+         CALL ECPSET (EC,CSC,CPC,NGSC,6)
+      ELSE
+         CALL STONG  (EC,CSC,CPC,NGSC,2)
+      ENDIF
+      CALL RENORM (EC,CSC,NGSC,0)
+      CALL RENORM (EC,CPC,NGSC,1)
+      Z2     = Z(6)**2
+      DO 30 I=1,NGSC
+      EC(I)  = EC(I)*Z2
+      CSC(I) = CSC(I)*FAC *EC(I)**0.75D0
+      CPC(I) = CPC(I)*FAC2*EC(I)**1.25D0
+   30 CONTINUE
+C *** PRECALCULATE TERMS (PINF) FOR CARBON.
+      NCC    = NGSC*NGSC
+      IND    = 0
+      DO 41 I=1,NGSC
+      DO 40 J=1,NGSC
+      IND    = IND+1
+      GAB    = EC(I)+EC(J)
+      EAB    = ONE/GAB
+      X      = XX3498*EAB
+      GPC(IND) = GAB
+      EPC(IND) = EAB
+      DP00PC(IND) = X*CSC(I)*CSC(J)
+      DP10PC(IND) = X*CPC(I)*CSC(J)
+      DP11PC(IND) = X*CPC(I)*CPC(J)
+      DP00PC(IND) = DP00PC(IND)/DP11PC(IND)
+      DP10PC(IND) = DP10PC(IND)/DP11PC(IND)
+   40 CONTINUE
+   41 CONTINUE
+C *** PRECALCULATE SQRT-TERMS FOR SP0000.
+      IND    = 0
+      DO 61 I=1,NGSH
+      DO 60 J=1,NGSH
+      IND    = IND+1
+      GAB    = EH(I)+EH(J)
+      KND    = 0
+      DO 51 K=1,NGSH
+      DO 50 L=1,NGSH
+      KND    = KND+1
+      GCD    = EH(K)+EH(L)
+      SQ1HH(IND,KND) = SQRT(PT7853/(GAB*GCD))
+      SQ2HH(IND,KND) = ONE/SQRT(GAB+GCD)
+   50 CONTINUE
+   51 CONTINUE
+   60 CONTINUE
+   61 CONTINUE
+C *** PRECALCULATE SQRT-TERMS FOR SP0011.
+      NHC    = NGSH*NGSC
+      IND    = 0
+      DO 81 I=1,NGSH
+      DO 80 J=1,NGSH
+      IND    = IND+1
+      GAB    = EH(I)+EH(J)
+      KND    = 0
+      DO 71 K=1,NGSC
+      DO 70 L=1,NGSC
+      KND    = KND+1
+      GCD    = EC(K)+EC(L)
+      SQ1HC(IND,KND) = SQRT(PT7853/(GAB*GCD))
+      SQ2HC(IND,KND) = ONE/SQRT(GAB+GCD)
+   70 CONTINUE
+   71 CONTINUE
+   80 CONTINUE
+   81 CONTINUE
+C *** PRECALCULATE SQRT-TERMS FOR SP1111.
+      IND    = 0
+      DO 101 I=1,NGSC
+      DO 100 J=1,NGSC
+      IND    = IND+1
+      GAB    = EC(I)+EC(J)
+      KND    = 0
+      DO 91 K=1,NGSC
+      DO 90 L=1,NGSC
+      KND    = KND+1
+      GCD    = EC(K)+EC(L)
+      SQ1CC(IND,KND) = SQRT(PT7853/(GAB*GCD))
+      SQ2CC(IND,KND) = ONE/SQRT(GAB+GCD)
+   90 CONTINUE
+   91 CONTINUE
+  100 CONTINUE
+  101 CONTINUE
+C *** DEBUG PRINT.
+      IF(IOPPRT.GT.5) THEN
+         NB6 = NBF(6)
+         WRITE(NB6,400) NHH,NHC,NCC
+         WRITE(NB6,410) (EH(I),I=1,NGSH)
+         WRITE(NB6,420) (CSH(I),I=1,NGSH)
+         WRITE(NB6,430) (EC(I),I=1,NGSC)
+         WRITE(NB6,440) (CSC(I),I=1,NGSC)
+         WRITE(NB6,450) (CPC(I),I=1,NGSC)
+         WRITE(NB6,510) (GPH(I),I=1,9)
+         WRITE(NB6,520) (EPH(I),I=1,9)
+         WRITE(NB6,530) (DP00PH(I),I=1,9)
+         WRITE(NB6,540) (GPC(I),I=1,9)
+         WRITE(NB6,550) (EPC(I),I=1,9)
+         WRITE(NB6,560) (DP00PC(I),I=1,9)
+         WRITE(NB6,570) (DP10PC(I),I=1,9)
+         WRITE(NB6,580) (DP11PC(I),I=1,9)
+         WRITE(NB6,590) ((SQ1HH(I,J),J=1,9),I=1,9)
+         WRITE(NB6,600) ((SQ2HH(I,J),J=1,9),I=1,9)
+         WRITE(NB6,610) ((SQ1HC(I,J),J=1,9),I=1,9)
+         WRITE(NB6,620) ((SQ2HC(I,J),J=1,9),I=1,9)
+         WRITE(NB6,630) ((SQ1HC(I,J),J=1,9),I=1,9)
+         WRITE(NB6,640) ((SQ2HC(I,J),J=1,9),I=1,9)
+      ENDIF
+      RETURN
+  400 FORMAT(// 1X,'DEBUG PRINT FROM GTPREP',/,' NHH,NHC,NCC:',3I10)
+  410 FORMAT(   1X,'EH(I)      :',6F15.10)
+  420 FORMAT(   1X,'CSH(I)     :',6F15.10)
+  430 FORMAT(   1X,'EC(I)      :',6F15.10)
+  440 FORMAT(   1X,'CSC(I)     :',6F15.10)
+  450 FORMAT(   1X,'CPC(I)     :',6F15.10)
+  510 FORMAT(   1X,'GPH(I)     :',9F10.5)
+  520 FORMAT(   1X,'EPH(I)     :',9F10.5)
+  530 FORMAT(   1X,'DP00PH(I)  :',9F10.5)
+  540 FORMAT(   1X,'GPC(I)     :',9F10.5)
+  550 FORMAT(   1X,'EPC(I)     :',9F10.5)
+  560 FORMAT(   1X,'DP00PC(I)  :',9F10.5)
+  570 FORMAT(   1X,'DP10PC(I)  :',9F10.5)
+  580 FORMAT(   1X,'DP11PC(I)  :',9F10.5)
+  590 FORMAT(   1X,'SQ1HH(I,J) :',9F10.5,/,(13X,9F10.5))
+  600 FORMAT(   1X,'SQ2HH(I,J) :',9F10.5,/,(13X,9F10.5))
+  610 FORMAT(   1X,'SQ1HC(I,J) :',9F10.5,/,(13X,9F10.5))
+  620 FORMAT(   1X,'SQ2HC(I,J) :',9F10.5,/,(13X,9F10.5))
+  630 FORMAT(   1X,'SQ1CC(I,J) :',9F10.5,/,(13X,9F10.5))
+  640 FORMAT(   1X,'SQ2CC(I,J) :',9F10.5,/,(13X,9F10.5))
+      END

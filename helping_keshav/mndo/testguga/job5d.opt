@@ -1,0 +1,7 @@
+DSC DISULFIDE (H2S2), P helix, C2, MNDO/d MRSD-CI for closed-shell singlet
+DSC Active space: 4 MOs, 3 VOs - defined explicitly via input
+DSC Single-point energy and gradient of ground state.
+PRP heat=3.71806:3.71806
+PRP ciheat=-1.57017:-1.57017
+PRP cartgrd=55.60091:55.60091
+PRP intgrd=64.75299:64.75299

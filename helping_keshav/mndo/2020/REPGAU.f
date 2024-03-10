@@ -1,0 +1,630 @@
+      SUBROUTINE REPGAU (R,A,ISHELL,KSHELL,NI,NK,MODE)
+C     *
+C     GAUSSIAN TWO-CENTER TWO-ELECTRON INTEGRALS (SP BASIS).
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     R         INTERATOMIC DISTANCE, IN BOHR (I).
+C     A(22)     TWO-ELECTRON INTEGRALS, IN EV (O).
+C     ISHELL    NUMBERS OF CURRENT SHELL AT FIRST  ATOM (I).
+C     KSHELL    NUMBERS OF CURRENT SHELL AT SECOND ATOM (I).
+C     NI        ATOMIC NUMBER OF FIRST  ATOM (I).
+C     NK        ATOMIC NUMBER OF SECOND ATOM (I).
+C     MODE      TYPES OF INTEGRALS COMPUTED (I).
+C               = 0  ALL TWO-ELECTRON INTEGRALS.
+C               = I  ONLY TWO-CENTER COULOMB INTEGRALS.
+C     *
+C     MEANING OF SOME DATA FROM COMMON BLOCKS (I).
+C     KTYPE()   TYPE OF SHELL: 0 S, 1 SP.
+C     KNG()     NUMBER OF PRIMITIVES IN A GIVEN SHELL.
+C     KSTART()  INDEX OF FIRST PRIMITIVE IN A GIVEN SHELL.
+C     *
+C     NOTE ON COMMON BLOCKS:
+C     AUXVAR    FOR VARIABLES SHARED WITH CALLED ROUTINES (S).
+C     CONSTF    GENERAL CONSTANTS (I).
+C     CONSTN    GENERAL CONSTANTS (I).
+C     EXTRA     RESULTS: TWO-ELECTRON INTEGRALS IN EV (S).
+C     FMGTO1    LIMITS FOR ARGUMENTS OF ERROR FUNCTION (I).
+C     GAUSS1    BASIS SET, SHELL INFORMATION (I).
+C     GAUSS3    BASIS SET, EXPONENTS AND COEFFICIENTS (I).
+C     PGEOM     INTERMEDIATE RESULTS, USED ONLY HERE (S).
+C     PGEOM1    PRECALCULATED INTERMEDIATE RESULTS FOR HH,HC,CC (I).
+C     PGEOM2    FLAGS FOR PRECALCULATED INTERMEDIATE RESULTS (I).
+C     *
+C     THIS ROUTINE TREATS THE FOLLOWING COMBINATIONS OF ANGULAR
+C     QUANTUM NUMBERS (AS DEFINED IN KTYPE):
+C     0000      ITYPE=1, (SS,SS)
+C     0011      ITYPE=2, UP TO (SS,PP)
+C     1100      ITYPE=3, UP TO (PP,SS), INTERNAL REORDERING EMPLOYED
+C     1111      ITYPE=4, UP TO (PP,PP)
+C     *
+C     THE CODE IS ADAPTED FROM PUBLIC-DOMAIN ROUTINES IN GAUSSIAN70.
+C     CALLS TO THE FOLLOWING ROUTINES ARE PRESENT:
+C     PINF (INLINED)     TO PERFORM PRELIMINARY LOOP OVER I,J (P-LOOP).
+C     SP0000 TO SP1111   TO CALCULATE THE LOCAL REPULSION INTEGRALS.
+C     SP111C             TO CALCULATE A SUBSET OF SP1111 INTEGRALS.
+C     *
+      USE LIMIT, ONLY: LMGP, LMGS
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (XX3498=34.9868366552497D0)
+C     PARAMETER (XX3498=SQRT(PI)*PI*PI*2.0D0)
+      COMMON
+     ./AUXVAR/ DQ00,DQ01,DQ10,DQ11,EAB,ECD,GAB,GCD,RAB,NGANGB
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./EXTRA / G(22)
+     ./FMGTO1/ XLIM,XMAX
+     ./GAUSS1/ KSTART(LMGS),KNG(LMGS),KTYPE(LMGS),NSHELL,NBASIS
+     ./GAUSS3/ EXX(LMGP),C1(LMGP),C2(LMGP),C3(LMGP)
+     ./INOPT2/ IN2(300)
+     ./PGEOM / GP(36),EP(36),DP00P(36),DP01P(36),DP10P(36),DP11P(36)
+     ./PGEOM1/ GPH(9),EPH(9),DP00PH(9),GPC(9),EPC(9),DP00PC(9),
+     .         DP10PC(9),DP11PC(9),SQ1HH(9,9),SQ2HH(9,9),SQ1HC(9,9),
+     .         SQ2HC(9,9),SQ1CC(9,9),SQ2CC(9,9)
+     ./PGEOM2/ NHH,NHC,NCC
+      DIMENSION A(22),SQ(36)
+C$OMP THREADPRIVATE (/EXTRA/,/PGEOM/,/AUXVAR/)
+C *** INITIALIZATION.
+      RAB    = R
+      RAB2   = R*R
+      LIT    = KTYPE(ISHELL)
+      LKT    = KTYPE(KSHELL)
+      ITYPE  = 2*LIT+LKT+1
+C     XX3498 = SQRT(PI)*PI*PI*TWO
+C     DO 10 K=1,22
+C     A(K)  = ZERO
+C  10 CONTINUE
+C *** SWITCH ORDER OF SHELLS FOR COMBINATION 1100.
+C     COMBINATIONS 0000,0011,1111 ARE UNALTERED.
+      IF(LIT.LE.LKT) THEN
+         INEW  = ISHELL
+         KNEW  = KSHELL
+         NINEW = NI
+         NKNEW = NK
+      ELSE
+         INEW  = KSHELL
+         KNEW  = ISHELL
+         NINEW = NK
+         NKNEW = NI
+      ENDIF
+      IA     = KSTART(INEW)
+      KA     = KSTART(KNEW)
+      IMAX   = KNG(INEW)+IA-1
+      KMAX   = KNG(KNEW)+KA-1
+      NGANGB = KNG(INEW)*KNG(INEW)
+C *** INITIALIZATION FOR REMAINING CASES 0000, 0011, 1111.
+      IF(ITYPE.EQ.1) THEN
+         G(1)  = ZERO
+      ELSE IF(ITYPE.EQ.2 .OR. ITYPE.EQ.3) THEN
+         G(1)  = ZERO
+         G(5)  = ZERO
+         G(11) = ZERO
+         G(12) = ZERO
+      ELSE
+         DO 20 K=1,22
+         G(K)  = ZERO
+   20    CONTINUE
+      ENDIF
+C *** CHECK FOR SPECIAL CASES.
+      IF(NINEW.EQ.1 .AND. NKNEW.EQ.1 .AND. NHH.GT.0) GO TO 100
+      IF(NINEW.EQ.1 .AND. NKNEW.EQ.6 .AND. NHC.GT.0) GO TO 200
+      IF(NINEW.EQ.6 .AND. NKNEW.EQ.6 .AND. NCC.GT.0) GO TO 300
+C *** INLINE CODE FROM SUBROUTINE PINF, PRELIMINARY P-LOOP.
+C     CALL PINF
+      IND    = 0
+CDIR$ NOVECTOR
+C$DIR SCALAR
+      DO 40 I=IA,IMAX
+      GA     = EXX(I)
+      CSAI   = C1(I)
+      CPAI   = C2(I)
+C$DIR SCALAR
+      DO 30 J=IA,IMAX
+      IND    = IND+1
+      GAB    = GA+EXX(J)
+      EAB    = ONE/GAB
+      X      = XX3498*EAB
+      GP(IND)= GAB
+      EP(IND)= EAB
+      DP00P(IND) = X*CSAI*C1(J)
+      IF(ITYPE.EQ.4) THEN
+         DP10P(IND) = X*CPAI*C1(J)
+         DP11P(IND) = X*CPAI*C2(J)
+         DP00P(IND) = DP00P(IND)/DP11P(IND)
+         DP10P(IND) = DP10P(IND)/DP11P(IND)
+      ENDIF
+   30 CONTINUE
+   40 CONTINUE
+C *** BEGIN Q LOOP
+C$DIR SCALAR
+      DO 70 K=KA,KMAX
+      GC     = EXX(K)
+C$DIR SCALAR
+      DO 60 L=KA,KMAX
+      GD     = EXX(L)
+      GCD    = GC+GD
+      ECD    = ONE/GCD
+      V      = ECD*EV
+      DQ00   = C1(K)*C1(L)*V
+      DQ10   = C2(K)*C1(L)*V
+      DQ11   = C2(K)*C2(L)*V
+      DO 50 I=1,NGANGB
+      X      = RAB2/(EP(I)+ECD)
+      IF(X.GT.XLIM) THEN
+         SQ(I) = PT5*SQRT(PI/(GP(I)*GCD))
+      ELSE
+         SQ(I) = ONE/SQRT(GP(I)+GCD)
+      ENDIF
+   50 CONTINUE
+C     INNER LOOPS OVER P
+      IF(ITYPE.EQ.1) THEN
+         CALL SP0000 (SQ,SQ,EP,DP00P)
+      ELSE IF(ITYPE.EQ.2 .OR. ITYPE.EQ.3) THEN
+         CALL SP0011 (SQ,SQ,EP,DP00P)
+      ELSE IF(MODE.LE.0) THEN
+         CALL SP1111 (SQ,SQ,EP,DP00P,DP10P,DP11P)
+      ELSE IF(MODE.GT.0) THEN
+         CALL SP111C (SQ,SQ,EP,DP00P,DP10P,DP11P)
+      ENDIF
+   60 CONTINUE
+   70 CONTINUE
+C     PUT INTEGRALS IN STANDARD ORDER, IF NECESSARY.
+      IF(ITYPE.EQ.3) THEN
+         G(2)  =-G(5)
+         G(3)  = G(11)
+         G(4)  = G(12)
+         G(5)  = ZERO
+         G(11) = ZERO
+         G(12) = ZERO
+      ENDIF
+C     SAVE INTEGRALS IN ARRAY A(22).
+      A(1)   = G(1)
+      IF(ITYPE.EQ.2) THEN
+         A(5)  = G(5)
+         A(11) = G(11)
+         A(12) = G(12)
+      ELSE IF(ITYPE.EQ.3) THEN
+         A(2)  = G(2)
+         A(3)  = G(3)
+         A(4)  = G(4)
+      ELSE
+         DO 80 K=2,22
+         A(K)  = G(K)
+   80    CONTINUE
+      ENDIF
+      RETURN
+C *** SPECIAL SECTION FOR HH PAIR, Q-LOOP.
+  100 KL     = 0
+C$DIR SCALAR
+      DO 170 K=KA,KMAX
+      GC     = EXX(K)
+C$DIR SCALAR
+      DO 160 L=KA,KMAX
+      KL     = KL+1
+      GD     = EXX(L)
+      GCD    = GC+GD
+      ECD    = ONE/GCD
+      DQ00   = C1(K)*C1(L)*ECD*EV
+      CALL SP0000 (SQ1HH(1,KL),SQ2HH(1,KL),EPH,DP00PH)
+  160 CONTINUE
+  170 CONTINUE
+      A(1)   = G(1)
+      RETURN
+C *** SPECIAL SECTION FOR HC PAIR, Q-LOOP.
+  200 KL     = 0
+C$DIR SCALAR
+      DO 270 K=KA,KMAX
+      GC     = EXX(K)
+C$DIR SCALAR
+      DO 260 L=KA,KMAX
+      KL     = KL+1
+      GD     = EXX(L)
+      GCD    = GC+GD
+      ECD    = ONE/GCD
+      V      = ECD*EV
+      DQ00   = C1(K)*C1(L)*V
+      DQ10   = C2(K)*C1(L)*V
+      DQ11   = C2(K)*C2(L)*V
+      CALL SP0011 (SQ1HC(1,KL),SQ2HC(1,KL),EPH,DP00PH)
+  260 CONTINUE
+  270 CONTINUE
+C     PUT INTEGRALS IN STANDARD ORDER, IF NECESSARY.
+      IF(ITYPE.EQ.3) THEN
+         G(2)  =-G(5)
+         G(3)  = G(11)
+         G(4)  = G(12)
+         G(5)  = ZERO
+         G(11) = ZERO
+         G(12) = ZERO
+      ENDIF
+C     SAVE INTEGRALS IN ARRAY A(22).
+      A(1)   = G(1)
+      IF(ITYPE.EQ.2) THEN
+         A(5)  = G(5)
+         A(11) = G(11)
+         A(12) = G(12)
+      ELSE IF(ITYPE.EQ.3) THEN
+         A(2)  = G(2)
+         A(3)  = G(3)
+         A(4)  = G(4)
+      ENDIF
+      RETURN
+C *** SPECIAL SECTION FOR CC PAIR, Q-LOOP.
+  300 KL     = 0
+C$DIR SCALAR
+      DO 370 K=KA,KMAX
+      GC     = EXX(K)
+C$DIR SCALAR
+      DO 360 L=KA,KMAX
+      KL     = KL+1
+      GD     = EXX(L)
+      GCD    = GC+GD
+      ECD    = ONE/GCD
+      V      = ECD*EV
+      DQ00   = C1(K)*C1(L)*V
+      DQ10   = C2(K)*C1(L)*V
+      DQ11   = C2(K)*C2(L)*V
+      IF(MODE.LE.0) THEN
+         CALL SP1111 (SQ1CC(1,KL),SQ2CC(1,KL),EPC,DP00PC,DP10PC,DP11PC)
+      ELSE
+         CALL SP111C (SQ1CC(1,KL),SQ2CC(1,KL),EPC,DP00PC,DP10PC,DP11PC)
+      ENDIF
+  360 CONTINUE
+  370 CONTINUE
+C     SAVE INTEGRALS IN ARRAY A(22).
+      DO 380 K=1,22
+      A(K)   = G(K)
+  380 CONTINUE
+      RETURN
+      END
+C     ******************************************************************
+      SUBROUTINE SP0000 (SQ1,SQ2,EP,DP00P)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (TWENTY=20.0D0)
+      COMMON
+     ./AUXVAR/ DQ00,DQ01,DQ10,DQ11,EAB,ECD,GAB,GCD,RAB,NGANGB
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./EXTRA / G0000,G(21)
+     ./FMGTO1/ XLIM,XMAX
+     ./MATRIX/ A0(400),B0(400),C0(400),
+     .         A1(400),B1(400),C1(400),A2(400),B2(400),C2(400),
+     .         A3(400),B3(400),C3(400),A4(400),B4(400),C4(400)
+C$OMP THREADPRIVATE (/EXTRA/,/AUXVAR/)
+C     DIMENSION SQ1(36),SQ2(36),EP(36),DP00P(36)
+      DIMENSION SQ1(36),SQ2(36),EP(*),DP00P(*)
+      DIMENSION FMT(5)
+      H0000  = ZERO
+      RAB2   = RAB*RAB
+      RABINV = ONE/RAB
+CDIR$ NOVECTOR
+C$DIR SCALAR
+      DO 10 I=1,NGANGB
+      X      = RAB2/(EP(I)+ECD)
+      IF(X.GT.XLIM) THEN
+         F0  = DP00P(I)*SQ1(I)*RABINV
+      ELSE IF(X.LT.XMAX) THEN
+         Y   = DP00P(I)*SQ2(I)
+         QQ  = X*TWENTY
+         TH  = QQ-AINT(QQ)
+         N   = NINT(QQ-TH)
+         TH2 = TH*(TH-ONE)
+         TH3 = TH2*(TH-TWO)
+         TH4 = TH2*(TH+ONE)
+         F0  = (A0(N+1)+TH*B0(N+1)-TH3*C0(N+1)+TH4*C0(N+2))*Y
+      ELSE
+         Y   = DP00P(I)*SQ2(I)
+         CALL FMTGEN (FMT,X,1,ICK)
+         F0  = FMT(1)*Y
+      ENDIF
+      H0000  = H0000+F0
+   10 CONTINUE
+      G0000  = G0000+H0000*DQ00
+      RETURN
+      END
+C     ******************************************************************
+      SUBROUTINE SP0011 (SQ1,SQ2,EP,DP00P)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (TWENTY=20.0D0)
+      PARAMETER (ONEPT5=1.5D0)
+      COMMON
+     ./AUXVAR/ DQ00,DQ01,DQ10,DQ11,EAB,ECD,GAB,GCD,RAB,NGANGB
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./EXTRA / G0000,G3000,G3300,G2200,G0030,G3030,G2020,G3330,
+     .         G2230,G2320,G0033,G0022,G3033,G3022,G2023,G3333,
+     .         G2233,G3322,G2222,G2323,G1122,G1212
+     ./FMGTO1/ XLIM,XMAX
+     ./MATRIX/ A0(400),B0(400),C0(400),
+     .         A1(400),B1(400),C1(400),A2(400),B2(400),C2(400),
+     .         A3(400),B3(400),C3(400),A4(400),B4(400),C4(400)
+C$OMP THREADPRIVATE (/EXTRA/,/AUXVAR/)
+C     DIMENSION SQ1(36),SQ2(36),EP(36),DP00P(36)
+      DIMENSION SQ1(36),SQ2(36),EP(*),DP00P(*)
+      DIMENSION FMT(5)
+      H0000  = ZERO
+      H0001  = ZERO
+      H0033  = ZERO
+      RAB2   = RAB*RAB
+      RABINV = ONE/RAB
+CDIR$ NOVECTOR
+C$DIR SCALAR
+      DO 10 I=1,NGANGB
+      G      = ONE/(EP(I)+ECD)
+      X      = G*RAB2
+      G      = G*ECD
+      IF(X.GT.XLIM) THEN
+         F0  = DP00P(I)*SQ1(I)*RABINV
+         GTX = ECD*RABINV*RABINV
+         F1  = PT5*F0*GTX
+         F2  = ONEPT5*F1*GTX
+      ELSE IF(X.LT.XMAX) THEN
+         Y   = DP00P(I)*SQ2(I)
+         GY  = G*Y
+         GGY = G*GY
+         QQ  = X*TWENTY
+         TH  = QQ-AINT(QQ)
+         N   = NINT(QQ-TH)
+         TH2 = TH *(TH-ONE)
+         TH3 = TH2*(TH-TWO)
+         TH4 = TH2*(TH+ONE)
+         F0  = (A0(N+1)+TH*B0(N+1)-TH3*C0(N+1)+TH4*C0(N+2))*Y
+         F1  = (A1(N+1)+TH*B1(N+1)-TH3*C1(N+1)+TH4*C1(N+2))*GY
+         F2  = (A2(N+1)+TH*B2(N+1)-TH3*C2(N+1)+TH4*C2(N+2))*GGY
+      ELSE
+         Y   = DP00P(I)*SQ2(I)
+         GY  = G*Y
+         GGY = G*GY
+         CALL FMTGEN (FMT,X,3,ICK)
+         F0  = FMT(1)*Y
+         F1  = FMT(2)*GY
+         F2  = FMT(3)*GGY
+      ENDIF
+      H0000  = H0000+F0
+      H0001  = H0001+F1
+      H0033  = H0033+F2
+   10 CONTINUE
+      H0030  =-H0001*RAB
+      H0033  = H0033*RAB2
+      H0022  = PT5*ECD*(H0000-H0001)
+      H0033  = H0033+H0022
+      G0000  = G0000+H0000*DQ00
+      G0022  = G0022+H0022*DQ11
+      G0033  = G0033+H0033*DQ11
+      G0030  = G0030+H0030*DQ10
+      RETURN
+      END
+C     ******************************************************************
+      SUBROUTINE SP1111 (SQ1,SQ2,EP,DP00P,DP10P,DP11P)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (TWENTY=20.0D0)
+      PARAMETER (ONEPT5=1.5D0)
+      PARAMETER (TWOPT5=2.5D0)
+      PARAMETER (THRPT5=3.5D0)
+      COMMON
+     ./AUXVAR/ DQ00,DQ01,DQ10,DQ11,EAB,ECD,GAB,GCD,RAB,NGANGB
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./EXTRA / G0000,G3000,G3300,G2200,G0030,G3030,G2020,G3330,
+     .         G2230,G2320,G0033,G0022,G3033,G3022,G2023,G3333,
+     .         G2233,G3322,G2222,G2323,G1122,G1212
+     ./FMGTO1/ XLIM,XMAX
+     ./MATRIX/ AA(400),BA(400),CA(400),
+     .         AB(400),BB(400),CB(400),AC(400),BC(400),CC(400),
+     .         AD(400),BD(400),CD(400),AE(400),BE(400),CE(400)
+C$OMP THREADPRIVATE (/EXTRA/,/AUXVAR/)
+C     DIMENSION SQ1(36),SQ2(36),EP(36),DP00P(36),DP10P(36),DP11P(36)
+      DIMENSION SQ1(36),SQ2(36),EP(*),DP00P(*),DP10P(*),DP11P(*)
+      DIMENSION FMT(5)
+      X0     = ZERO
+      X1     = ZERO
+      X2     = ZERO
+      W1     = ZERO
+      W2     = ZERO
+      W3     = ZERO
+      S0     = ZERO
+      S1     = ZERO
+      S2     = ZERO
+      T1     = ZERO
+      T2     = ZERO
+      T3     = ZERO
+      T4     = ZERO
+      RAB2   = RAB*RAB
+      RAB3   = RAB*RAB2
+      RAB4   = RAB*RAB3
+      RABINV = ONE/RAB
+CDIR$ NOVECTOR
+C$DIR SCALAR
+      DO 10 IND=1,NGANGB
+      EAB    = EP(IND)
+      EAB2   = EAB*EAB
+      G      = ONE/(EAB+ECD)
+      X      = G*RAB2
+      DP00   = DP00P(IND)
+      EDP10  = EAB*DP10P(IND)
+      IF(X.GT.XLIM) THEN
+         F0  = DP11P(IND)*SQ1(IND)*RABINV
+         GTX = RABINV*RABINV
+         F1  = PT5*F0*GTX
+         F2  = ONEPT5*F1*GTX
+         F3  = TWOPT5*F2*GTX
+         F4  = THRPT5*F3*GTX
+      ELSE IF(X.LT.XMAX) THEN
+         Y   = DP11P(IND)*SQ2(IND)
+         GY  = G*Y
+         GGY = G*GY
+         GGGY= G*GGY
+         QQ  = X*TWENTY
+         TH  = QQ-AINT(QQ)
+         N   = NINT(QQ-TH)
+         TH2 = TH* (TH-ONE)
+         TH3 = TH2*(TH-TWO)
+         TH4 = TH2*(TH+ONE)
+         F0  = (AA(N+1)+TH*BA(N+1)-TH3*CA(N+1)+TH4*CA(N+2))*Y
+         F1  = (AB(N+1)+TH*BB(N+1)-TH3*CB(N+1)+TH4*CB(N+2))*GY
+         F2  = (AC(N+1)+TH*BC(N+1)-TH3*CC(N+1)+TH4*CC(N+2))*GGY
+         F3  = (AD(N+1)+TH*BD(N+1)-TH3*CD(N+1)+TH4*CD(N+2))*GGGY
+         F4  = (AE(N+1)+TH*BE(N+1)-TH3*CE(N+1)+TH4*CE(N+2))*GGGY*G
+      ELSE
+         Y   = DP11P(IND)*SQ2(IND)
+         GY  = G*Y
+         GGY = G*GY
+         GGGY= G*GGY
+         CALL FMTGEN (FMT,X,5,ICK)
+         F0  = FMT(1)*Y
+         F1  = FMT(2)*GY
+         F2  = FMT(3)*GGY
+         F3  = FMT(4)*GGGY
+         F4  = FMT(5)*GGGY*G
+      ENDIF
+      X0     = X0+F0*DP00
+      X1     = X1+F1*DP00
+      X2     = X2+F2*DP00
+      W1     = W1+F1*EDP10
+      W2     = W2+F2*EDP10
+      W3     = W3+F3*EDP10
+      S0     = S0+F0*EAB
+      S1     = S1+F1*EAB
+      S2     = S2+F2*EAB
+      T1     = T1+F1*EAB2
+      T2     = T2+F2*EAB2
+      T3     = T3+F3*EAB2
+      T4     = T4+F4*EAB2
+   10 CONTINUE
+      HECD   = PT5*ECD
+      ECD2   = ECD*ECD
+      HECD2  = PT5*ECD2
+      H0000  = X0
+      H0030  = -ECD*X1*RAB
+      H0022  = HECD*(X0-ECD*X1)
+      H0033  = H0022+ECD2*X2*RAB2
+      H2020  = HECD*W1
+      H2023  = -HECD2*W2*RAB
+      H3000  = W1*RAB
+      H3030  = H2020-ECD*W2*RAB2
+      H3022  = H2023+HECD*H3000
+      H3033  = H3022+H2023+H2023+ECD2*W3*RAB3
+      H2200  = PT5*(S0-T1)
+      H3300  = H2200+T2*RAB2
+      H2320  = HECD*T2*RAB
+      H2230  = HECD*(T2-S1)*RAB
+      H3330  = H2230+ECD*(T2*RAB-T3*RAB3)
+      H1212  = PT25*ECD2*T2
+      H2323  = HECD2*(PT5*T2-T3*RAB2)
+      HXXYY  = PT25*(ECD*(S0-T1)-ECD2*(S1-T2))
+      H2222  = HXXYY+HECD2*T2
+      H1122  = HXXYY
+      H3322  = HXXYY+HECD*T2*RAB2-HECD2*T3*RAB2
+      H2233  = HXXYY+HECD2*(S2-T3)*RAB2
+      H3333  = HXXYY+HECD2*(T2+S2*RAB2)+ECD2*(-THREE*T3*RAB2+T4*RAB4)
+     1              +HECD*T2*RAB2
+      G0000  = G0000+H0000*DQ00
+      G0022  = G0022+H0022*DQ11
+      G0033  = G0033+H0033*DQ11
+      G2200  = G2200+H2200*DQ00
+      G3300  = G3300+H3300*DQ00
+      G1212  = G1212+H1212*DQ11
+      G2323  = G2323+H2323*DQ11
+      G2222  = G2222+H2222*DQ11
+      G1122  = G1122+H1122*DQ11
+      G3322  = G3322+H3322*DQ11
+      G2233  = G2233+H2233*DQ11
+      G3333  = G3333+H3333*DQ11
+      G3000  = G3000+H3000*DQ00
+      G0030  = G0030+H0030*DQ10
+      G2020  = G2020+H2020*DQ10
+      G3030  = G3030+H3030*DQ10
+      G3330  = G3330+H3330*DQ10
+      G2230  = G2230+H2230*DQ10
+      G2320  = G2320+H2320*DQ10
+      G3033  = G3033+H3033*DQ11
+      G3022  = G3022+H3022*DQ11
+      G2023  = G2023+H2023*DQ11
+      RETURN
+      END
+C     ******************************************************************
+      SUBROUTINE SP111C (SQ1,SQ2,EP,DP00P,DP10P,DP11P)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (TWENTY=20.0D0)
+      PARAMETER (ONEPT5=1.5D0)
+      COMMON
+     ./AUXVAR/ DQ00,DQ01,DQ10,DQ11,EAB,ECD,GAB,GCD,RAB,NGANGB
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./EXTRA / G0000,G3000,G3300,G2200,G0030,G3030,G2020,G3330,
+     .         G2230,G2320,G0033,G0022,G3033,G3022,G2023,G3333,
+     .         G2233,G3322,G2222,G2323,G1122,G1212
+     ./FMGTO1/ XLIM,XMAX
+     ./MATRIX/ AA(400),BA(400),CA(400),
+     .         AB(400),BB(400),CB(400),AC(400),BC(400),CC(400),
+     .         AD(400),BD(400),CD(400),AE(400),BE(400),CE(400)
+C$OMP THREADPRIVATE (/EXTRA/,/AUXVAR/)
+C     DIMENSION SQ1(36),SQ2(36),EP(36),DP00P(36),DP10P(36),DP11P(36)
+      DIMENSION SQ1(36),SQ2(36),EP(*),DP00P(*),DP10P(*),DP11P(*)
+      DIMENSION FMT(5)
+      X0     = ZERO
+      X1     = ZERO
+      X2     = ZERO
+      W1     = ZERO
+      S0     = ZERO
+      T1     = ZERO
+      T2     = ZERO
+      RAB2   = RAB*RAB
+      RABINV = ONE/RAB
+CDIR$ NOVECTOR
+C$DIR SCALAR
+      DO 10  IND=1,NGANGB
+      EAB    = EP(IND)
+      EAB2   = EAB*EAB
+      G      = ONE/(EAB+ECD)
+      X      = G*RAB2
+      DP00   = DP00P(IND)
+      EDP10  = EAB*DP10P(IND)
+      IF(X.GT.XLIM) THEN
+         F0  = DP11P(IND)*SQ1(IND)*RABINV
+         GTX = RABINV*RABINV
+         F1  = PT5*F0*GTX
+         F2  = ONEPT5*F1*GTX
+      ELSE IF(X.LT.XMAX) THEN
+         Y   = DP11P(IND)*SQ2(IND)
+         GY  = G*Y
+         GGY = G*GY
+         QQ  = X*TWENTY
+         TH  = QQ-AINT(QQ)
+         N   = NINT(QQ-TH)
+         TH2 = TH *(TH-ONE)
+         TH3 = TH2*(TH-TWO)
+         TH4 = TH2*(TH+ONE)
+         F0  = (AA(N+1)+TH*BA(N+1)-TH3*CA(N+1)+TH4*CA(N+2))*Y
+         F1  = (AB(N+1)+TH*BB(N+1)-TH3*CB(N+1)+TH4*CB(N+2))*GY
+         F2  = (AC(N+1)+TH*BC(N+1)-TH3*CC(N+1)+TH4*CC(N+2))*GGY
+      ELSE
+         Y   = DP11P(IND)*SQ2(IND)
+         GY  = G*Y
+         GGY = G*GY
+         CALL FMTGEN (FMT,X,3,ICK)
+         F0  = FMT(1)*Y
+         F1  = FMT(2)*GY
+         F2  = FMT(3)*GGY
+      ENDIF
+      X0     = X0+F0*DP00
+      X1     = X1+F1*DP00
+      X2     = X2+F2*DP00
+      W1     = W1+F1*EDP10
+      S0     = S0+F0*EAB
+      T1     = T1+F1*EAB2
+      T2     = T2+F2*EAB2
+   10 CONTINUE
+      HECD   = PT5*ECD
+      ECD2   = ECD*ECD
+      H0000  = X0
+      H0030  = -ECD*X1*RAB
+      H0022  = HECD*(X0-ECD*X1)
+      H0033  = H0022+ECD2*X2*RAB2
+      H2200  = PT5*(S0-T1)
+      H3000  = W1*RAB
+      H3300  = H2200+T2*RAB2
+      G0000  = G0000+H0000*DQ00
+      G0022  = G0022+H0022*DQ11
+      G0033  = G0033+H0033*DQ11
+      G2200  = G2200+H2200*DQ00
+      G3300  = G3300+H3300*DQ00
+      G3000  = G3000+H3000*DQ00
+      G0030  = G0030+H0030*DQ10
+      RETURN
+      END

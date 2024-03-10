@@ -1,0 +1,439 @@
+      SUBROUTINE DMSGRDS (FS,IFS,JFS,GS,IGS,JGS,PS,IPS,JPS,XMU,N,
+     +                    MPDIAG,NPRINT,NCG,FILT,FILTALL,CUTM,PRECON)
+C     *
+C     GRADIENT OF THE FUNCTIONAL USED IN THE DENSITY MATRIX SEARCH.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     FS(*)     FOCK MATRIX (I).
+C     GS(*)     GRADIENT MATRIX (O).
+C     PS(*)     DENSITY MATRIX (I).
+C     IX(N+1)   POINTERS FOR SPARSE MATRICES IN CSR FORMAT (S).
+C               X=FS,PS,GS.
+C     JX(*)     COLUMN INDICES FOR SPARSE MATRICES IN CSR FORMAT (S).
+C               X=FS,PS,GS.
+C     XMU       LAGRANGEAN MULTIPLIER (O).
+C     N         NUMBER OF ORBITALS (I).
+C     MPDIAG    TYPE OF DENSITY MATRIX (I).
+C     NPRINT    PRINTING FLAG (I).
+C     NCG(*)    TOTAL NUMBER OF OPERATIONS DURING CG SEARCHES (I,O).
+C               (3) MATRIX MULTIPLICATIONS DONE.
+C     FILT      FLAG FOR REMOVING SMALL ELEMENTS IN PRODUCT A*B (I).
+C     FILTALL   FLAG FOR REMOVING SMALL ELEMENTS IN SUM A+B (I).
+C     CUTM      CUTOFF FOR SMALL MATRIX ELEMENTS (I).
+C     PRECON    FLAG FOR DIAGONAL PRECONDITIONING (I).
+C     *
+      USE module3
+C     IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      IMPLICIT NONE
+C
+      INTERFACE
+         SUBROUTINE DIAPRC(FS,JFS,IFS,PS,JPS,IPS,GS,JGS,IGS,N,FILT,CUTM)
+         USE module3
+         IMPLICIT NONE
+         LOGICAL :: FILT
+         INTEGER :: N
+         DOUBLE PRECISION :: CUTM
+         DOUBLE PRECISION, DIMENSION (:), POINTER :: GS,FS,PS
+         INTEGER, DIMENSION (:), POINTER :: IGS,JGS,IFS,JFS,IPS,JPS
+         END SUBROUTINE DIAPRC
+      END INTERFACE
+C
+      INTEGER :: N,NCOL,NCG(10),ie,N4,I,NB6,NPRINT,MPDIAG,J,N3,N5,NBF
+      INTEGER :: N6,N7
+      DOUBLE PRECISION :: XMU,TRG,Tr,ZERO,ONE,TWO,THREE,SIX,PEL,
+     +                    FACTOR,CUTM,COMMFP
+      DOUBLE PRECISION :: ZTIME,TT1A,TT1B
+      PARAMETER (ZERO=0.0D0)
+      PARAMETER (ONE=1.0D0)
+      PARAMETER (TWO=2.0D0)
+      PARAMETER (THREE=3.0D0)
+      PARAMETER (SIX=6.0D0)
+      INTEGER, ALLOCATABLE :: IW(:)
+      DOUBLE PRECISION, DIMENSION (:), POINTER :: GS,Q4,Q2,FS,PS
+      INTEGER, DIMENSION (:), POINTER :: IGS,JGS,JQ4,IQ4,IQ2,JQ2,
+     +                                   IFS,JFS,IPS,JPS
+      LOGICAL :: FILT,FILTALL,PRECON
+      COMMON
+     ./NBFILE/ NBF(20)
+     ./ZTIMES/ ZTIME(20)
+      SAVE Q2,JQ2,IQ2,Q4,JQ4,IQ4
+C     *
+C *** GENERAL FORMULAS FOR GRADIENT MATRIX.
+C     GPROD  = 3 (FP+PF) - 2 (FPP+PFP+PPF)
+C     XMU    = - Tr(GPROD) / N
+C     G      = GPROD + XMU * UNIT-MATRIX
+C     XMU IS A LAGRANGEAN MULTIPLIER WHICH ENFORCES NORMALIZATION.
+C     *
+C     DENOTING THE TRANSPOSE OF MATRIX A BY At, WE HAVE IN GENERAL:
+C     (AB)t  = Bt At 
+C     SINCE F AND P ARE SYMMETRIC MATRICES, WE MAY WRITE:
+C     GPROD  = 3 [FP+(FP)t] - 2 [(FP)P+P(FP)+P(FP)t]
+C     GPROD  = 3 [FP+(FP)t] - 2 [(FP)P+P{(FP)+(FP)t}]
+C     *
+C     IMPLEMENTATION OF THE GENERAL FORMULA:
+C     Q1     = FP
+C     Q2     = FP+(FP)t
+C     GPROD  = 3*Q1 - 2*Q1*P - 2*P*Q2
+C     *
+C     SIMPLIFIED IMPLEMENTATION WHEN F AND P COMMUTE:
+C     GPROD  = 6 FP - 6 PFP
+C     GPROD  = 6*Q1 - 6*P*Q1
+C     *
+C     SPECIAL CASE: DIAGONAL P MATRIX WITH EQUAL ELEMENTS.
+C     P      = p*I  (SCALAR p, UNIT MATRIX I)
+C     GPROD  = 6*p*(1-p)*F
+C
+C *** INITIALIZATION.
+      ALLOCATE (IW(N),STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','IW',N,0)
+C     *
+C *** DEBUG PRINT - INPUT DATA.
+      NB6 = NBF(6)
+      IF(NPRINT.GE.9) THEN
+         WRITE (NB6,540)
+         CALL SPAPRT (FS,IFS,JFS,N)
+         WRITE (NB6,550)
+         CALL SPAPRT (PS,IPS,JPS,N)
+      ENDIF
+C     *
+C *** SPECIAL CASE: DIAGONAL P MATRIX WITH EQUAL ELEMENTS.
+      IF(MPDIAG.GE.2) THEN
+         PEL = PS(1)
+         FACTOR = SIX*PEL*(ONE-PEL)
+         N4 = IFS(N+1)-1
+         ALLOCATE (GS(N4),JGS(N4),IGS(N+1),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+         CALL copmatp (N,FS,JFS,IFS,GS,JGS,IGS,1)
+         DO 10 I=1,N4
+         GS(I) = FACTOR*GS(I)
+   10    CONTINUE
+         GO TO 100
+      ENDIF
+C     *
+C *** COMPUTE PRODUCT Q4=P*F BY MATRIX MULTIPLICATION.
+      CALL amubdgp (N,JPS,IPS,JFS,IFS,N5,IW)
+      ALLOCATE (Q4(N5),JQ4(N5),IQ4(N+1),STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q4',N5,0)
+C     CALL CPUSEC (TT1A)
+      CALL amubp (N,PS,JPS,IPS,FS,JFS,IFS,Q4,JQ4,IQ4,N5,IW,ie)
+C     CALL CPUSEC (TT1B)
+C     ZTIME(1) = ZTIME(1) + TT1B - TT1A
+C     WRITE(6,*) ' DMSGRDS: PF ',IPS(N+1)-1,IFS(N+1)-1,N5,TT1B-TT1A
+         IF(ie.NE.0) CALL XERSPA (ie,'amub','DMSGRDS',1)
+      IF(FILT) THEN
+         CALL filterp (N,1,CUTM,Q4,JQ4,IQ4,Q4,JQ4,IQ4,N5,ie)
+            IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',1)
+      ENDIF
+      N4=IQ4(N+1)-1
+      ALLOCATE (GS(N4),JGS(N4),IGS(N+1),STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+C     FORM TRANSPOSE GS = (Q4)t = (P*F)t = F*P.
+      CALL csrcscp (N,Q4,JQ4,IQ4,GS,JGS,IGS)
+C     DEBUG PRINT - PRODUCT MATRIX F*P.
+      IF(NPRINT.GE.9) THEN
+         WRITE (NB6,560)
+         CALL SPAPRT (GS,IGS,JGS,N)
+      ENDIF
+C     *
+C *** COMPUTE COMMUTATOR MATRIX Q2 = P*F - (P*F)t = Q4-GS
+      DO 20 I=1,N4
+      GS(I) = -GS(I)
+   20 CONTINUE
+      CALL aplbdgp (N,JGS,IGS,JQ4,IQ4,N4,IW)
+      ALLOCATE (Q2(N4),JQ2(N4),IQ2(N+1),STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q2',N4,0)
+      CALL aplbp (N,Q4,JQ4,IQ4,GS,JGS,IGS,Q2,JQ2,IQ2,N4,IW,ie)
+         IF(ie.NE.0) CALL XERSPA (ie,'aplb','DMSGRDS',2)
+C     FIND MAXIMUM ABSOLUTE ELEMENT COMMFP OF COMMUTATOR MATRIX.
+      COMMFP = ZERO 
+      DO 30 I=1,IQ2(N+1)-1
+      COMMFP = MAX(COMMFP,ABS(Q2(I))) 
+   30 CONTINUE
+      DEALLOCATE (Q2,JQ2,STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q2',N4,1)
+      NULLIFY (Q2,JQ2)
+C     *
+C *** FULL CALCULATION FOR NON-VANISHING COMMUTATOR (COMMFP).
+      IF(COMMFP.NE.ZERO) THEN
+C        COMPUTE AUXILIARY MATRIX GS = (3*I-2*P)
+         DEALLOCATE (GS,JGS,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,1)
+         NULLIFY (GS,JGS)
+         N4 = IPS(N+1)-1
+         ALLOCATE (GS(N4),JGS(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+         DO 40 I=1,N+1
+         IGS(I) = IPS(I)
+   40    CONTINUE
+         DO 60 I=1,N
+         DO 50 J=IPS(I),IPS(I+1)-1
+         IF (JPS(J).EQ.I) THEN
+            GS(J) = THREE-TWO*PS(J)
+         ELSE
+            GS(J) = -TWO*PS(J)
+         ENDIF
+         JGS(J) = JPS(J)
+   50    CONTINUE
+   60    CONTINUE
+C
+C        COMPUTE AUXILIARY PRODUCT Q2 = (3*I-2*P)*P*F = GS*Q4
+C        GS = (3*I-2*P) AND Q4 = P*F ARE ALREADY AVAILABLE.
+         CALL amubdgp (N,JGS,IGS,JQ4,IQ4,N4,IW)
+         N6 = N4
+         ALLOCATE (Q2(N4),JQ2(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q2',N4,0)
+C        CALL CPUSEC (TT1A)
+         CALL amubp (N,GS,JGS,IGS,Q4,JQ4,IQ4,Q2,JQ2,IQ2,N4,IW,ie)
+C        CALL CPUSEC (TT1B)
+C        ZTIME(2) = ZTIME(2) + TT1B - TT1A
+C        WRITE(6,*) ' DMSGRDS: Q2 ',IGS(N+1)-1,IQ4(N+1)-1,N4,TT1B-TT1A
+            IF(ie.NE.0) CALL XERSPA (ie,'amub','DMSGRDS',4)
+         IF(FILT) THEN
+            CALL filterp (N,1,CUTM,Q2,JQ2,IQ2,Q2,JQ2,IQ2,N4,ie)
+               IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',4)
+         ENDIF
+         DEALLOCATE (GS,JGS,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,1)
+         NULLIFY (GS,JGS)
+C
+C        THE PRODUCT PFP CAN BE COMPUTED AS P(FP) OR (PF)P.
+C        CODE FOR FIRST CASE: MATRIX MULTIPLICATION P(FP).
+C        USEFUL IF MATRIX MULTIPLICATION A*B EXPLOITS SYMMETRY OF A.
+C        NEEDS SOME EXTRA WORK TO GET FP AS TRANSPOSE OF PF.
+C        COPY Q4=PF INTO GS AND FORM TRANSPOSE Q4=FP=(PF)transpose.
+C        N4=IQ4(N+1)-1
+C        ALLOCATE (GS(N4),JGS(N4),IGS(N+1),STAT=ie)
+C           IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+C        CALL copmatp (N,Q4,JQ4,IQ4,GS,JGS,IGS,1)
+C        FORM TRANSPOSE GS = (Q4)t = (P*F)t = F*P.
+C        CALL csrcscp (N,GS,JGS,IGS,Q4,JQ4,IQ4)
+C        DEALLOCATE (GS,JGS,STAT=ie)
+C           IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,1)
+C        NULLIFY (GS,JGS)
+C        COMPUTE AUXILIARY PRODUCT GS = P*Q4 = P*F*P
+C        CALL amubdgp (N,JPS,IPS,JQ4,IQ4,N4,IW)
+C        N7 = N4
+C        ALLOCATE (GS(N4),JGS(N4),IGS(N+1),STAT=ie)
+C           IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+C        CALL amubp (N,PS,JPS,IPS,Q4,JQ4,IQ4,GS,JGS,IGS,N4,IW,ie)
+C           IF(ie.NE.0) CALL XERSPA (ie,'amub','DMSGRDS',6)
+C        IF(FILT) THEN
+C           CALL filterp (N,1,CUTM,GS,JGS,IGS,GS,JGS,IGS,N4,ie)
+C              IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',4)
+C        ENDIF
+C
+C        CODE FOR SECOND CASE: MATRIX MULTIPLICATION (PF)P.
+C        COMPUTE AUXILIARY PRODUCT GS = Q4*P = P*F*P
+         CALL amubdgp (N,JQ4,IQ4,JPS,IPS,N4,IW)
+         N7 = N4
+         ALLOCATE (GS(N4),JGS(N4),IGS(N+1),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+C        CALL CPUSEC (TT1A)
+         CALL amubp (N,Q4,JQ4,IQ4,PS,JPS,IPS,GS,JGS,IGS,N4,IW,ie)
+C        CALL CPUSEC (TT1B)
+C        ZTIME(3) = ZTIME(3) + TT1B - TT1A
+C        WRITE(6,*) ' DMSGRDS: PFP',IQ4(N+1)-1,IPS(N+1)-1,N4,TT1B-TT1A
+            IF(ie.NE.0) CALL XERSPA (ie,'amub','DMSGRDS',6)
+         IF(FILT) THEN
+            CALL filterp (N,1,CUTM,GS,JGS,IGS,GS,JGS,IGS,N4,ie)
+               IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',4)
+         ENDIF
+C
+C        SCALE AUXILIARY PRODUCT GS BY FACTOR -2
+         DO 70 I=1,IGS(N+1)-1
+         GS(I) = -TWO*GS(I)
+   70    CONTINUE
+C
+C        COMPUTE SUM Q4 = Q2 + GS = (3*I-2*P)*P*F - 2*P*F*P
+         CALL aplbdgp (N,JQ2,IQ2,JGS,IGS,N4,IW)
+         DEALLOCATE (Q4,JQ4,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q4',N4,1)
+         NULLIFY (Q4,JQ4)
+         ALLOCATE (Q4(N4),JQ4(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q4',N4,0)
+         CALL aplbp (N,Q2,JQ2,IQ2,GS,JGS,IGS,Q4,JQ4,IQ4,N4,IW,ie)
+            IF(ie.NE.0) CALL XERSPA (ie,'aplb','DMSGRDS',7)
+         IF(FILTALL) THEN
+            CALL filterp (N,1,CUTM,Q4,JQ4,IQ4,Q4,JQ4,IQ4,N4,ie)
+               IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',4)
+         ENDIF
+         DEALLOCATE (GS,JGS,IW,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,1)
+         NULLIFY (GS,JGS)
+C
+C        COMPUTE TRANSPOSE: F*P*(3*I-2*P) = [(3*I-2*P)*P*F]t = [Q2]t
+         N4 = IQ2(N+1)-1
+         N4 = max(N4,N)
+         ALLOCATE (IW(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','IW',N4,0)
+         NCOL = N
+         CALL transpp (N,NCOL,Q2,JQ2,IQ2,IW,ie)
+C
+C        COMPUTE SUM:  GS = Q2 + Q4 = F*P*(3*I-2*P) + (3*I-2*P)*P*F - 2*P*F*P
+C        NOTE: GPROD = GS = 3*F*P + 3*P*F - 2*F*P*P - 2*P*P*F - 2*P*F*P
+         CALL aplbdgp (N,JQ2,IQ2,JQ4,IQ4,N4,IW)
+         ALLOCATE (GS(N4),JGS(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+         CALL aplbp (N,Q2,JQ2,IQ2,Q4,JQ4,IQ4,GS,JGS,IGS,N4,IW,ie)
+            IF(ie.NE.0) CALL XERSPA (ie,'aplb','DMSGRDS',7)
+         IF(FILTALL) THEN
+            CALL filterp (N,1,CUTM,GS,JGS,IGS,GS,JGS,IGS,N4,ie)
+               IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',4)
+         ENDIF
+         NCG(3) = NCG(3)+3
+C
+C *** SIMPLIFIED CALCULATION FOR VANISHING COMMUTATOR (COMMFP).
+      ELSE
+C        COMPUTE AUXILIARY PRODUCT Q2 = PS*Q4 = PFP.
+C        NOTE: Q4 = GS = FP IS ALREADY AVAILABLE.
+C        NOTE: GS CONTAINS -FP, SIGN REVERSED BY copmatp.
+         DEALLOCATE (Q4,JQ4,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q4',N4,1)
+         NULLIFY(Q4,JQ4)
+         ALLOCATE (Q4(N4),JQ4(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q4',N4,0)
+         CALL copmatp (N,GS,JGS,IGS,Q4,JQ4,IQ4,-1)
+         CALL amubdgp (N,JPS,IPS,JQ4,IQ4,N4,IW)
+C        N7 = N4
+         ALLOCATE (Q2(N4),JQ2(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q2',N4,0)
+         CALL CPUSEC (TT1A)
+         CALL amubp (N,PS,JPS,IPS,Q4,JQ4,IQ4,Q2,JQ2,IQ2,N4,IW,ie)
+         CALL CPUSEC (TT1B)
+         ZTIME(4) = ZTIME(4) + TT1B - TT1A
+         WRITE(6,*) ' DMSGRDS: PFP',IPS(N+1)-1,IQ4(N+1)-1,N4,TT1B-TT1A
+            IF(ie.NE.0) CALL XERSPA (ie,'amub','DMSGRDS',8)
+         IF(FILT) THEN
+            CALL filterp (N,1,CUTM,Q2,JQ2,IQ2,Q2,JQ2,IQ2,N4,ie)
+               IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',8)
+         ENDIF
+C
+C        COMPUTE SUM: GS = SIX*Q4 - SIX*Q2 = 6 FP - 6 PFP.
+         DEALLOCATE (GS,JGS,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,1)
+         NULLIFY(GS,JGS)
+         CALL aplbdgp (N,JQ4,IQ4,JQ2,IQ2,N4,IW)
+         ALLOCATE (GS(N4),JGS(N4),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+         N3     = IQ4(N+1)-1
+         DO 80 I=1,N3
+         Q4(I)  = SIX*Q4(I)
+   80    CONTINUE
+         N3     = IQ2(N+1)-1
+         DO 90 I=1,N3
+         Q2(I)  = -SIX*Q2(I)
+   90    CONTINUE
+         CALL aplbp (N,Q4,JQ4,IQ4,Q2,JQ2,IQ2,GS,JGS,IGS,N4,IW,ie)
+            IF(ie.NE.0) CALL XERSPA (ie,'aplb','DMSGRDS',9)
+         IF(FILTALL) THEN
+            CALL filterp (N,1,CUTM,GS,JGS,IGS,GS,JGS,IGS,N4,ie)
+               IF(ie.ne.0) CALL XERSPA (ie,'filter','DMSGRDS',4)
+         ENDIF
+         NCG(3) = NCG(3)+2
+      ENDIF
+C
+C *** DIAGONAL PRECONDITIONING.
+      IF(PRECON) THEN
+         IF(NPRINT.GE.7) WRITE(NB6,700)
+         CALL DIAPRC (FS,JFS,IFS,PS,JPS,IPS,GS,JGS,IGS,N,FILT,CUTM)
+      ENDIF
+  100 CONTINUE
+C
+C *** COMPUTE LAGRANGEAN MULTIPLIER XMU.
+      N4 = 0
+      Tr = ZERO
+      DO 120 I=1,N
+      DO 110 J=IGS(I),IGS(I+1)
+      IF(JGS(J).EQ.I) THEN
+         Tr  = Tr+GS(J)
+         N4  = N4+1
+         GO TO 120
+      ENDIF
+  110 CONTINUE
+  120 CONTINUE
+      XMU    = -Tr/DBLE(N)
+      IF(NPRINT.GE.7) THEN
+         IF(N4.NE.N) WRITE(NB6,710) N-N4
+      ENDIF
+C
+C *** INCLUDE LAGRANGEAN TERM (XMU) INTO THE GRADIENT MATRIX.
+      TRG = ZERO
+      IF(ASSOCIATED(Q2)) THEN
+         DEALLOCATE (Q2,JQ2,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q2',N4,1)
+         NULLIFY(Q2,JQ2)
+      ELSE
+         ALLOCATE (IQ2(N+1),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','IQ2',N+1,0)
+      ENDIF
+      IF(ASSOCIATED(Q4)) THEN
+         DEALLOCATE (Q4,JQ4,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q4',N4,1)
+         NULLIFY(Q4,JQ4)
+      ELSE
+         ALLOCATE (IQ4(N+1),STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','IQ4',N+1,0)
+      ENDIF
+C
+C     DEFINE DIAGONAL CORRECTION VECTOR (Q2).
+      N4 = IGS(N+1)-1
+      ALLOCATE (Q2(N),JQ2(N),Q4(N4+N),JQ4(N4+N),STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q2',N4,0)
+      IQ2(N+1) = N+1
+      DO 130 I=1,N
+      IQ2(I) = I
+      JQ2(I) = I
+      Q2(I)  = XMU
+  130 CONTINUE
+C
+C     SUM UNCORRECTED GRADIENT (GS) AND DIAGONAL CORRECTION (Q2)
+C     TO YIELD TRACELESS CORRECTED GRADIENT MATRIX (Q4->GS).
+      CALL aplbp (N,GS,JGS,IGS,Q2,JQ2,IQ2,Q4,JQ4,IQ4,N4+N,IW,ie)
+         IF(ie.NE.0) CALL XERSPA (ie,'aplb','DMSGRDS',9)
+      DEALLOCATE (GS,JGS,STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,1)
+      NULLIFY (GS,JGS)
+      N4 = IQ4(N+1)-1
+      ALLOCATE (GS(N4),JGS(N4),STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','GS',N4,0)
+      CALL copmatp (N,Q4,JQ4,IQ4,GS,JGS,IGS,1)
+C
+C *** DEBUG PRINT - RESULTS.
+      IF(NPRINT.GE.7) THEN
+         WRITE(NB6,500) XMU
+         WRITE(NB6,510) COMMFP
+         IF(NPRINT.GE.8) THEN
+            WRITE(NB6,520) TRG
+            WRITE(NB6,530)
+            CALL SPAPRT (GS,IGS,JGS,N)
+         ENDIF
+         WRITE(NB6,600) IPS(N+1)-1,IFS(N+1)-1
+         WRITE(NB6,610) N5,N6,N7
+      ENDIF
+C *** DEALLOCATE SCRATCH ARRAYS.
+      DEALLOCATE (IW,STAT=ie)
+         IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','IW',N,1)
+      IF(ASSOCIATED(Q2)) THEN
+         DEALLOCATE (Q2,JQ2,IQ2,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q2',N4,1)
+         NULLIFY(Q2,JQ2,IQ2)
+      ENDIF
+      IF(ASSOCIATED(Q4)) THEN
+         DEALLOCATE (Q4,JQ4,IQ4,STAT=ie)
+            IF(ie.NE.0) CALL XERALL (ie,'DMSGRDS','Q4',N4,1)
+         NULLIFY(Q4,JQ4,IQ4)
+      ENDIF
+      RETURN
+  500 FORMAT(/  1X,'DMSGRD: LAGRANGEAN MULTIPLIER XMU: ',G20.10)
+  510 FORMAT(   1X,'DMSGRD: COMMUTATOR FP-PF, MAXIMUM: ',G20.10)
+  520 FORMAT(   1X,'DMSGRD: TRACE OF GRADIENT MATRIX : ',G20.10)
+  530 FORMAT(///1X,'DMSGRD: GRADIENT MATRIX G.'/)
+  540 FORMAT(///1X,'DMSGRD: FOCK MATRIX F.'/)
+  550 FORMAT(///1X,'DMSGRD: DENSITY MATRIX P.'/)
+  560 FORMAT(///1X,'DMSGRD: PRODUCT MATRIX FP.'/)
+  600 FORMAT(/  1X,'DMSGRD: NONZERO ELEMENTS IN P, F    :',2I10)
+  610 FORMAT(/  1X,'DMSGRD: NONZERO ELEMENTS IN PF,Q,PFP:',3I10)
+  700 FORMAT(   1X,'DMSGRD: DIAGONAL PRECONDITIONING ACTIVATED')
+  710 FORMAT(   1X,'DMSGRD: NUMBER OF ZERO DIAGONAL ELEMENTS ',
+     1             'OF THE GRADIENT MATRIX:',I5)
+      END

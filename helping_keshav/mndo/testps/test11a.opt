@@ -1,0 +1,14 @@
+DSC MNDO vibrational frequencies for D2d C4H4 (state 1 in 3x3 closed shell CI)
+DSC Direct solution with no preconditioning and out-of-core rhs formation.
+DSC Integral route used for Z-vector reduction. 10x CPHF precision.
+DAT C4H4.dat
+OPT iprint=1
+OPT kci=1 cik=0 cil=0 cinc=3 cilroot=0 dprec=1d-7
+OPT imix=2 idens=3 iqswap=1 inrhs=1 irows=-1 iprect=1 ihlst=1 ihlwrp=1 ikmode=2 isolve=1 ikrsav=1
+PRP heat=106.53384
+PRP freqmem=7778 freqdisk=5140
+PRP optcyc=2
+PRP intgrdopt=0.04008 cartgrdopt=2.14908
+PRP CIstate1=92.14844 CIstate2=121.16616 CIstate3=121.16669
+PRP freq1=-1520.31406 freq8=381.97854 freq9=765.10747 freq10=852.67412
+PRP zpe=39.08067

@@ -1,0 +1,119 @@
+      SUBROUTINE INPDIR (JPRINT)
+C     *
+C     INPUT OF SPECIFIC OPTIONS FOR LINEAR SCALING AND DIRECT METHODS.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./INOPT1/ IN1(300)
+     ./INOPT2/ IN2(300)
+     ./INOPT3/ XN3(50)
+     ./INOPT4/ XN4(50)
+     ./MOPAC / IMOPAC
+     ./NBFILE/ NBF(20)
+C *** FILE NUMBERS.
+      NB5    = NBF(5)
+      NB6    = NBF(6)
+C *** INPUT VARIABLES.
+      INP24  = IN2(63)
+C *** READ INPUT AND INITIALIZE ARRAYS.
+      IF(IMOPAC.EQ.0) THEN
+         IF(INP24.GT.0) THEN
+            READ(NB5,500) (IN1(I),I=171,186)
+         ELSE
+            DO 10 I=171,186
+            IN1(I) = 0
+   10       CONTINUE
+         ENDIF
+         IF(INP24.GT.1) THEN
+            READ(NB5,510) (XN3(I),I=20,24)
+         ELSE
+            DO 20 I=20,24
+            XN3(I) = ZERO
+   20       CONTINUE
+         ENDIF
+      ENDIF
+      DO 30 I=171,186
+      IN2(I) = IN1(I)
+   30 CONTINUE
+      DO 40 I=20,24
+      XN4(I) = XN3(I)
+   40 CONTINUE
+C *** SET DEFAULT VALUES.
+C     MAXCG, MAXPUR, MCMAX, MIDEMP, MPURIF, MLROOT.
+      IF(IN2(171).LE.0) IN2(171)=2
+      IF(IN2(172).LE.0) IN2(172)=2
+C     IF(IN2(173).LE.0) IN2(173)=5
+C     IF(IN2(174).LE.0) IN2(174)=5
+      IF(IN2(175).EQ.0) IN2(175)=99
+      IF(IN2(176).EQ.0) IN2(176)=5
+C     MCUTM, MCUTF, MCUTP, MCUT1, MCUT2, MCUTR.
+      IF(IN2(181).EQ.0) IN2(181)=100
+      IF(IN2(182).EQ.0) IN2(182)=20
+      IF(IN2(183).EQ.0) IN2(183)=20
+      IF(IN2(184).EQ.0) IN2(184)=20
+      IF(IN2(185).EQ.0) IN2(185)=20
+      IF(IN2(186).EQ.0) IN2(186)=10000
+C *** DEFAULT VALUES FOR CUTOFFS.
+C     FCUTF, FCUTP, FCUT1, FCUT2, FCUTR.
+      DO 50 I=20,24
+      MCUT   = IN2(I+162)
+      IF(INP24.GT.1 .AND. XN4(I).NE.ZERO) THEN
+         IF(XN4(I).LT.ZERO) THEN
+            XN4(I) = - XN4(I)
+            IF(I.EQ.20 .OR. I.EQ.22 .OR. I.EQ.23) XN4(I) = XN4(I)*EV
+            IF(I.EQ.24) XN4(I) = XN4(I)*A0
+         ENDIF
+      ELSE IF(MCUT.GT.0) THEN
+         XN4(I) = 10.0D0**(-MCUT)
+         IF(I.EQ.24) XN4(I) = DBLE(MCUT)
+      ELSE
+         XN4(I) = - ONE
+      ENDIF
+   50 CONTINUE
+C *** PRINTING SECTION.
+      IF(JPRINT.GT.-5) THEN
+        IF(INP24.GT.0 .OR. JPRINT.GE.0) THEN
+            WRITE(NB6,100)
+            WRITE(NB6,110) (IN2(I),I=171,186)
+            WRITE(NB6,120) (XN4(I),I=20,24)
+         ENDIF
+      ENDIF
+C     OPTIONS MCGUPD AND MCGPRE.
+      IF(JPRINT.GE.0) THEN
+         IF(IN2(178).EQ.3) THEN
+            WRITE(NB6,200)
+         ELSE
+            WRITE(NB6,210)
+            IF(IN2(178).LE.0) THEN
+               WRITE(NB6,220)
+            ELSE
+               WRITE(NB6,230)
+            ENDIF
+            IF(IN2(177).EQ.1) WRITE(NB6,250)
+         ENDIF
+      ENDIF
+      RETURN
+  100 FORMAT(///1X,'*** OPTIONS FOR CGDMS TREATMENT AND CUTOFFS ***',
+     1       /  1X,'*** DEFINED EITHER EXPLICITLY OR BY DEFAULT ***')
+  110 FORMAT(/  1X,'MAXCG  =',I5,5X,'MAXPUR =',I5,5X,'MCMAX  =',I5,
+     1          5X,'MIDEMP =',I5,5X,'MPURIF =',I5,
+     2       /  1X,'MLROOT =',I5,5X,'MCGPRE =',I5,5X,'MCGUPD =',I5,
+     3          5X,'MPSCAL =',I5,5X,'MCUTAU =',I5,
+     4       /  1X,'MCUTM  =',I5,5X,'MCUTF  =',I5,5X,'MCUTP  =',I5,
+     5          5X,'MCUT1  =',I5,5X,'MCUT2  =',I5,
+     6       /  1X,'MCUTR  =',I5)
+  120 FORMAT(// 1X,'FCUTF  =',G10.3,' EV    CUTOFF FOR FOCK MATRIX',
+     1       /  1X,'FCUTP  =',G10.3,'       CUTOFF FOR DENSITY MATRIX',
+     2       /  1X,'FCUT1  =',G10.3,' EV    CUTOFF FOR 1-EL INTEGRALS',
+     3       /  1X,'FCUT2  =',G10.3,' EV    CUTOFF FOR 2-EL INTEGRALS',
+     4       /  1X,'FCUTR  =',G10.3,' A     CUTOFF FOR DISTANCES'/)
+  200 FORMAT(/  1X,'DAVIDON-FLETCHER-POWELL DENSITY MATRIX SEARCH')
+  210 FORMAT(/  1X,'CONJUGATE GRADIENT DENSITY MATRIX SEARCH')
+  220 FORMAT(/  1X,'POLAK-RIBIERE FORMULA FOR STEP LENGTH')
+  230 FORMAT(/  1X,'FLETCHER-REEVES FORMULA FOR STEP LENGTH')
+  250 FORMAT(/  1X,'DIAGONAL PRECONDITIONING APPLIED ')
+  500 FORMAT(16I5)
+  510 FORMAT(8G10.5)
+      END

@@ -1,0 +1,11 @@
+DSC MNDO force constants for C2H4. Combined AO solution using globally
+DSC orthogonal ortres solver with vector sharing and floating shift
+DSC conditioner.
+DAT C2H4.dat
+OPT iprint=1
+OPT imix=1 idens=8 iqswap=3 inrhs=5 iprect=3 idstrp=4 isolve=3 ikrsav=8
+PRP heat=15.40476 intgrdopt=0.48996 cartgrdopt=0.61077 optcyc=3
+PRP freqmem=23160 freqdisk=0 respvec=3.83
+PRP freq7=854.504 freq8=869.418 freq9=1098.321 zpe=33.51331
+PRP modea=9 wavea=1098.321 ira=28.902 modeb=7 waveb=854.504 irb=4.153 
+PRP modec=16 wavec=3409.847 irc=9.283

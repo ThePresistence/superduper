@@ -1,0 +1,129 @@
+      SUBROUTINE EE_CIS_GRADIENT(IMODE,ICNTR,IC,A,LDA,DERIV,
+     $                    P,NDEN,IPRINT,NB6,I1n)
+      USE LIMIT, ONLY: LM1, LMZ, LM1M, LEN
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+C
+      PARAMETER (EV =27.2100D0)
+      PARAMETER (BOHR=0.529167D0)
+C
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./ATOMC / COORD(3,LM1)
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+     ./LIMITS/ LM2,LM3,LM4,LM6,LM7,LM8,LM9
+     ./LMSCF / LS1,LS2,LS3,LS4,LS5,LS6,LS7,LS8,LS9
+     ./LMUHF / LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU8
+C
+      DIMENSION A(LDA),P(LM3*LM3,*)
+      REAL*8, DIMENSION(:,:), ALLOCATABLE :: F,F2
+
+      ALLOCATE(F(LM3*LM3,3*NDEN),F2(LM3*LM3,3*NDEN))
+
+      IF( DSTEP .EQ.ZERO ) DSTEP  = 2.0D-4
+      IF (DSTEP.LE.0) THEN
+        WRITE (NB6,*) "EEDRV_FD_CIS: STEP: ", DSTEP
+        STOP 'EEDRV_FD_CIS - DSTEP'
+      END IF
+      IF (LM6**2 /= LM9) THEN
+        WRITE (NB6,*) "EEDRV_FD_CIS: 2-ELECTRON INTEGRALS MATRIX STORAGE
+     .         IS INCONSISTENT",
+     .         LM6**2, LM9
+        STOP 'EEDRV_FD_CIS - WSTORE'
+      END IF
+
+      CALL STEP(DSTEP)
+      IF(IPRINT.EQ.6) THEN
+        WRITE(NB6,*) "COORDINATION"
+        CALL MATPRNT(COORD,3,NUMAT,6)
+      ENDIF
+      CALL USE131a(A,LDA,P,F2,ICNTR,ESCALM,IMODE,I1n)
+      IF(IPRINT.EQ.6) THEN
+        WRITE(NB6,*) "H^x P + II^x P"
+        CALL MATPRNT(F2,LM3,LM3,6)
+      ENDIF
+
+      CALL STEP(-2*DSTEP)
+      IF(IPRINT.EQ.6) THEN
+        WRITE(NB6,*) "COORDINATION"
+        CALL MATPRNT(COORD,3,NUMAT,6)
+      ENDIF
+      CALL USE131a(A,LDA,P,F,ICNTR,ESCALP,IMODE,I1n)
+      IF(IPRINT.EQ.6) THEN
+        WRITE(NB6,*) "H^x P + II^x P"
+        CALL MATPRNT(F,LM3,LM3,6)
+      ENDIF
+
+      SCALE = 1/(2*DSTEP*EV)
+      N2 = LM3*LM3
+      IF (IMODE.EQ.1) THEN
+        DO I=0,2
+        F2(1:N2,I*NDEN+1) = SCALE*(F2(1:N2,I*NDEN+1)-F(1:N2,I*NDEN+1))
+        IF (NDEN.EQ.2) THEN
+          F2(1:N2,(I+1)*NDEN) = SCALE*(F2(1:N2,(I+1)*NDEN)
+     $                  -F(1:N2,(I+1)*NDEN))
+        END IF
+        ENDDO
+      ENDIF
+      DSCAL = SCALE*(ESCALP-ESCALM)
+
+      !call matprnt(P,LM3,LM3,6)
+      !call matprnt(P(1,2*NDEN+1),LM3,LM3,6)
+
+      ! P(1,1) = P' + 1/2 P0
+      ! P(1,2) = R
+      ! P(1,3) = P0
+      CALL VECDOT(DOT,F2(1,1),P(1,2*NDEN+1),N2)
+      CALL VECDOT(DOT2,F2(1,NDEN+1),P(1,NDEN+1),N2)
+      CALL VECADD2(F2,0.5d0,P(1,2*NDEN+1),P,N2)
+      CALL VECDOT(DOT3,F2(1,2*NDEN+1),F2,N2)
+      IF(NDEN.EQ.2) THEN
+        CALL VECDOT(DOTT, F2(1,NDEN),  P(1,3*NDEN),LM3*LM3)
+        DOT = DOT + DOTT
+        CALL VECDOT(DOTT2,F2(1,2*NDEN),P(1,2*NDEN),LM3*LM3)
+        DOT2 = DOT2 + DOTT2
+        CALL VECADD2(F2,0.5d0,P(1,3*NDEN),P(1,NDEN),N2)
+        CALL VECDOT(DOTT3,F2(1,3*NDEN),F2,LM3*LM3)
+        DOT3 = DOT3 + DOTT3
+      ELSE
+        DOT  = DOT  * 2D0
+        DOT2 = DOT2 * 2D0
+        DOT3 = DOT3 * 2D0
+      ENDIF
+      DERIV =   (DSCAL - DOT - DOT2 - DOT3) * BOHR
+     
+C
+C    5. Clean up, debug print, and leave.
+C
+      CALL STEP(DSTEP)
+
+      IF(IPRINT.GT.5) THEN
+         WRITE (NB6,"(//' ICNTR: ',I4)") ICNTR
+         WRITE (NB6,"(//' EEDRV_FD_CIS: FOCK MATRIX DERIVATIVES')")
+         WRITE (NB6,"(1X,10F10.6)") F2(1:N2,1)
+      ENDIF
+
+      DEALLOCATE(F)
+      DEALLOCATE(F2)
+
+      RETURN
+C
+      CONTAINS 
+C
+        SUBROUTINE STEP(DX)
+          NPTCHG = 0
+          NATOM  = NUMAT
+          IF (ICNTR.LE.0 .OR. ICNTR.GT.NATOM+NPTCHG) THEN
+            WRITE (NB6,*) "EEDRV_FD_CIS: BAD CENTRE INDEX", 
+     .                    ICNTR, NATOM+NPTCHG
+            STOP 'EEDRV_FD_CIS - CENTRE'
+          END IF
+C
+          IF (ICNTR.LE.NATOM) THEN
+            COORD (IC,ICNTR      ) = COORD (IC,ICNTR      ) + DX
+          ELSE
+            COORDM(IC,ICNTR-NATOM) = COORDM(IC,ICNTR-NATOM) + DX
+          END IF
+        END SUBROUTINE STEP
+C
+      END SUBROUTINE EE_CIS_GRADIENT
+

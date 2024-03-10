@@ -1,0 +1,5 @@
+DSC ETHYLENE, D2h, MNDO RHF
+DSC Geometry optimization, EF algorithm, pure Newton-Raphson
+PRP optcyc=2
+PRP finalheat=15.40470
+PRP intgrdopt=0.00085

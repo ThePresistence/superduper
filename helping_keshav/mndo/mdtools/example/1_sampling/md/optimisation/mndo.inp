@@ -1,0 +1,15 @@
+iop=-6 jop=-1 igeom=1 iform=1 nsav13=2 icuts=-1 icutg=-1 +
+iscf=11 iplscf=11 iprint=1 mprint=1 +
+iprec=100 +
+kharge=1 imult=0 +
+kci=5 ioutci=1 imomap=1 maxrtl=200 pipop=6000 +
+movo=-2 ici1=3 ici2=1 jci1=2 jci2=0 nciref=3 mciref=0 levexc=2
+Methaniminium OM2/GUGA-CI ground state RHF opt
+Initial coordinates from OM2 optimisation
+   6       0.00000  1      0.00000  1      0.00000   1  
+   7       1.28268  1      0.00000  1      0.00000   1  
+   1      -0.58300  1      0.93267  1      0.00000   1  
+   1       1.83410  1      0.85765  1      0.00001   1  
+   1      -0.58300  1     -0.93267  1     -0.00004   1  
+   1       1.83410  1     -0.85765  1      0.00001   1  
+   0       0.0      0      0.0      0      0.0       0

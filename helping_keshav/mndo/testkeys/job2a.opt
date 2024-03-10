@@ -1,0 +1,4 @@
+DSC TETRACENE C18H12, D2h, MNDO RHF
+DSC Single-point SCF energy and gradient calculation
+PRP heat=101.43424
+PRP cartgrd=229.63308

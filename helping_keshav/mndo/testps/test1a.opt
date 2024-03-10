@@ -1,0 +1,9 @@
+DSC MNDO/d force constants for CHFClBr, LAPACK solver, all in-core.
+DAT CHFClBr.dat
+COM Note that inrhs is ignored for LAPACK solver
+OPT iprint=1
+OPT imix=1 idens=3 iqswap=-1 inrhs=-1 idstrp=10 ikmode=1
+PRP heat=-59.08879 intgrdopt=0.29086 cartgrdopt=0.72765 optcyc=5
+PRP freqmem=39882 freqdisk=0
+PRP freq7=224.90784 freq8=338.38656 zpe=14.25926 
+PRP modea=11 wavea=940.67039 ira=203.765 modeb=14 waveb=1545.86385 irb=208.533

@@ -1,0 +1,9 @@
+DSC VINYL CATION, CLASSICAL STRUCTURE, C2v, MNDOC RHF and BWEN
+DSC Single-point BWEN energy calculation after SCF optimization
+PRP heat=290.46916
+PRP optcyc=6
+PRP finalheat=290.46916
+PRP intgrdopt=0
+PRP order2en=-18.1115488
+PRP davcorr=-0.8013073
+PRP poplecorr=-0.6896316

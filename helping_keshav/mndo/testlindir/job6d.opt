@@ -1,0 +1,6 @@
+DSC SINGLET METHYLENE, C2v, MNDOC BWEN1 with 2 reference configurations
+DSC Geometry optimization, standard BFGS
+PRP heat=103.84816
+PRP optcyc=1
+PRP finalheat=93.63234
+PRP intgrdopt=0.01606

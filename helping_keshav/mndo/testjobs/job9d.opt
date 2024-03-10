@@ -1,0 +1,27 @@
+DSC HMPA (C3), AM1/d-CB1
+DSC Single-point energy and gradient
+DSC using fast finite differences
+DSC HMPA (C3), AM1/d-CB1
+DSC Single-point energy and gradient
+DSC using analytic integral derivatives
+DSC HMPA (C3), AM1/d-CB1
+DSC Geometry optimization followed
+DSC by force constant analysis
+PRP heat=-183.44676:-183.44676
+PRP cartgrd=236.73358:236.73373
+PRP intgrd=359.41124:359.41129
+PRP finalheat=-222.73692
+PRP intgrdopt=0
+PRP cartgrdopt=0
+PRP zeroheat=-207.72874
+PRP zpe=152.07357
+PRP freq1=0
+PRP freq2=0
+PRP freq3=0
+PRP freq4=0
+PRP freq5=0
+PRP freq6=0
+PRP freq7=24.00481
+PRP freq8=24.00557
+PRP freq9=77.17024
+PRP freq10=169.15822

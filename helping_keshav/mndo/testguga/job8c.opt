@@ -1,0 +1,6 @@
+DSC CYCLOBUTADIENE, D4h, AM1 minimal CI for closed-shell singlet
+DSC Active space: 1 MO, 1 VO - defined by default
+DSC Single-point energy and gradient for state 3
+PRP ciheat=143.37997:143.37997
+PRP cartgrd=19.42227:19.42227
+PRP intgrd=27.22268:27.22268

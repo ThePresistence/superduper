@@ -1,0 +1,27 @@
+DSC P4 (Td), AM1/d-CB1
+DSC Single-point energy and gradient
+DSC using fast finite differences
+DSC P4 (Td), AM1/d-CB1
+DSC Single-point energy and gradient
+DSC using analytic integral derivatives
+DSC P4 (Td), AM1/d-CB1
+DSC Geometry optimization followed
+DSC by force constant analysis
+PRP heat=23.65788:23.65788
+PRP cartgrd=59.83224:59.83223
+PRP intgrd=207.26496:207.26492
+PRP finalheat=22.85550
+PRP intgrdopt=0
+PRP cartgrdopt=0
+PRP zeroheat=24.84793
+PRP zpe=4.94353
+PRP freq1=0
+PRP freq2=0
+PRP freq3=0
+PRP freq4=0
+PRP freq5=0
+PRP freq6=0
+PRP freq7=381.00457
+PRP freq8=381.00457
+PRP freq9=583.20496
+PRP freq10=583.20496

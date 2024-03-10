@@ -1,0 +1,4 @@
+DSC WATER, C2v, MNDO TC-CISD for ground-state singlet
+DSC Active space: 3 MOs, 2 VOs - defined by default (movo=0)
+DSC Explicit input of two reference occupations (mciref=1)
+DSC Detect incorrect input of reference occupations (mciref=1)

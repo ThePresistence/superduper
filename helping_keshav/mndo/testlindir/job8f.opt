@@ -1,0 +1,15 @@
+DSC Water, MNDO-A3, single-point NMR calculation, gas phase
+OPT iop=0 jop=-1 nmr=1 icosmo=0 imode=-1 +
+OPT iscf=9 iplscf=9 jprint=0 iprec=100 +
+OPT ipsprt=-1 nmrlev=3 intctl=14 nmrnuc=1 +
+OPT iuhf=-1 nprint=-1 ifast=2 ksym=1 nstart=-1
+DSC Water, MNDO-A3, single-point NMR calculation, COSMO solvation treatment
+OPT iop=0 jop=-1 nmr=1 icosmo=1 imode=-1 +
+OPT iscf=9 iplscf=9 jprint=0 iprec=100 +
+OPT ipsprt=-1 nmrlev=3 intctl=14 nmrnuc=1 +
+OPT iuhf=-1 nprint=-1 ifast=2 ksym=1 nstart=-1
+PRP heat=-60.36950:-151.95416:-66.31165:-158.60557
+
+
+
+

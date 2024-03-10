@@ -1,0 +1,11 @@
+DSC AM1 force constants for BF3. LAPACK solver.
+DAT BF3.dat
+COM Note that inrhs is ignored for LAPACK solver
+OPT iprint=1
+OPT imix=3 idens=3 iqswap=1 inrhs=-3 idstrp=1 ikmode=1 
+PRP heat=-272.1473 intgrdopt=0.09093 cartgrdopt=0.05250 optcyc=1
+PRP freqmem=4358 freqdisk=576
+PRP freq7=428.195 freq8=428.195 freq9=613.276 freq10=1218.044 zpe=9.82809
+PRP modea=11  wavea=2093.607 ira=374.337
+PRP modeb=12  waveb=2093.607 irb=374.337
+PRP modec=9   wavec=613.276  irc=61.415 

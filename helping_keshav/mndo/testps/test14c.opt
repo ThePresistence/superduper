@@ -1,0 +1,16 @@
+DSC NMR chemical shifts in formaldehyde, "Method A" using STO-9G
+DSC expansions for the 3-center terms. Hermiticity of one-electron
+DSC terms is not used.
+DAT H2CO.dat
+OPT iprint=1
+OPT indsym=1 nmrlev=3 intctl=19
+OPT idens=4 iqswap=2 inrhs=1 iprect=5 ikmode=1 isolve=3 dncoff=-1e0
+PRP freqmem=5428 freqdisk=72
+PRP NMRatomA=1  NMRtypeA=C     NMRisoA=-158.658  NMRs1A=-279.347   NMRs2A=-187.162  NMRs3A=-9.464
+PRP NMRatomB=2  NMRtypeB=H     NMRisoB=40.128    NMRs1B=36.979     NMRs2B=39.592    NMRs3B=43.812
+PRP NMRatomC=3  NMRtypeC=H     NMRisoC=40.128    NMRs1C=36.979     NMRs2C=39.592    NMRs3C=43.812
+PRP NMRatomD=4  NMRtypeD=O     NMRisoD=-562.400  NMRs1D=-1022.058  NMRs2D=-702.994  NMRs3D=37.852
+PRP NMRatomE=5  NMRtypeE=NICS  NMRisoE=20.698    NMRs1E=10.942     NMRs2E=13.313    NMRs3E=37.838
+PRP NMRatomF=6  NMRtypeF=NICS  NMRisoF=16.774    NMRs1F=7.473      NMRs2F=13.695    NMRs3F=29.154
+PRP NMRatomG=7  NMRtypeG=NICS  NMRisoG=5.656     NMRs1G=-0.099     NMRs2G=1.643     NMRs3G=15.426
+PRP NMRatomH=8  NMRtypeH=NICS  NMRisoH=2.417     NMRs1H=-0.746     NMRs2H=-0.288    NMRs3H=8.283

@@ -1,0 +1,164 @@
+      SUBROUTINE OCCSYM (CA,CB,EA,EB,LM2,LM3)
+C     *
+C     DEFINE THE OCCUPATION OF THE MOLECULAR ORBITALS ACCORDING TO
+C     THEIR SYMMETRY. THE OCCUPATION NUMBERS FOR EACH IRREDUCIBLE
+C     REPRESENTATION ARE DEFINED AS INPUT.
+C     *
+      USE LIMIT, ONLY: LM1, LMX
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      CHARACTER*3 NGROUP
+      CHARACTER*4 IRREP
+      LOGICAL UHF
+      COMMON
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./HALFE / IODD,JODD
+     ./INOPT2/ IN2(300)
+     ./IJWORK/ NSYM(LMX),ISYM(3,LM1)
+     ./NBFILE/ NBF(20)
+     ./OCCFL / IMOCC,NOCCA,NOCCB,MSUB,MOSUMA,MOSUMB,MOCCA(8),MOCCB(8)
+     ./OCCNM / OCCA(LMX),OCCB(LMX)
+     ./ORBITS/ NUMB,NORBS,NMOS,NALPHA,NBETA
+     ./SYMLAB/ NGROUP(7),IRREP(26)
+     ./SYMLIM/ IRREPA(7),IRREPN(7)
+     ./UHF   / UHF
+      DIMENSION CA(LM2,LM3),CB(LM2,LM3),EA(LM2),EB(LM2)
+      DIMENSION MOA(8),MOB(8)
+C *** FILE NUMBERS.
+      NB6    = NBF(6)
+C *** INPUT OPTIONS.
+      IMULT  = IN2(66)
+      NPRINT = IN2(72)
+C *** INITIALIZATION.
+      DO 10 I=1,NORBS
+      OCCA(I) = ZERO
+   10 CONTINUE
+      IF(UHF) THEN
+         DO 20 I=1,NORBS
+         OCCB(I) = ZERO
+   20    CONTINUE
+      ENDIF
+      DO 30 I=1,8
+      MOA(I) = 0
+      MOB(I) = 0
+   30 CONTINUE
+      KSTOP  = 0
+C *** MOLECULAR ORBITALS CA(LM2,LM3).
+C     ASSIGN THEIR SYMMETRY.
+      IF(NPRINT.GT.5) THEN
+         NPRSYM = NPRINT
+      ELSE
+         NPRSYM = -5
+      ENDIF
+      CALL MOSYM(CA,EA,LM2,LM3,LM3,NSYM,ISYM,ISUB,NPRSYM)
+C     CHECK FOR SIMPLE ERRORS.
+      IF(ISUB.EQ.0) THEN
+         WRITE(NB6,500) NGROUP(MSUB),MSUB
+         STOP 'OCCSYM'
+      ENDIF
+      IF(ISUB.NE.MSUB) THEN
+         WRITE(NB6,510) NGROUP(MSUB),MSUB,NGROUP(ISUB),ISUB
+         STOP 'OCCSYM'
+      ENDIF
+C     DEFINE OCCUPATION NUMBERS.
+      KOCC   = 0
+      DO 40 I=1,NORBS
+      NS     = NSYM(I)
+      MS     = MOA(NS)+1
+      IF(MS.LE.MOCCA(NS)) THEN
+         OCCA(I) = ONE
+         MOA(NS) = MS
+         KOCC    = KOCC+1
+         IF(KOCC.EQ.MOSUMA) THEN
+            NOCCA = I
+            GO TO 50
+         ENDIF
+      ENDIF
+   40 CONTINUE
+      KSTOP  = 1
+      WRITE(NB6,520)
+   50 CONTINUE
+      IF(.NOT.UHF .AND. IMULT.GT.0) THEN
+         KOCC   = 0
+         DO 60 I=1,NORBS
+         IF(OCCA(I).EQ.ZERO) THEN
+            NS     = NSYM(I)
+            MS     = MOB(NS)+1
+            IF(MS.LE.MOCCB(NS)) THEN
+               OCCA(I) = PT5
+               MOB(NS) = MS
+               KOCC    = KOCC+1
+               IF(KOCC.EQ.1) IODD=I
+               IF(KOCC.EQ.2) JODD=I
+               IF(KOCC.EQ.MOSUMB) THEN
+                  IF(I.GT.NOCCA) NOCCA=I
+                  GO TO 70
+               ENDIF
+            ENDIF
+         ENDIF
+   60    CONTINUE
+         KSTOP  = 1
+         WRITE(NB6,520)
+   70    CONTINUE
+      ENDIF
+C     PRINTING SECTION.
+      IF(NPRINT.GE.5 .OR. KSTOP.GT.0) THEN
+         WRITE(NB6,530) NOCCA
+         NLAB   = IRREPA(ISUB)
+         IF(UHF) THEN
+            FF  = ONE
+         ELSE
+            FF  = TWO
+         ENDIF
+         DO 80 I=1,NORBS
+         WRITE(NB6,540) I,EA(I),IRREP(NLAB+NSYM(I)),NSYM(I),OCCA(I)*FF
+   80    CONTINUE
+      ENDIF
+C *** MOLECULAR ORBITALS CB(LM2,LM3).
+C     ASSIGN THEIR SYMMETRY AND DEFINE OCCUPATION NUMBERS.
+      IF(UHF) THEN
+         CALL MOSYM(CB,EB,LM2,LM3,LM3,NSYM,ISYM,ISUB,NPRSYM)
+         KOCC   = 0
+         DO 90 I=1,NORBS
+         NS     = NSYM(I)
+         MS     = MOB(NS)+1
+         IF(MS.LE.MOCCB(NS)) THEN
+            OCCB(I) = ONE
+            MOB(NS) = MS
+            KOCC    = KOCC+1
+            IF(KOCC.EQ.MOSUMB) THEN
+               NOCCB = I
+               GO TO 100
+            ENDIF
+         ENDIF
+   90    CONTINUE
+         IF(MOSUMB.GT.0) THEN
+            KSTOP = 1
+            WRITE(NB6,520)
+         ENDIF
+  100    CONTINUE
+C        PRINTING SECTION.
+         IF(NPRINT.GE.5 .OR. KSTOP.GT.0) THEN
+            WRITE(NB6,550) NOCCB
+            NLAB   = IRREPA(ISUB)
+            DO 110 I=1,NORBS
+            WRITE(NB6,540) I,EB(I),IRREP(NLAB+NSYM(I)),NSYM(I),OCCB(I)
+  110       CONTINUE
+         ENDIF
+      ENDIF
+      IF(KSTOP.GT.0) STOP 'OCCSYM'
+      RETURN
+  500 FORMAT(///1X,'NO SYMMETRY WAS DETECTED IN THE ACTUAL GEOMETRY.',
+     1       /  1X,'SYMMETRY-BASED OCCUPATIONS CANNOT BE DEFINED.',
+     2       /  1X,'INPUT POINT GROUP   ',A3,'    MSUB=',I1,//)
+  510 FORMAT(///1X,'THE ACTUAL POINT GROUP DIFFERS FROM THE INPUT.',
+     1       /  1X,'SYMMETRY-BASED OCCUPATIONS CANNOT BE DEFINED.',
+     2       // 1X,'INPUT    ',A3,'    MSUB=',I1,
+     3       /  1X,'FOUND    ',A3,'    ISUB=',I1//)
+  520 FORMAT(///1X,'THE ACTUAL SYMMETRIES OF THE MOLECULAR ORBITALS',
+     1       /  1X,'ARE INCOMPATIBLE WITH THE OCCUPATIONS REQUESTED.'//)
+  530 FORMAT(///1X,'OCCUPATIONS FOR ORBITALS CA, HOMO =',I4,
+     1       // 4X,'MO     EIGENVALUE     LABEL     NSYM   OCCUPATION'/)
+  540 FORMAT(   1X,I5,F15.5,6X,A4,5X,I2,F12.2)
+  550 FORMAT(///1X,'OCCUPATIONS FOR ORBITALS CB, HOMO =',I4,
+     1       // 4X,'MO     EIGENVALUE     LABEL     NSYM   OCCUPATION'/)
+      END

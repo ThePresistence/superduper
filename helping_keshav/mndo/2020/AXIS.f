@@ -1,0 +1,109 @@
+      SUBROUTINE AXIS (AMS,C,IAX,ITYPE,NUMAT)
+*VOCL TOTAL,SCALAR
+C     *
+C     FIND PRINCIPAL SYMMETRY AXIS OF AN ORDER HIGHER THAN 2.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     AMS     ATOMIC MASSES, IN AMU (I).
+C     C       CARTESIAN COORDINATES, IN ANGSTROM (I).
+C     IAX     LABEL FOR PRINCIPAL SYMMETRY AXIS (O).
+C             = 0  NO SUCH AXIS.
+C             = 1  X AXIS.
+C             = 2  Y AXIS.
+C             = 3  Z AXIS.
+C     ITYPE   TYPE OF MOLECULE ACCORDING TO MOMENTS OF INERTIA (O).
+C             = 1  LINEAR.
+C             = 2  SPHERICAL TOP.
+C             = 3  SYMMETRIC TOP.
+C             = 4  ASYMMETRIC TOP.
+C     NUMAT   NUMBER OF ATOMS (I).
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION AMS(NUMAT),C(3,NUMAT)
+      DIMENSION PM(3),PR(3,3),T(6),DUM(15)
+      DATA ZERO,ONE/0.0D0,1.0D0/
+C     MOMENTS OF INERTIA ARE CONSIDERED TO BE ZERO IF THEY ARE
+C     LESS THAN SMALL (IN AMU*ANGSTROM**2).
+      DATA SMALL/1.0D-07/
+C     MOMENTS OF INERTIA ARE CONSIDERED TO BE EQUAL IF THEIR RATIO
+C     DIFFERS FROM 1 BY LESS THAN SMALLM.
+      DATA SMALLM/1.0D-06/
+C     *
+C     INITIALIZATION.
+      IAX    = 0
+      ITYPE  = 4
+C     *
+C     MOLECULAR WEIGHT AND CENTER-OF-GRAVITY COORDINATES.
+      AMSUM  = ZERO
+      CGX    = ZERO
+      CGY    = ZERO
+      CGZ    = ZERO
+      DO 10 I=1,NUMAT
+      AMSI   = AMS(I)
+      AMSUM  = AMSUM+AMSI
+      CGX    = CGX+AMSI*C(1,I)
+      CGY    = CGY+AMSI*C(2,I)
+      CGZ    = CGZ+AMSI*C(3,I)
+   10 CONTINUE
+      RAMSUM = ONE/AMSUM
+      CGX    = CGX*RAMSUM
+      CGY    = CGY*RAMSUM
+      CGZ    = CGZ*RAMSUM
+C     *
+C     TENSOR OF INERTIA.
+      DO 30 I=1,6
+      T(I)   = ZERO
+   30 CONTINUE
+      DO 40 I=1,NUMAT
+      AMSI   = AMS(I)
+      XI     = C(1,I)-CGX
+      YI     = C(2,I)-CGY
+      ZI     = C(3,I)-CGZ
+      T(1)   = T(1)+AMSI*(YI*YI+ZI*ZI)
+      T(2)   = T(2)-AMSI* XI*YI
+      T(3)   = T(3)+AMSI*(XI*XI+ZI*ZI)
+      T(4)   = T(4)-AMSI* XI*ZI
+      T(5)   = T(5)-AMSI* YI*ZI
+      T(6)   = T(6)+AMSI*(XI*XI+YI*YI)
+   40 CONTINUE
+C     *
+C     CHECK ALIGNMENT OF MOLECULE ALONG THE PRINCIPAL AXES.
+      IF(ABS(T(2)).GT.SMALL .OR. ABS(T(4)).GT.SMALL .OR.
+     1   ABS(T(5)).GT.SMALL) GO TO 70
+C     *
+C     THE MOLECULE IS ALIGNED ALONG THE PRINCIPAL AXES.
+      DO 60 I=1,3
+      II     = I*(I+1)/2
+      PM(I)  = T(II)
+      IF(PM(I).LT.SMALL) THEN
+         IAX   = I
+         ITYPE = 1
+         RETURN
+      ENDIF
+      IF(I.EQ.1) GO TO 60
+      IM1    = I-1
+      DO 50 J=1,IM1
+      FIJ    = ABS(ONE-PM(J)/PM(I))
+      IF(FIJ.LT.SMALLM) THEN
+         IF(ITYPE.EQ.4) THEN
+            IAX   = 6-I-J
+            ITYPE = 3
+         ELSE
+            IAX   = 0
+            ITYPE = 2
+         ENDIF
+      ENDIF
+   50 CONTINUE
+   60 CONTINUE
+      RETURN
+C     *
+C     THE MOLECULE IS NOT ALIGNED ALONG THE PRINCIPAL AXES.
+C     ASSIGN TYPE OF MOLECULE FROM PRINCIPAL MOMENTS OF INERTIA.
+   70 CALL TDIAG (T,PR,PM,DUM,6,3,3,3)
+      F12    = ONE-PM(1)/PM(2)
+      F23    = ONE-PM(2)/PM(3)
+      IF(F12.LT.SMALLM .OR.  F23.LT.SMALLM) ITYPE=3
+      IF(F12.LT.SMALLM .AND. F23.LT.SMALLM) ITYPE=2
+      IF(PM(1).LT.SMALL) ITYPE=1
+      RETURN
+      END

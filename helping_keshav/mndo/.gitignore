@@ -1,0 +1,30 @@
+# Emacs backup files.
+*~
+
+# GNU Build System (GNU Autotools).
+aclocal.m4
+autom4te.cache
+compile
+config.guess
+config.log
+config.status
+config.sub
+install-sh
+missing
+configure
+Makefile.in
+Makefile
+
+# Compilation products.
+*.mod
+*.o
+*.a
+mndo2020
+
+# Test jobs.
+*.out
+*.pass
+*.fail
+
+# Miscellaneous files.
+nohup.out

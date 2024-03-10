@@ -1,0 +1,6 @@
+DSC Ethylene + butadiene, Diels-Alder TS, PM3
+DSC Reaction core: 4 C atoms, HDLC connection scheme
+DSC Environment: no fragments, Cartesian coords
+PRP hdlccyc=76
+PRP finalheat=70.15028
+PRP cartgrdopt=0.26366

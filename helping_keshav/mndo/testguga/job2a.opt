@@ -1,0 +1,6 @@
+DSC WATER, C2v, MNDO CISD, ground-state singlet.
+DSC Automatic generation of SCF reference occupation.
+DSC Single-point energy calculation (IOP=0, JOP=-1, KCI=5).
+DSC Expected CI heat -65.03157 kcal/mol (CI95)
+PRP heat=-60.62044
+PRP ciheat=-65.03157

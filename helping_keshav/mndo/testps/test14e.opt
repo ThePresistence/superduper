@@ -1,0 +1,15 @@
+DSC NMR chemical shifts in formaldehyde, "Method A" omitting 3-center
+DSC terms. Hermiticity of one-electron matrix elements is not used.
+DAT H2CO.dat
+OPT iprint=1
+OPT indsym=1 nmrlev=2 intctl=00
+OPT idens=5 iqswap=1 inrhs=3 iprect=3 ikmode=1 isolve=1
+PRP freqmem=4725 freqdisk=72
+PRP NMRatomA=1  NMRtypeA=C     NMRisoA=-158.840  NMRs1A=-278.603   NMRs2A=-188.807  NMRs3A=-9.110
+PRP NMRatomB=2  NMRtypeB=H     NMRisoB=39.777    NMRs1B=34.079     NMRs2B=41.726    NMRs3B=43.527
+PRP NMRatomC=3  NMRtypeC=H     NMRisoC=39.777    NMRs1C=34.079     NMRs2C=41.726    NMRs3C=43.527
+PRP NMRatomD=4  NMRtypeD=O     NMRisoD=-561.167  NMRs1D=-1019.304  NMRs2D=-700.567  NMRs3D=36.371
+PRP NMRatomE=5  NMRtypeE=NICS  NMRisoE=5.100     NMRs1E=-3.021     NMRs2E=2.303     NMRs3E=16.019
+PRP NMRatomF=6  NMRtypeF=NICS  NMRisoF=10.232    NMRs1F=4.486      NMRs2F=11.314    NMRs3F=14.896
+PRP NMRatomG=7  NMRtypeG=NICS  NMRisoG=3.806     NMRs1G=0.504      NMRs2G=2.832     NMRs3G=8.082
+PRP NMRatomH=8  NMRtypeH=NICS  NMRisoH=1.784     NMRs1H=0.099      NMRs2H=0.799     NMRs3H=4.454

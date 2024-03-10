@@ -1,0 +1,8 @@
+DSC PENTADIENIMINIUM CATION, AM1 MRSD-CI for closed-shell singlet
+DSC Active space: 5 MOs, 5 VOs - defined explicitly via input
+DSC Single-point energy and gradient, first excited state
+DSC Modified Davidson diagonalizer, root selected by CI coefficient
+PRP heat=222.96133:222.96133
+PRP ciheat=213.19238:213.19238
+PRP cartgrd=0.01810:0.01810
+PRP intgrd=0.01165:0.01165

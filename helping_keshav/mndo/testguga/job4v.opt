@@ -1,0 +1,9 @@
+DSC BENZENE, D6h, OM2 septet full CI with closed-shell reference
+DSC Active space: 3 MOs, 3 VOs - defined via pz populations (movo=-3)
+DSC Single-point energy calculation
+PRP heat=19.04022:19.04022
+PRP ciheat=347.05466:347.05466
+PRP deltae=0.000000
+PRP dipole=0.000000
+PRP deltae2=0.000000
+PRP dipole2=0.000000

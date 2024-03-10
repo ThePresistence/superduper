@@ -1,0 +1,5 @@
+DSC TETRACENE C18H12, D2h, MNDO RHF
+DSC HDLC, primitive coordinates, no fragments
+PRP hdlccyc=32
+PRP finalheat=80.90247
+PRP cartgrdopt=0.46149

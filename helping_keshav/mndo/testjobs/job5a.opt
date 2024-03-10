@@ -1,0 +1,7 @@
+DSC METHANOL, MNDO RHF
+DSC Reaction path, internal rotation, 3 points
+PRP heat=-56.61127:-56.97819:-57.35390
+PRP optcyc=4:3:4
+PRP finalheat=-56.61127:-56.97819:-57.35390
+PRP intgrdopt=0.14426:0.32240:0.21224
+

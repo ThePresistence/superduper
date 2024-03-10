@@ -1,0 +1,15 @@
+JOP=0 IOP=-6 KCI=5 MOVO=0 NCIREF=0 ICI1=4 ICI2=3 IROOT=3 +
+IOUTCI=0 NCISYM=-1 icross=5 IGEOM=0 IFORM=1 IMULT=2 +
+NCIGRD=2 IMOMAP=0 IPRINT=5 IEF=1 IPREC=9999 LRSCAL=1 DMAX=0.05 IUPD=1 +
+ICUTS=-1 ICUTG=-1 ISCF=12 IPLSCF=12 DPREC=1D-8 DSTEP=1D-6 maxrtl=10
+HCO, on CI seam
+
+ 6    0.0000000  0      0.000000  0      0.000000  0    0    0    0
+ 8    1.3430000  1      0.000000  0      0.000000  0    1    0    0
+ 1    1.2718800  1     68.415000  1      0.000000  0    2    1    0
+ 0    0.0        0      0.0       0      0.0       0    0    0    0
+   1   2
+   0.00010   1.00000
+   1
+   1 1 2
+   1.264

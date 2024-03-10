@@ -1,0 +1,18 @@
+DSC PM3 gradients for two CH3 radicals at 2.5 A (state 2 in OS CI).
+DSC Global ortres in MO basis (out-of-core). Exact diagonal conditioner.
+DSC Fock route used for Z-vector reduction.
+DAT CH3CH3.dat
+OPT iprint=1
+OPT kci=1 cik=0 cil=0 cinc=3 cilroot=2
+OPT imix=3 idens=5 iqswap=2 inrhs=1 irows=3 iprect=4 ihlst=2 ihlwrp=2 ikmode=1 isolve=3 ikrsav=1
+PRP heat=177.89858
+PRP freqmem=9358 freqdisk=2054 respvec=5
+PRP intgrd=45.82963 cartgrd=64.75162
+PRP CIstate1=52.95347 CIstate2=177.89858 CIstate3=190.88522
+PRP cartgrda=1 cartgrdaX=-45.78629 cartgrdaY=0.00000 cartgrdaZ=0.00000
+PRP cartgrdb=3 cartgrdbX=-0.01436  cartgrdbY=0.02065 cartgrdbZ=0.00000
+PRP cartgrdc=4 cartgrdcX=-0.01436  cartgrdcY=-0.01033 cartgrdcZ=-0.01788
+PRP cartgrdd=7 cartgrddX=0.01436   cartgrddY=-0.02065 cartgrddZ=0.00000
+PRP intgrda=1 intgrdaX=45.82937
+PRP intgrdb=2 intgrdbX=0.13562
+PRP intgrdc=3 intgrdcX=0.07112

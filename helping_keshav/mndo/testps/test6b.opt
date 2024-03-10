@@ -1,0 +1,11 @@
+DSC MNDO ROHF force constants for triplet oxygen from numerical differentiation 
+DSC of gradients. Packed in-core MO solution using locally orthogonal gen-cg
+DSC solver with exact diagonal conditioner.
+DAT O2.dat
+OPT iprint=1
+OPT imix=2 idens=4 iqswap=2 inrhs=-1 iprect=4 ihlst=2 ihlwrp=1 ikmode=1 isolve=6 ikrsav=1
+PRP heat=-15.33476 intgrdopt=0.00359 cartgrdopt=0.00508 optcyc=3
+PRP freqmem=1448 freqdisk=233
+PRP freq6=2476.536
+PRP zpe=3.54035
+PRP modea=7   wavea=2476.536 ira=0.000

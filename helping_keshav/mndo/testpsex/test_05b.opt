@@ -1,0 +1,10 @@
+DSC BENZENE, OM2/GUGA with varying multiplicities
+DSC Multiple state gradient and interstate coupling calculation
+DSC First singlet and first triplet states
+PRP mulstates=1:1
+PRP mulheats=103.61463:104.73667
+PRP mulqmnorms=119.69661:102.00293
+PRP muloptnorms=173.36498:153.77165
+PRP gicvstates=1,1
+PRP gicvqmnorms=0.00000
+PRP gicvoptnorms=0.00000

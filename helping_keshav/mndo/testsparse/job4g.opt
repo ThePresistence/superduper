@@ -1,0 +1,9 @@
+DSC CCl4, Td, MNDO/d RHF
+DSC Geometry optimization followed by force constant analysis
+PRP heat=-32.50944
+PRP optcyc=2
+PRP finalheat=-32.50944
+PRP zeroheat=-32.00531
+PRP zpe=6.97377
+PRP intgrdopt=0.04282
+

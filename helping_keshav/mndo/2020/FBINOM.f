@@ -1,0 +1,28 @@
+      SUBROUTINE FBINOM
+C     *
+C     DEFINE FACTORIALS AND BINOMIAL COEFFICIENTS (FOR SPD INTEGRALS).
+C     F(30)         LOGARITHM OF FACTORIALS.
+C     B(30,30)      BINOMIAL COEFFICIENTS.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./PSC   / F(30),B(30,30)
+      K      = 30
+      F(1)   = ZERO
+      DO 10 I=1,29
+      F(I+1) = F(I)+LOG(ZERO+I)
+   10 CONTINUE
+      DO 30 I=1,K
+      B(I,1) = ONE
+      DO 20 J=2,K
+      B(I,J) = ZERO
+   20 CONTINUE
+   30 CONTINUE
+      DO 50 I=2,K
+      DO 40 J=2,I
+      B(I,J) = B(I-1,J-1)+B(I-1,J)
+   40 CONTINUE
+   50 CONTINUE
+      RETURN
+      END

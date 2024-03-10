@@ -1,0 +1,11 @@
+DSC Test suite 7 with 15 runs
+DSC Formaldehyde molecule and cation
+DSC Check MNDO, AM1, and PM3 both with RHF and UHF
+DSC Geometry optimizations and force constant analysis
+DSC Test use of previous geometries and of restart procedures
+PRP heat=-32.88190:-31.48947:-32.88190:-34.08164:215.67058:210.16949:210.16963:215.66956:210.16952
+PRP optcyc=5:4:3:3:7:4:7:4:4
+PRP finalheat=-32.88190:-31.48947:-32.88190:-34.08164:215.67058:210.16949:210.16963:215.66956:210.16952
+PRP zeroheat=-32.16791:-30.77990:-32.16791:-33.38536:216.34563:210.85418:216.34471:210.85419
+PRP zpe=17.98862:17.21149:17.98874:16.39005:15.93650:16.14883:15.95483:16.15014
+PRP intgrdopt=0.00124:0.00598:0.01209:0.00110:1.04222:0.12031:0.16476:0.09373:0.13462

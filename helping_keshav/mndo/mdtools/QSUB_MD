@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Usage:
+# qsub -t {min}-{max} -tc {maxRunning} QSUB_MD
+
+#$ -S /bin/bash
+#$ -cwd
+#$ -o Q_Output.txt
+#$ -e Q_Error.txt
+
+#SCRATCH 
+export TMP=/usr/scratch/$USER
+export TMPDIR=/usr/scratch/$USER
+
+#RUNNING
+
+mndo_path="mndo99"
+
+#ADJUST NUMBER OF ZEROES IN THE FILENAME
+zeros=""
+length=$((4 - ${#SGE_TASK_ID}))
+for ((i=1; i <= $length ; i++))
+do
+  zeros="${zeros}0"
+done
+
+Qwd=`pwd`
+
+number="$zeros${SGE_TASK_ID}"
+
+
+
+if [ -d "$Qwd/run$number" ]; then
+  if [ ! -e "$Qwd/run$number/mndo.log" ]; then
+    echo "Start: $JOB_NAME $JOB_ID/${SGE_TASK_ID} on ${HOSTNAME}"
+
+    cd $Qwd/run$number
+
+    rm -rf mndo.log traj.out vel.out stat.out hopping.out MD_data
+
+    mkdir -pv /usr/scratch/$USER/${JOB_ID}/run$number
+    cd /usr/scratch/$USER/${JOB_ID}/run$number
+
+    /bin/cp -rfv $Qwd/run$number/* .
+
+    $mndo_path < mndo.inp > mndo.log
+
+    echo "Finish: $JOB_NAME $JOB_ID/${SGE_TASK_ID} on ${HOSTNAME}"
+
+    /bin/cp -rfv *.out *.log $Qwd/run$number/
+
+    /bin/rm -rfv /usr/scratch/$USER/${JOB_ID}/run$number
+
+    if [ "$(ls -A /usr/scratch/$USER/${JOB_ID})" == "" ]; then
+      /bin/rm -rfv /usr/scratch/$USER/${JOB_ID}
+    fi
+
+  fi
+fi
+
+

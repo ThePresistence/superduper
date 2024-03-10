@@ -1,0 +1,603 @@
+Tutorial for the utilities in mdtools/
+
+------------------------------------------------------------------------
+
+
+0.    Introduction.
+
+      This tutorial is intended as a guide to running a typical surface
+      hopping dynamics calculation. The Tully surface hopping algorithm
+      is inherently statistical, so multiple trajectories have to be 
+      calculated and averaged. This process is divided into three
+      parts:
+
+       1. Sampling ground state geometries.
+       2. Preparing the surface hopping trajectory input files.
+       3. Running and analysing the surface hopping jobs.
+
+      This tutorial explains how to use the scripts (most of them written
+      in Python) located in the mdtools/ folder to perform these tasks.
+      It is not intended to cover all the options available for each
+      script. Full documentation of the options can be found by running
+      the script in question with the --help option.
+
+      The tutorial refers to an example run for the dynamics of
+      the methaniminium ion. Input files and typical outputs for this
+      run can be found in the example/ directory.
+
+      The tutorial assumes that the command 'mndo-md' points to an MNDO
+      executable with the excited state dynamics module enabled. All
+      dynamics calculations that can be performed with MNDO as a
+      standalone program use the NVE ensemble. In combination with
+      ChemShell an NVT ensemble can be utilised for the initial ground
+      state dynamics. Currently there is no option to generate a Wigner
+      distribution of the initial velocities. Details of the MNDO dynamics
+      implementation and further examples of its use can be found in Ref. 1.
+
+      All Python scripts have been developed and tested using Python
+      version 2.5. More recent versions (2.7.x) should also be suitable.
+
+
+
+1.    Sampling ground state geometries.
+
+      The first task is to generate a realistic sample of ground 
+      state geometries, from which the starting geometries for the
+      surface hopping runs can be selected.
+
+1.1.  Sampling from a Born-Oppenheimer dynamics run.
+
+      One way of obtaining a realistic sample is to take snapshots
+      from a ground state (Born-Oppenheimer) molecular dynamics run.
+
+      We first generate the starting geometry from an ordinary 
+      OM2/GUGA-CI ground state optimisation. 
+
+      Example: example/1_sampling/md/optimisation/
+
+      In the regular MNDO input file (named mndo.inp throughout this
+      tutorial) we use the same active space here that we intend to use
+      for the excited state dynamics later:
+       - movo=1, to explicitly specify the active orbitals (3 5 6 7)
+         (these orbitals were determined from inspection of the 
+         Molden output of a previous OM2-only calculation).
+       - ici1=3 ici2=1, to specify 3 occupied and 1 unoccupied active
+         orbital.
+       - nciref=3 mciref=0, to automatically select 3 reference 
+         configurations corresponding to the ground state, a single 
+         excitation from the HOMO into the LUMO, and a double
+         excitation from the HOMO into the LUMO.
+       - levexc=2, for single and double excitations from the reference
+         configurations. (This would be a typical setting for a larger 
+         active space, but here we are already effectively doing
+         a complete active space calculation).
+       - imomap=1, to ensure that the active space is correctly 
+         mapped during the optimisation.  
+
+      Run the optimisation with:
+         mndo-md < mndo.inp > mndo.out
+
+      The output should look like mndo.out.chk.
+
+      The optimised geometry is now used to set up the dynamics 
+      calculation.
+
+      Example: example/1_sampling/md/dynamics/
+
+      The mndo.inp file needed now is similar to the optimisation input,
+      with the following major changes:
+       - the initial geometry is now the optimised geometry
+       - jop=-2 icross=6 is used to specify dynamics
+       - ncigrd=1 is added requesting an extra line of input at the end
+         to specify that the gradient of state 1 should be calculated.
+
+      An extra input file, dynvar.in, is needed by MNDO to specify
+      dynamics options. In particular:
+       - INIT_STAT=1, EHRENFEST=F, TULLY_HOP=F, specifies ground state
+         Born-Oppenheimer dynamics.
+       - NSTEP=4000, DT=0.5E-3, specifies a 20ps run.
+       - TEMP0=298, is used to set the (random) initial velocities
+         based on an instantaneous temperature of 298K. Note that the 
+         'temperature' will vary considerably over the course of the
+         run - this setting is only used to give a reasonable set 
+         of initial velocities.
+       - RND_GEN=PM_BD, RND_SEED=11111, seeds one of the portable
+         random number generators. A value for RND_SEED is specified
+         here to make the results reproducible (up to the limit of
+         numerical precision, choice of compiler, etc.) When doing so
+         care must be taken that different seeds are used for
+         independent calculations within the same project to avoid
+         identical random number sequences.
+
+      Run the calculation as before. In addition to the normal output,
+      there should be a file traj.out, which contains the dynamics 
+      trajectory in Molden format. Compare this with traj.out.chk 
+      (which contains only the first two and last two geometries, as 
+      the full file is rather large).
+
+      A sample of snapshots can now be taken.
+
+      Script: mdsample.py
+
+      The mdsample script reads in a trajectory file in Molden or
+      XYZ format (the relevant section of the Molden file is the
+      [GEOMETRIES] section which must have XYZ format; ZMAT format
+      is not supported) and outputs either a random sample of
+      snapshots or snapshots taken at fixed intervals. In this
+      case we will take a random sample of 100 snapshots.
+
+      Run the script with: 
+         mdsample.py --vel --sample-size=100 --random-seed=12345
+
+      (Again, a random seed has been specified only to make the results
+      reproducible.)
+
+      Output files are sample.xyz (with the geometries in XYZ format)
+      and sample.vel (containing the corresponding velocities), from
+      now on referred to as the sample files. The output should look
+      like sample.*.chk.
+
+1.2.  Using a thermostat with ChemShell.
+
+      An alternative to a pure Born-Oppenheimer dynamics run is the
+      combination with a thermostat in order to produce a canonical
+      (NVT) ensemble of configurations. The advantage of a constant
+      temperature is a more realistic sampling of the ground state
+      potential energy surface as the temperature may fluctuate quite
+      strongly for a microcanonical (NVE) ensemble.
+
+      For this purpose ChemShell may be used. An example input file
+      can be found under: example/1_sampling/md/chemshell/
+      It uses a Nosé-Hoover chain of length 10.
+
+      The resulting dynamics.trj file can then be converted to traj.out
+      and vel.out files using the script Chemsh_getSample.sh. (Although
+      this script accepts an alternative trajectory file name as its
+      argument, the default will be dynamics.trj if no argument is
+      specified. The names of the written files are fixed.)
+
+      The following steps (generation of snapshots using mdsample.py
+      etc.) are the same as in section 1.1.
+
+
+2.    Preparing the surface hopping input files.
+
+      Example: example/2_hopping/
+
+      Each surface hopping job requires a regular MNDO input file with
+      an individual starting geometry as well as common theory options,
+      and a dynamics input file (dynvar.in) specifying the correct
+      initial state as well as common dynamics options. Depending on
+      the restart option in dynvar.in, a third input file (dynam.restart
+      by default) containing the initial velocities is also needed.
+      This is the case in the example in this tutorial.
+
+      The geometries and velocities are extracted from the sample files
+      (the output from section 1.1) and converted to the required MNDO
+      input files using the script mdfilter.py. By default, for each
+      trajectory the script creates a separate folder named run0001,
+      run0002, run0003 etc. in which all individual input and output
+      files will be stored. The name of the script indicates that
+      usually not all structures in the sample will be used to start
+      a trajectory, but the geometries will be subject to further
+      automated filtering (see section 2.3).
+
+      While the contents of the mandatory input files mndo.inp and
+      dynvar.in is controlled by the user via appropriate template
+      files (template.inp and dynvar.in, same name), generation of
+      the restart files is completely automated and this file type
+      can be treated as a black box. A detailed description of the
+      information to be included in the template files and how to
+      apply the mdfilter.py script will be provided in the following
+      sections.
+
+2.1.  The template dynamics options file.
+
+      Example: example/2_hopping/dynvar.in
+
+      The dynamics template file is an ordinary MNDO dynamics input,
+      except that INIT_STAT is omitted (the initial electronic state
+      is determined later as it may vary from job to job if transitions
+      from the ground state into one of several excited states are
+      allowed at the beginning of each surface hopping trajectory;
+      in this tutorial only the second excited state is considered).
+      NB: If INIT_STAT is present, it will be ignored.
+
+      The main differences from the ground state dynamics options are:
+       - EHRENFEST=F, TULLY_HOP=T, specifies the surface hopping 
+         algorithm of Tully [2, 3].
+       - NSTEP=4000, DT=5.0E-5, specifies a 200fs run with 0.05fs time
+         steps. Such a small time step (compared with a purely classical
+         MD) may be considered a safe starting point to avoid problems
+         with orbital tracking and state following, and because transitions
+         to the ground state are likely to occur well within 200fs for our
+         system. Especially when using the adaptive algorithm [5] the
+         time step might be increased after some testing.
+       - NUM_CC=F, AN_CC=T. Analytic non-adiabatic couplings will 
+         be calculated. For larger systems, the computational cost can 
+         be reduced by using numerical non-adiabatic couplings. 
+       - EINTEG=UP3, NE=200. The default options for integrating the 
+         Tully electronic equation.
+       - No RND_SEED. In this case we do not specify a seed as each
+         job should have its own seed. This means that the individual 
+         jobs will not be reproducible, although the average over all 
+         jobs should give similar results.
+       - ADAPT_ENE=0.0001, ADAPT_MAP=97, ADAPT_TRIES=10. [5]
+         The adaptive time step algorithm is used that will reject a
+         calculation step and reduce the time step in the next try if:
+            - The relative total energy exceeds the amount specified
+              by option ADAPT_ENE, or
+            - One of the active MO mapping overlap factors is below
+              the threshold given by option ADAPT_MAP.
+         In this example the maximum relative total energy change is set 
+         to 0.0001 (which means no bigger change than 0.01%) and the
+         overlap of all corresponding MOs in two consecutive steps must
+         be at least 0.97. Alternatively, a maximum absolute total
+         energy change (of 0.05 kcal/mol in this case) may be specified
+         by ADAPT_ENE_MODE=1 and ADAPT_ENE=0.05. At most 10 iterative
+         step reductions are done (option ADAPT_TRIES).
+
+2.2.  The template MNDO input file.
+
+      Example: example/2_hopping/template.inp
+
+      The template MNDO input file has the same format as an ordinary
+      MNDO input, but not all options that appear in the final input
+      need to be included. Only theory options have to be specified,
+      such as charge, multiplicity, the choice of Hamiltonian and
+      GUGA-CI options (including, importantly, the choice of orbitals
+      for the active space). A reference geometry should also be
+      included, which normally would be a ground state optimised
+      geometry (i.e. the same that was used to start Born-Oppenheimer
+      dynamics in section 1.1). The active orbital list must
+      correspond to orbitals calculated at the given geometry.
+
+      Options that specify the type of job (jop, icross, etc.) or the 
+      gradients to be used in the dynamics (specified by ncigrd)
+      SHOULD NOT be set in the template file. They will be inserted
+      automatically later.
+
+      Print options (nprint, ioutci, iuvcd, etc.) may also be set if 
+      desired to control the level of output in the dynamics runs. 
+      In the example, mprint=-1 and nprint=-5 are set to minimise
+      the MNDO output during dynamics.
+
+      The template input file should use keywords and be in free format
+      (iform=1) and the geometry should be specified using Cartesians
+      (igeom=1).
+
+2.3.  An overview of sample geometry filtering.
+
+      Script: mdfilter.py
+
+      The mdfilter script takes the sample files as input and accepts
+      or rejects individual sample geometries based on tests using
+      the molecule in template.inp (see section 2.2) as reference.
+      (If a structure is accepted, it will be the starting point for
+      one or more trajectories depending on the allowed number of
+      excited states. In this tutorial only one excited state, S2,
+      is considered.)
+
+      The sample geometries can be filtered according to various
+      criteria:
+
+       1. Active space mapping: a geometry is selected only if the
+          active orbitals can be successfully mapped from the template
+          molecule to the new geometry. This ensures that the active 
+          orbitals are correctly defined at the start of every 
+          surface hopping run.
+       2. Energy window: a geometry is only selected if the excitation 
+          energy for a state is within a certain tolerance of a target 
+          excitation energy (usually defined as the excitation energy 
+          for the template molecule).
+       3. Transition probability: the probability for excitation to a 
+          target state k can be calculated as [4]
+
+                Pk = (fk/(Ek-E0)^2) / max(fk/(Ek-E0)^2)
+
+          where fk is the oscillator strength of the transition to 
+          state k, Ek and E0 are the energies of states k and 0, and 
+          the probability is normalised by taking the maximum computed 
+          ratio over all geometries and selected states k.
+          A stochastic algorithm is used to determine whether the 
+          excitation is selected according to the probability Pk.
+
+      By default all three filters are applied, but it is not normally
+      necessary to use both criterion 2 and criterion 3. In this
+      tutorial, criterion 2 will be skipped.
+
+      In addition to the above, the output geometries are by default 
+      restricted to a single target state. Alternatively, excitations
+      to all calculated states can be considered (using the option -a
+      or --all-states). Each selected state has its own dynamics run, 
+      so a given sample geometry may be used for more than one run.
+
+      The filtering procedure is carried out simultaneously with the 
+      preparation of the surface hopping input files, as described in 
+      section 2.4.
+
+2.4.  Preparing the surface hopping jobs.
+
+      Script: mdfilter.py
+
+      The mdfilter script is used for preparing the surface hopping
+      input files, by passing the -d (or --dynamics) option. By
+      default, each dynamics run is set up in its own directory, with
+      the name 'run' followed by the number of the run.
+
+      To run the script, first copy your sample files (sample.xyz and
+      sample.vel) into the 2_hopping/ directory. Then run:
+         mdfilter.py --vel --target-state=3 --mapthr=0.7 -W -d
+                     --random-seed=9999
+
+      The options are:
+       --vel               Read the sample velocity file (default name:
+                           sample.vel), extract initial velocities and
+                           create a corresponding restart file
+                           (run00xy/dynam.restart) for each dynamics run.
+       --target-state=3    Only excitations to the S2 state (state 3 in
+                           the GUGA-CI module of MNDO) will be considered.
+       --mapthr=0.7        The threshold for active space mapping is by
+                           default 90%, for both filtering and dynamics.
+                           For filtering, where the sample and reference
+                           geometries are fixed (the adaptive time step
+                           algorithm can be applied only during dynamics),
+                           the threshold is reduced to 70% because too many
+                           sample structures would be rejected otherwise.
+                           During surface hopping the options specified
+                           in the dynvar.in template file (see section
+                           2.1) take precedence, so in this case the
+                           adaptive algorithm with a MO mapping threshold
+                           of 97% is used.
+       -W                  Switch off energy window filtering (criterion
+                           2 in section 2.3).
+       -d                  Prepare dynamics input files.
+       --random-seed=9999  Again, only to ensure reproducibility of the 
+                           filtering (the actual jobs will not be
+                           reproducible, as discussed in section 2.1).
+
+      Because we have restricted excitations to state 3 where the
+      transition probability is always above 90%, only five geometries
+      are filtered out, and 95 pass the filter.
+
+      The filtering is summarised in filtered-info.log and a list of
+      selected geometries in XYZ format is written to
+      filtered-sample.xyz. The output should be the same as in the
+      respective .chk files. For each of the 95 selected geometries,
+      a directory 'run00xy' is created containing the appropriate
+      dynamics input files.
+
+
+
+3.    Running and analysing the surface hopping jobs.
+
+3.1.  Running the surface hopping jobs.
+
+      Surface hopping jobs are executed like any other MNDO job. Set
+      the current directory to the folder of each job and run:
+         mndo-md < mndo.inp > mndo.out
+
+      Instead of starting all calculations manually, a queuing system
+      may be used. An example submit script named QSUB_MD for the
+      queuing system "Sun Grid Engine" can be found in the mdtools
+      folder. Please note that the path to the MNDO executable has to be
+      adjusted at mndo_path=... To submit all trajectories at once use
+      the example call:
+      qsub -t {min}-{max} -tc {maxRunning} QSUB_MD
+      The -t flag determines the range of trajectories (e.g. -t 1-150
+      starts the calculations in the folders run0001 to run0150).
+      The -tc flag determines the maximum number of calculations run
+      at the same time.
+
+      It is quite common for a job to fail during the dynamics 
+      calculations because of the highly distorted geometries that can 
+      be reached. This can be due to SCF convergence failure, orbital 
+      tracking failure, state following failure, etc. If the job fails 
+      it is advisable to re-run it, as a new random seed will be used 
+      (unless the user has selected a specific value) and hence a new
+      trajectory will be calculated.
+
+3.2.  Analysing the surface hopping jobs.
+
+3.2.1 Extracting MD and hopping data.
+
+      The results of surface hopping calculations are stored in the
+      hopping.out file. Some other data (e.g. numerical nonadiabatic
+      couplings) are printed to standard output if IOUT .GE. 2 (we
+      suppose in the following that the standard output was redirected
+      to a file named mndo.out). General information about dynamics is
+      stored in the file stat.out.
+
+      The files hopping.out and mndo.out are not suitable for plotting
+      and to manipulate the data. Therefore the data must be extracted.
+      Data stored in the stat.out file do not need to be extracted
+      since this file is already suitable for plotting and manipulation.
+
+      To extract information from the files hopping.out and mndo.out
+      the script MDextr.py can be used. In a directory containing the
+      regular MNDO input file (mndo.inp), the dynamics input file
+      (dynvar.in) and the output files (hopping.out and mndo.out) run:
+
+         MDextr.py
+
+      For each trajectory several files will be stored in the directory
+      MD_data that will be created inside the folder of the
+      corresponding trajectory containing the following data at each
+      time interval:
+
+         E1.dat             Energy of the first state (ground state)
+         E2.dat             Energy of the second state
+       * E3.dat             Energy of the third state
+         E12.dat            Energy difference E2-E1
+       * E13.dat            Energy difference E3-E1
+       * E23.dat            Energy difference E3-E2
+         CC12.dat           Nonadiabatic coupling between states 1 and 2
+       * CC13.dat           Nonadiabatic coupling between states 1 and 3
+       * CC23.dat           Nonadiabatic coupling between states 2 and 3
+         pop1.dat           Electronic population of state 1
+         pop2.dat           Electronic population of state 2
+       * pop3.dat           Electronic population of state 3
+         prob1.dat          Probability of hopping to state 1
+         prob2.dat          Probability of hopping to state 2
+       * prob3.dat          Probability of hopping to state 3
+         rnd_num.dat        Random number for hopping criterion
+         state.dat          State on which dynamics is performed
+      $  num_CC12           Numerical coupling between states 1 and 2
+      $* num_CC13           Numerical coupling between states 1 and 2
+      $* num_CC23           Numerical coupling between states 2 and 3
+
+      Files denoted with * are created only if (at least) three states
+      are included in the simulation. Files denoted by $ are created
+      only if the file mndo.out is present and no option -n or --nonumCC
+      has been used.
+
+      In the example, the files marked * will be created, but the files
+      marked $ will not, because numerical nonadiabatic couplings are
+      not calculated during the dynamics runs.
+
+      As the number of trajectories is usually rather large, invocation
+      of MDextr.py for each subdirectory run00xy has been automated using
+      the script trajectories_data_generator.sh which needs to be started
+      without arguments from the folder that contains these subdirectories.
+      (Note that the script currently can handle at most 1000 trajectories,
+      but this limit can be increased very easily if needed by editing
+      the script. Also note that there will be no warning or error message
+      if there are more than 1000 trajectories. The script will simply
+      process the first 1000 subdirectories and ignore the rest.)
+
+3.2.2 Averaging.
+
+      Surface hopping simulations are stochastic simulations. Therefore
+      the data from many trajectories must be averaged to obtain meaningful
+      results.
+
+      First the unfinished trajectory folders need to be sorted out. 
+      This can be done with the two scripts 
+      trajectories_check_I_length.tcsh and
+      trajectories_check_II_energy_crash.tcsh
+      When executed in the calculation main folder, it will rename the 
+      folders of unfinished or incorrect trajectories to run****_bk.
+      (Note that these scripts currently can handle at most 1000
+      trajectories, but this limit can be increased very easily if
+      needed by editing the scripts. Also note that there will be no
+      warning or error message if there are more than 1000 trajectories.
+      The scripts will simply process the first 1000 subdirectories and
+      ignore the rest.)
+
+      The average over data stored in files created by the MDextr.py
+      script (see section 3.2.1) can be performed by the script 
+      mmean.py.
+
+      Before running the script a list file must be prepared containing
+      a list of all the files to include in the averaging process.
+      Suppose that different trajectories are stored in directories
+      run0001, run0002, run0003, ..., run000N and that each directory
+      contains a directory MD_data. Then to get the average of the
+      energy of the first state for instance the list file will be:
+
+         run0001/MD_data/E1.dat
+         run0002/MD_data/E1.dat
+         run0003/MD_data/E1.dat
+               .
+               .
+               .
+         run000N/MD_data/E1.dat
+
+      Assuming you want to average over all trajectories, this list can
+      be easily generated by:
+
+          ls run*/MD_data/E1.dat > data.ls
+
+      Once the list file is ready, run:
+
+          mmean.py
+
+      The file data.mean will be created.
+
+      In order to determine the average occupation of each state during
+      the course of the dynamics, averaging cannot be done in the same
+      way as above as this would result in a single curve of fractional
+      state numbers. Instead, one curve for each state representing the
+      fraction of trajectories propagating on the potential energy
+      surface of this state at each time interval needs to be
+      calculated. This is done by calling the mmean.py script using
+      option -s or --state. The data.ls file needs to point to the
+      state.dat files (instead of E1.dat above).
+
+      Example: 2_hopping/state.mean.chk
+
+      For the methaniminium example run:
+
+          mmean.py -s --out-file state.mean
+
+      The output should be similar to state.mean.chk (and also to figure
+      5 of Ref. 1, although the results are not directly comparable as
+      some different options have been used in this tutorial). This file
+      contains the data for all states (the three lowest states in our
+      example) in a consecutive manner.
+
+      The lifetime of the S2 state can be fit to the exponential
+      function n(S2) = exp(-t/T(S2)). This gives a lifetime of 15.0 fs.
+      The lifetime of the S1 state can then be fit using:
+
+      n(S1) = [T(S1)/(T(S2)-T(S1))] . [exp(-t/T(S2))-exp(-t/T(S1))]
+
+      For state.mean.chk, this gives an S1 lifetime of 82.6 fs. Again,
+      your results should be similar but not necessarily the same as the
+      lifetimes will not be fully converged using just 95 trajectories.
+
+      A script is provided called trajectories_state_average.tcsh, which
+      does the generation of data.ls and the subsequent calling of 
+      mmean.py for average state occupations automatically. (Note that
+      the script currently can handle at most 1000 trajectories, but
+      this limit can be increased very easily if needed by editing the
+      script. Also note that there will be no warning or error message
+      if there are more than 1000 trajectories. The script will simply
+      process the first 1000 subdirectories and ignore the rest.)
+
+3.2.3 Analyzing trajectories.
+
+      The geometries in a trajectory file can be analyzed using the
+      program geoman.py.
+
+      Usage:
+           geoman.py [options] file
+
+      By default the XYZ geometries from the trajectory file will be
+      printed out. The output can be restricted to a specific range
+      of geometries using the option:
+
+           geoman.py --range=R1 R2 file
+
+      Alternatively, geometrical parameters such as bond lengths and
+      bond angles can be calculated by specifying the relevant atom
+      numbers. For example:
+
+           geoman.py --angle=A1 A2 A3 file
+
+      This will print out the bond angle A1-A2-A3 for each geometry.
+      The other available parameters are --length, --dihedral, and
+      --outofplane.
+
+      For a full list of options, see:
+
+           geoman.py --help
+
+      Files created by geoman.py can be subsequently averaged by
+      mmean.py (see section 3.2.2)
+
+
+
+------------------------------------------------------------------------
+
+      References.
+
+      1. E. Fabiano, T. W. Keal, and W. Thiel, Chem. Phys. 349, 334
+         (2008).
+      2. J. C. Tully, J. Chem. Phys. 93, 1061 (1990).
+      3. S. Hammes-Schiffer and J.C. Tully, J. Chem. Phys. 101, 4657 
+         (1994).
+      4. M. Barbatti, G. Granucci, M. Persico, M. Ruckenbauer, 
+         M. Vazdar, M. Eckert-Maksic and H. Lischka, J. Photochem. 
+         Photobiol. A: Chem. 120, 118 (2007).
+      5. L. Spörkel and W. Thiel, J. Chem. Phys. 144, 194108 (2016).

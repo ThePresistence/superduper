@@ -1,0 +1,53 @@
+#!/bin/csh
+#
+# testanugo
+#
+# Benchmark suite for semiempirical programs
+# developed by Ross Nobes at ANU (Canberra)
+#
+# (1) Single-point energy and gradient calculations, closed-shell SCF
+# (a) C7NO2H16+, (b) C28N5O7H37, (c) C42H50, (d) C60, (e) C120, (f) C180
+#
+time ../mndo99 < bench1a.inp  > bench1a.out
+time ../mndo99 < bench1b.inp  > bench1b.out
+time ../mndo99 < bench1c.inp  > bench1c.out
+time ../mndo99 < bench1d.inp  > bench1d.out
+time ../mndo99 < bench1e.inp  > bench1e.out
+time ../mndo99 < bench1f.inp  > bench1f.out
+#
+# (2) Geometry optimizations, closed-shell SCF
+# (a) C7NO2H16+, (b) C42H50, (c) C60
+#
+time ../mndo99 < bench2a.inp  > bench2a.out
+time ../mndo99 < bench2b.inp  > bench2b.out
+time ../mndo99 < bench2c.inp  > bench2c.out
+#
+# (3) Force constant calculations, closed-shell SCF
+# (a) C7NO2H16+, (b) C60
+#
+time ../mndo99 < bench3a.inp > bench3a.out
+time ../mndo99 < bench3b.inp > bench3b.out
+#
+# (4) Open-shell half-electron treatment, C16H10+
+# (a) single-point, (b) geometry, (c) force constants
+#
+time ../mndo99 < bench4a.inp > bench4a.out
+time ../mndo99 < bench4b.inp > bench4b.out
+time ../mndo99 < bench4c.inp > bench4c.out
+#
+# Generate summary of results
+#
+if (-f ../mndogrepall) then
+   ../mndogrepall
+endif
+#
+# Compare with reference results
+#
+if (-f anu.grep) then
+    /bin/diff anu.grep all.grep > x
+endif
+#
+# Clean temporary files
+#
+/bin/rm -f fort.1 fort.2 fort.3 fort.4 fort.10 fort.11
+/bin/rm -f fort.19

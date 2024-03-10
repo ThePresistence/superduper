@@ -1,0 +1,5 @@
+DSC WATER, C2v, MNDO CISD for ground-state singlet
+DSC Active space: 3 MOs, 2 VOs - defined via explicit input (movo=1)
+DSC Single-point energy calculation
+PRP heat=-60.62044
+PRP ciheat=-63.12290

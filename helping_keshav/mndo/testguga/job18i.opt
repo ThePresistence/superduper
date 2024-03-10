@@ -1,0 +1,7 @@
+DSC ETHENE, MNDO MRSD-CI for closed-shell singlet
+DSC Active space: 4 MOs, 4 VOs - defined by default
+DSC Single point energy and gradient for state 1
+DSC using numerical integral derivatives
+PRP ciheat=18.78161
+PRP cartgrd=100.33409
+PRP intgrd=147.67698

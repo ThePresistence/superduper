@@ -1,0 +1,196 @@
+      SUBROUTINE BETOM (MODE,ISHELL,JSHELL,NI,NJ,R,S,T)
+C     *
+C     SEMIEMPIRICAL TWO-CENTER ONE-ELECTRON INTEGRALS FOR OM-METHODS.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     MODE      SPECIFICATION OF INTEGRALS TO BE COMPUTED (I).
+C               = 0  OVERLAP AND RESONANCE INTEGRALS.
+C               = 1  ONLY OVERLAP INTEGRALS.
+C               = 2  ONLY RESONANCE INTEGRALS.
+C     ISHELL    NUMBER OF FIRST  GTO SHELL (I).
+C     JSHELL    NUMBER OF SECOND GTO SHELL (I).
+C     NI,NJ     ATOMIC NUMBERS (I).
+C     R         INTERNUCLEAR DISTANCE, IN ATOMIC UNITS (I).
+C     S         LOCAL OVERLAP INTEGRALS (O).
+C     T         LOCAL RESONANCE INTEGRALS, IN EV (O).
+C     *
+C     MODIFICATIONS BY PAVLO O. DRAL, 2015, FEBRUARY.
+C        IMPLEMENTED SUPPORT OF THE ODM2 METHOD.
+C     *
+C     MODIFICATIONS BY PAVLO O. DRAL, 2015, NOVEMBER.
+C        ALWAYS CHECK WHETHER THE SECOND ATOM IS A HEAVY ATOM
+C        FOR THE X-H AND H-X INTERACTIONS.
+C     *
+C     MODIFICATIONS BY PAVLO O. DRAL, 2018, AUGUST.
+C        IMPLEMENTED SUPPORT OF THE ODM3 METHOD.
+C     *
+      USE LIMIT, ONLY: LMZ
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./DPARM / LORBS(LMZ)
+     ./INOPT2/ IN2(300)
+     ./NBFILE/ NBF(20)
+     ./PAROMM/ BETPI(LMZ),BETSH(LMZ),BETPH(LMZ),ALPS(LMZ),
+     .         ALPP(LMZ),ALPPI(LMZ),ALPSH(LMZ),ALPPH(LMZ),FVAL1(LMZ*8)
+     ./PAROPT/ USS(LMZ),UPP(LMZ),Z(LMZ),ZP(LMZ),BETAS(LMZ),BETAP(LMZ),
+     .         ALPHA(LMZ)
+C    ./DPARM1/ UDD(LMZ),ZD(LMZ),BETAD(LMZ)
+      DIMENSION S(14),T(14)
+C *** INITIALIZATION.
+      IOP    = IN2(2)
+      NPRINT = IN2(72)
+      IORBS  = LORBS(NI)
+      JORBS  = LORBS(NJ)
+      NSMAX  = 1
+      IF(IORBS.GE.4 .OR. JORBS.GE.4) THEN
+         NSMAX = 5
+      ELSE IF(IORBS.GE.9 .OR. JORBS.GE.9) THEN
+         NSMAX = 14
+      ENDIF
+C *** COMPUTE LOCAL OVERLAP INTEGRALS.
+      IF(MODE.LT.2 .OR. IOP.EQ.-9) THEN
+C        IF(IGTO.LE.0) THEN
+C           CALL OVERLP (NI,NJ,R,S,0,0)
+C        ELSE
+            CALL SPOVER (ISHELL,JSHELL,R,S)
+C        ENDIF
+      ENDIF
+C *** MODE=1. SAVE OVERLAP INTEGRALS AND RETURN.
+      IF(MODE.EQ.1) THEN
+         DO 30 I=1,NSMAX
+         T(I) = S(I)
+   30    CONTINUE
+         RETURN
+      ENDIF
+C *** INITIALIZATION OF PARAMETERS.
+      BAS    = BETAS(NI)
+      BBS    = BETAS(NJ)
+      AAS    = ALPS (NI)
+      CBS    = ALPS (NJ)
+      IF(IORBS.GE.4) THEN
+         BAP = BETAP(NI)
+         BAI = BETPI(NI)
+         AAP = ALPP (NI)
+         AAI = ALPPI(NI)
+      ENDIF
+      IF(JORBS.GE.4) THEN
+         BBP = BETAP(NJ)
+         BBI = BETPI(NJ)
+         ABP = ALPP (NJ)
+         ABI = ALPPI(NJ)
+      ENDIF
+C     IF(IORBS.GE.9) BAD = BETAD(NI)
+C     IF(JORBS.GE.9) BBD = BETAD(NJ)
+C     SPECIAL H-X AND X-H INTERACTIONS.
+      IF(NI.GT.2 .AND. NJ.LE.2 .AND. NI.LT.86) THEN
+C      IF(NJ.LE.2) THEN ! NEVER USE THIS IN THE PRODUCTION CODE !
+         BAS = BETSH(NI)
+         BAP = BETPH(NI)
+         AAS = ALPSH(NI)
+         AAP = ALPPH(NI)
+      ENDIF
+      IF(NI.LE.2 .AND. NJ.GT.2 .AND. NJ.LT.86) THEN
+C      IF(NI.LE.2) THEN ! NEVER USE THIS IN THE PRODUCTION CODE !
+         BBS = BETSH(NJ)
+         BBP = BETPH(NJ)
+         CBS = ALPSH(NJ)
+         ABP = ALPPH(NJ)
+      ENDIF
+C *** INITIALIZATION OF INTEGRALS.
+      DO 60 I=1,NSMAX
+      T(I)   = ZERO
+   60 CONTINUE
+C *** OM1, OM2, OM3, ODM2 AND ODM3: BETA PROPORTIONAL SQRT(R)*EXP(-ALPHA*R**2)
+      IF(IOP.NE.-9) THEN
+        SQR    = SQRT(R)
+        R2     = R*R
+        EXP1   = (AAS+CBS)*R2
+        IF(EXP1.LT.BIGEXP) T(1) = SQR*EXP(-EXP1)
+        IF(JORBS.GE.4) THEN
+          EXP2 = (AAS+ABP)*R2
+          IF(EXP2.LT.BIGEXP) T(2) =-SQR*EXP(-EXP2)
+        ENDIF
+        IF(IORBS.GE.4) THEN
+          EXP3 = (AAP+CBS)*R2
+          IF(EXP3.LT.BIGEXP) T(3) = SQR*EXP(-EXP3)
+        ENDIF
+        IF(IORBS.GE.4 .AND. JORBS.GE.4) THEN
+          EXP4 = (AAP+ABP)*R2
+          EXP5 = (AAI+ABI)*R2
+          IF(EXP4.LT.BIGEXP) T(4) =-SQR*EXP(-EXP4)
+          IF(EXP5.LT.BIGEXP) T(5) = SQR*EXP(-EXP5)
+        ENDIF
+C *** OM4: BETA PROPORTIONAL (R**ALPHA * OVERLAP)
+      ELSE
+        T(1) = R**(PT5*(AAS+CBS))*S(1)
+        IF(JORBS.GE.4) THEN
+          T(2) = R**(PT5*(AAS+ABP))*S(2)
+        ENDIF
+        IF(IORBS.GE.4) THEN
+          T(3) = R**(PT5*(AAP+CBS))*S(3)
+          IF(JORBS.GE.4) THEN
+            T(4) = R**(PT5*(AAP+ABP))*S(4)
+            T(5) = R**(PT5*(AAI+ABI))*S(5)
+          ENDIF
+        ENDIF
+      ENDIF
+C *** OM-METHODS: COMPUTE THE RESONANCE INTEGRALS.
+      T(1) = PT5*(BAS+BBS)*T(1)
+      IF(JORBS.GE.4) THEN
+         T(2) = PT5*(BAS+BBP)*T(2)
+      ENDIF
+      IF(IORBS.GE.4) THEN
+         T(3) = PT5*(BAP+BBS)*T(3)
+         IF(JORBS.GE.4) THEN
+            T(4) = PT5*(BAP+BBP)*T(4)
+            T(5) = PT5*(BAI+BBI)*T(5)
+         ENDIF
+      ENDIF
+C     TERMS INVOLVING D ORBITALS.
+C     IF(IORBS.GE.9) THEN
+C        T(6)  = PT5*(BAD+BBS)*T(6)
+C        IF(JORBS.GE.4) THEN
+C           T(8)  = PT5*(BAD+BBP)*T(8)
+C           T(10) = PT5*(BAD+BBI)*T(10)
+C        ENDIF
+C     ENDIF
+C     IF(JORBS.GE.9) THEN
+C        T(7)  = PT5*(BAS+BBD)*T(7)
+C        IF(IORBS.GE.4) THEN
+C           T(9)  = PT5*(BAP+BBD)*T(9)
+C           T(11) = PT5*(BAI+BBD)*T(11)
+C           IF(IORBS.GE.9) THEN
+C              TT    = PT5*(BAD+BBD)
+C              T(12) = TT*T(12)
+C              T(13) = TT*T(13)
+C              T(14) = TT*T(14)
+C           ENDIF
+C        ENDIF
+C     ENDIF
+C *** DEBUG PRINT.
+      IF(NPRINT.GE.5 .AND. MODE.LE.0) THEN
+         NB6 = NBF(6)
+         RAB = R*A0
+         IF(NPRINT.GT.5) THEN
+            WRITE(NB6,510) NI,NJ,BAS,BAP,BAI,BBS,BBP,BBI
+            WRITE(NB6,520) NI,NJ,AAS,AAP,AAI,CBS,ABP,ABI
+         ENDIF
+         WRITE(NB6,500) NI,NJ,RAB,' 1',S(1),T(1)
+         IF(JORBS.GE.4) THEN
+            WRITE(NB6,500) NI,NJ,RAB,' 2',S(2),T(2)
+         ENDIF
+         IF(IORBS.GE.4) THEN
+            WRITE(NB6,500) NI,NJ,RAB,' 3',S(3),T(3)
+         ENDIF
+         IF(IORBS.GE.4 .AND. JORBS.GE.4) THEN
+            WRITE(NB6,500) NI,NJ,RAB,' 4',S(4),T(4)
+            WRITE(NB6,500) NI,NJ,RAB,' 5',S(5),T(5)
+         ENDIF
+      ENDIF
+      RETURN
+  500 FORMAT(1X,'BETOM: NI,NJ,RAB,I,S,T',2X,2I4,F10.5,A2,2X,2F12.5)
+  510 FORMAT(1X,'BETOM: NI,NJ,BETA (I/J)',1X,2I4,6F10.5)
+  520 FORMAT(1X,'BETOM: NI,NJ,ALPHA(I/J)',1X,2I4,6F10.5)
+      END

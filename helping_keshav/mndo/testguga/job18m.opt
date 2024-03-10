@@ -1,0 +1,7 @@
+DSC ETHENE, MNDO MRSD-CI for half-electron ROHF triplet
+DSC Active space: 5 MOs, 3 VOs - defined by default
+DSC Single point energy and gradient for triplet state 1
+DSC using numerical integral derivatives
+PRP ciheat=55.98507
+PRP cartgrd=254.37313
+PRP intgrd=354.13420

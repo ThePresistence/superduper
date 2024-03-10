@@ -1,0 +1,15 @@
+DSC MNDO force constants for D2d C4H4 (state 2 in 3x3 closed-shell CI
+DSC on MOs 9 and 12). Stabilized local minres solution in AO basis.
+DSC Coulomb conditioner. Fock route used for Z-vector reduction.
+DSC 10x CPHF precision.
+DAT C4H4.dat
+OPT iprint=1
+OPT kci=1 cik=9 cil=12 cinc=3 cilroot=2 dprec=1.d-7
+OPT imix=1 idens=7 iqswap=1 inrhs=1 irows=-1 iprect=6 ihlst=1 ihlwrp=2 ikmode=1 isolve=4 ikrsav=8
+PRP heat=113.28136
+PRP freqmem=12029 freqdisk=100
+PRP optcyc=3
+PRP intgrdopt=0.05805 cartgrdopt=192.81728
+PRP CIstate1=112.43191 CIstate2=263.86175 CIstate3=384.91147
+PRP freq1=-831.00511 freq2=-553.31798 freq3=-128.99836 freq10=513.53807
+PRP zpe=38.00902

@@ -1,0 +1,41 @@
+*******************************************************************
+*** testmopac6/READ_ME ***
+*******************************************************************
+
+This subdirectory contains a suite of 8 MOPAC-type test jobs
+which are used for validation of MNDO97. These test jobs
+were taken from the public-domain MOPAC(6.0) software (QCPE).
+They comprise a total of 143 MOPAC calculations. Using MOPAC
+input files, MNDO97 performs 128 of these calculations while
+some options in the remaining calculations are not available.
+If this behaviour is encountered, the second condition for
+the acceptance of a new program version is met.
+
+Note that these jobs require very little cpu time and are not
+suitable for benchmarking and performance measurements.
+
+The test jobs and the validation procedure are described in the 
+documentation (see file mndo97.doc).
+
+The results from the independent programs MNDO97 and MOPAC(6.0)
+agree well numerically (for details, see mndo97.doc). Note that
+some constants and conversion factors were changed in MOPAC(7.0)
+so that analogous comparisons between MNDO97 and MOPAC(7.0) are
+expected to show slightly larger numerical deviations (unless the 
+original constants and conversion factors are used in MOPAC(7.0)).
+
+-------------------------------------------------------------------
+
+READ_ME       This file.
+*.inp         Input files for MOPAC(6.0) test jobs.
+mopac6.grep   Reference summary file.
+testmopac6go  Script to execute all test jobs.
+
+-------------------------------------------------------------------
+
+The reference results were generated using MNDO97 on a Silicon
+Graphics workstation (R10000, IRIX(6.2)). The executable uses
+machine library routines for BLAS2 and dgemm.
+
+The test jobs combined require less than 10 seconds of cpu time
+with this setup.

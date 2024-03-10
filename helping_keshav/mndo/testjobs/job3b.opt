@@ -1,0 +1,6 @@
+DSC TETRACENE C18H12, D2h, MNDO RHF
+DSC Geometry optimization, standard BFGS
+PRP heat=80.90257
+PRP optcyc=9
+PRP finalheat=80.90259
+PRP intgrdopt=1.01783

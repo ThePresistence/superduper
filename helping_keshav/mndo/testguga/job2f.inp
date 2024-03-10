@@ -1,0 +1,35 @@
+MNDO jop=-1 iform=2 SYM kci=5 +
+ici1=3 ici2=2 ioutci=0 movo=0 nciref=1 mciref=0 levexc=2 iroot=1 lroot=1
+Water, C2v, MNDO
+
+XX    0.0000000  0      0.000000  0      0.000000  0      0    0    0
+O     1.0000000  0      0.000000  0      0.000000  0      1    0    0
+H     0.9500000  1    125.000000  1      0.000000  0      2    1    0
+H     0.9500000  0    125.000000  0    180.000000  0      2    1    3
+
+ 3 1 4
+ 3 2 4
+
+MNDO jop=3 iform=2 iprec=100 iconv=3 kfac=100 SYM kci=5 +
+ici1=4 ici2=2 ioutci=0 movo=0 nciref=1 mciref=0 levexc=2 iroot=1 lroot=1
+Water, C2v, MNDO
+
+XX    0.0000000  0      0.000000  0      0.000000  0      0    0    0
+O     1.0000000  0      0.000000  0      0.000000  0      1    0    0
+H     0.9500000  1    125.000000  1      0.000000  0      2    1    0
+H     0.9500000  0    125.000000  0    180.000000  0      2    1    3
+
+ 3 1 4
+ 3 2 4
+
+MNDO jop=-1 iform=2 iprec=100 iconv=3 SYM kci=5 +
+ici1=2 ici2=2 ioutci=0 movo=0 levexc=2 mciref=0 nciref=1 iroot=1 lroot=1
+Water, C2v, MNDO
+
+XX    0.0000000  0      0.000000  0      0.000000  0      0    0    0
+O     1.0000000  0      0.000000  0      0.000000  0      1    0    0
+H     0.9500000  1    125.000000  1      0.000000  0      2    1    0
+H     0.9500000  0    125.000000  0    180.000000  0      2    1    3
+
+ 3 1 4
+ 3 2 4

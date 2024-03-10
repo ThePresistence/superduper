@@ -1,0 +1,8 @@
+DSC WATER WITH FOUR POINT CHARGES, C2v.
+DSC PM3 minimal GUGA-CI, ground-state singlet.
+DSC Single-point energy and gradient.
+PRP heat=-56.23799:-56.23799:-56.23799
+PRP ciheat=-56.33894:-56.33894:-56.33894
+PRP cartgrd=62.49961:62.49961
+PRP qmmmgrd=62.51678:62.51678
+PRP intgrd=60.69656:60.69656:60.69656

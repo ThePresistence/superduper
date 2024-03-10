@@ -1,0 +1,11 @@
+DSC MNDO (G)ROHF gradient computation for triplet C2 at non-optimal
+DSC geometry. LAPACK solver.
+COM Note that inrhs is ignored for LAPACK solver
+DAT C2.dat
+OPT iprint=1
+OPT imix=2 idens=3 iqswap=-1 inrhs=1 ihlst=2 ihlwrp=1 ikmode=1 
+PRP heat=234.01301
+PRP freqmem=1006 freqdisk=216
+PRP cartgrda=1  cartgrdaX=-69.59652 cartgrdaY=0.00000 cartgrdaZ=0.00000
+PRP cartgrdb=2  cartgrdbX=69.59652  cartgrdbY=0.00000 cartgrdbZ=0.00000
+PRP intgrda=1 intgrdaX=69.59652

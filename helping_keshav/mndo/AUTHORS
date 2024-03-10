@@ -1,0 +1,41 @@
+This program was designed and written by:
+
+Walter Thiel,
+Max-Planck-Institut fuer Kohlenforschung,
+Kaiser-Wilhelm-Platz 1,
+D-45470 Muelheim, Germany
+
+Email: thiel@mpi-muelheim.mpg.de
+
+----------------------------------------------------------
+
+Significant contributions were made by:
+
+Michael Beck              First version of GUGACI code
+Salomon Billeter          Final version of HDLC optimiser
+Rouslan Kevorkiants       Density matrix search
+Matthias Kolb             Code related to OM1
+Axel Koslowski            Final version of GUGACI code
+Serguei Patchkovskii      Analytic derivatives and NMR
+Alexander Turner          First version of HDLC optimiser
+Ernst-Udo Wallenborn      CVS and configuration management
+Wolfgang Weber            Code related to OM2
+
+Public-domain routines were included from:
+
+netlib@www.netlib.org     BLAS and LAPACK routines
+Steve Elbert              EVVRSP diagonaliser 
+James J.P. Stewart        MOPAC(6.0) input routines
+
+----------------------------------------------------------
+
+This program should preferably be cited as:
+
+MNDO2020 is a semiempirical quantum chemistry program written
+by W. Thiel, with contributions from M. Beck, S. Billeter,
+R. Kevorkiants, M. Kolb, A. Koslowski, S. Patchkovskii, 
+A. Turner, E.-U. Wallenborn, and W. Weber.
+
+The following brief citation is also acceptable:
+
+W. Thiel, Program MNDO2020, Muelheim, 2020.

@@ -1,0 +1,14 @@
+iop=-1 kharge=1 ksym=1 iscf=9 iplscf=9 iprec=100 iconv=3 kci=2
+
+VINYL CATION, CLASSICAL STRUCTURE, C2V, MNDOC
+ 6
+ 6           1.33      1
+99           1.00               90.
+ 1           1.08      1        90.                180.                2 3 1
+ 1           1.08      1       120.        1       180.                1 2 3
+ 1                                                   0.                1 2 3
+
+ 5  1                6
+ 5  2                6
+
+   0   0   0

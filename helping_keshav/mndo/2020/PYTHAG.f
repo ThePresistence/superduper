@@ -1,0 +1,22 @@
+      DOUBLE PRECISION FUNCTION PYTHAG(A,B)
+      DOUBLE PRECISION A,B
+C
+C     FINDS SQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW
+C
+      DOUBLE PRECISION P,R,S,T,U
+      DOUBLE PRECISION ZERO,ONE,TWO,FOUR
+      PARAMETER (ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0,FOUR=4.0D0)
+      P = MAX(ABS(A),ABS(B))
+      IF (P .EQ. ZERO) GO TO 20
+      R = (MIN(ABS(A),ABS(B))/P)**2
+   10 CONTINUE
+         T = FOUR + R
+         IF (T .EQ. FOUR) GO TO 20
+         S = R/T
+         U = ONE + TWO*S
+         P = U*P
+         R = (S/U)**2 * R
+      GO TO 10
+   20 PYTHAG = P
+      RETURN
+      END

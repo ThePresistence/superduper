@@ -1,0 +1,13 @@
+DSC BENZENE, D6h, OM2 full CI for closed-shell singlet
+DSC Including external point charges
+DSC Multiple state gradient and interstate coupling calculation
+DSC States specified (1,10,12,2)
+PRP mulstates=1:10:12:2
+PRP mulheats=0.98406:216.98415:239.23768:104.23682
+PRP mulqmnorms=20.17060:142.43052:161.42908:79.68803
+PRP mulqmmmnorms=20.18509:142.43260:161.43092:79.69173
+PRP muloptnorms=37.38541:385.64953:432.17660:231.65170
+PRP gicvstates=10,1:12,1:12,10:2,1:2,10:2,12
+PRP gicvqmnorms=44.07926:7.58742:1.76722:28.45054:137.16858:111.52689
+PRP gicvqmmmnorms=44.07926:7.58742:1.76722:28.45054:137.16858:111.52689
+PRP gicvoptnorms=107.93639:18.57417:4.31794:0.00000:0.00000:0.00000

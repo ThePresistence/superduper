@@ -1,0 +1,11 @@
+DSC AM1 force constants for BF3. Blocked in-core MO solution using stabilized 
+DSC locally orthogonal minres solver with bi-linear conditioner.
+DAT BF3.dat
+OPT iprint=1
+OPT imix=1 idens=5 iqswap=-1 inrhs=-3 iprect=5 idstrp=9 ikmode=2 isolve=4 ikrsav=4
+PRP heat=-272.1473 intgrdopt=0.09093 cartgrdopt=0.05250 optcyc=1
+PRP freqmem=7117 freqdisk=0 respvec=5.75
+PRP freq7=428.192 freq8=428.192 freq9=613.282 freq10=1218.043 zpe=9.8281
+PRP modea=11  wavea=2093.605 ira=374.336
+PRP modeb=12  waveb=2093.605 irb=374.336
+PRP modec=9   wavec=613.282  irc=61.415 

@@ -1,0 +1,1769 @@
+      SUBROUTINE MNDO99INI(COMLYN,COMLEN)
+C-----------------------------------------------------------------------
+C     This is the interface for running MNDO99 with CHARMM for
+C     QM/MM calculations. It closely follows the interface
+C     developed for (GAMESS/CADPAC/DeFT/)SCCDFTB.
+C
+C     Q. Cui, M. Elstner Feb. 1999.
+C     Most recently updated, June. 2002
+C
+C     G. Li, Q. Cui, 2003.
+C     Added DTSC, pKa free energy simulations
+C
+C     Patti Schaefer, Q. Cui, Mar. 2004
+C
+C     Added eWald summation and GSBP; PS: unclear if working ...
+C
+C     Several aspects remain to be fixed/improved in the near future:
+C     4. Dispersion interactions
+C     5. Better compatability with path-integral and Tsallis statistics
+C
+C
+##IF MNDO99
+      USE LIMIT, ONLY: LM1, LM1M, LMGRD, LMNAC
+##ENDIF
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/exfunc.fcm'
+##INCLUDE '~/charmm_fcm/code.fcm'
+##INCLUDE '~/charmm_fcm/coord.fcm'
+##INCLUDE '~/charmm_fcm/consta.fcm'
+##INCLUDE '~/charmm_fcm/number.fcm'
+##INCLUDE '~/charmm_fcm/param.fcm'
+##INCLUDE '~/charmm_fcm/psf.fcm'
+##INCLUDE '~/charmm_fcm/reawri.fcm'
+##INCLUDE '~/charmm_fcm/stack.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##INCLUDE '~/charmm_fcm/energy.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/mndo99.fcm'
+##INCLUDE '~/charmm_fcm/mndo99ex.fcm'
+##INCLUDE '~/charmm_fcm/parallel.fcm'
+##INCLUDE '~/charmm_fcm/heap.fcm'
+C     QC_UW04: Add image
+##INCLUDE '~/charmm_fcm/image.fcm'
+C     QC_UW04 done
+C
+      REAL*8 XN3
+      INTEGER IN1,IMOPAC,NCGTOT
+      CHARACTER*80 KTITLE, KOMENT
+      COMMON
+     ./FLAG1 / KTITLE,KOMENT
+     ./INOPT1/ IN1(300)
+     ./INOPT3/ XN3(50)
+     ./MOPAC / IMOPAC
+     ./STATCG/ NCGTOT(20)
+C
+      CHARACTER COMLYN*(*)
+      INTEGER   COMLEN
+      INTEGER   ISLCT,OLDUSD,I,J
+C
+      CHARACTER*80 CM99
+      INTEGER M99LEN,JOPISCF,KHARGE,KITSCF,JPRINT,IOP,JOP
+      INTEGER IOPPRT,M99IU,MMATM,ISCF,MPRINT,NPRINT
+      LOGICAL QERROR,QREAD
+      EXTERNAL M99KEY,M99PAR
+C
+##IFN MNDO99 (overallmndo)
+      CALL WRNDIE(-1,' MNDO99INI>','MNDO99 code not compiled.')
+##ELSE (overallmndo)
+C     *
+      OLDUSD = LSTUSD
+C     *
+C     -------------------------M99 input file default   -------------
+      CALL GTRMWD(COMLYN,COMLEN,'FILE',4,CM99,80,M99LEN)
+      if (M99LEN.eq.0) then
+        CM99='mndo99.dat'
+        M99LEN=10
+        QREAD=.FALSE.
+      else
+        QREAD=.TRUE.
+      endif
+      M99IU=M99U
+      CALL VOPEN(M99IU,CM99,'FORMATTED','READ',QERROR)
+      IF(QERROR) THEN
+         IF (QREAD) THEN
+           CALL WRNDIE('can not open MNDO99 input file')
+         ELSE
+           M99IU=-1
+         ENDIF
+      ENDIF
+C     THE SUBSEQUENT SETTINGS VARIABLES WILL ALWAYS
+C     OVERRIDE EQUIVALENT ONES IN mndo99.dat.
+C     ---MNDO 99 Hamiltonian ---------------------------------------
+C *** defaults to MNDO=0 (OM2=-6)
+      IOP=GTRMI(COMLYN,COMLEN,'IOP',0)
+C     ---MNDO 99 Job -----------------------------------------------
+C *** defaults to -2= SCF energy & gradient.
+      JOP=GTRMI(COMLYN,COMLEN,'JOP',-2)
+      ISCF=GTRMI(COMLYN,COMLEN,'SCFT',6)
+      KITSCF=GTRMI(COMLYN,COMLEN,'MXIT',800)
+      KHARGE=GTRMI(COMLYN,COMLEN,'CHRG',0)
+      JPRINT=GTRMI(COMLYN,COMLEN,'JPRT',-1)
+      MPRINT=GTRMI(COMLYN,COMLEN,'MPRT',-1)
+      NPRINT=GTRMI(COMLYN,COMLEN,'NPRT',-6)
+C     --- set QM atoms ------------------------------------------------
+
+      ISLCT  = ALLSTK(INTEG4(NATOM))
+      CALL SELCTA(COMLYN,COMLEN,STACK(ISLCT),X,Y,Z,WMAIN,.TRUE.)
+C
+C     --- flag to indicate if QM atoms see shifted (as done by
+C         CHARMM) MM charges
+C         see scc sorce code (externalchgrad.f) how to implement
+      qsccnb=(INDXA(COMLYN,COMLEN,'CUTF').GT.0)
+      IF (QSCCNB) WRITE(OUTU,6677)
+6677  FORMAT('MNDO99INI>: NO SHIFTED QM/MM ELECTROSTATICS YET')
+      QSCCNB=.FALSE.
+C
+C     QC: CUTOFF RELATED (NOT REFINED, default include all)
+C     DEFINE CUT-OFF RADIUS FOR QM/MM INTERACTION (ATOM/GROUP-BASED)
+      RCUTQM=GTRMF(COMLYN,COMLEN,'RCUT', 999.9d0)
+      IF (RCUTQM.NE.999.d0) WRITE(OUTU,1000) RCUTQM
+1000  FORMAT('MNDO99INI> QM CUTOFF= ',F10.5)
+      QGMREM=(INDXA(COMLYN,COMLEN,'REMO').GT.0)
+##IF PARALLEL
+      IF(QGMREM) THEN
+        WRITE(OUTU,650)
+      ELSE
+        WRITE(OUTU,660)
+      ENDIF
+##ENDIF
+      QGMEXG=(INDXA(COMLYN,COMLEN,'EXGR').GT.0)
+##IF PARALLEL
+      IF(MYNOD.EQ.0)THEN
+##ENDIF
+      IF(QGMEXG) THEN
+        WRITE(OUTU,670)
+      ELSE
+        WRITE(OUTU,680)
+      ENDIF
+##IF PARALLEL
+      ENDIF
+##ENDIF
+CQWT  'MASS': OFFICIAL CHARMM OPTION ??
+      LWMASS=(INDXA(COMLYN,COMLEN,'MASS').GT.0)
+##IF PARALLEL
+      IF(MYNOD.EQ.0)THEN
+##ENDIF
+      IF (LWMASS) WRITE(OUTU,980)
+##IF PARALLEL
+      ENDIF
+##ENDIF
+CWT   'NOFIXGR' OFFICIAL CHARMM OPTION ??
+      QNOMMF=(INDXA(COMLYN,COMLEN,'NOFIXGR').GT.0)
+##IF PARALLEL
+      IF(MYNOD.EQ.0)THEN
+##ENDIF
+      IF(QNOMMF) THEN
+         WRITE(OUTU,690)
+      ENDIF
+##IF PARALLEL
+      ENDIF
+##ENDIF
+
+C
+      LQMPB =(INDXA(COMLYN,COMLEN,'QMPB').GT.0)
+C     QC: Image related, to be refined (not recommended to use now)
+C     QC: recommend either group based truncation or atom based shift.
+C     QC: (only two implemented plus atom based truncation - poor!)
+C     QC: not any switch was implemented - poor.
+C     PS: see fcm/gamess.fcm
+C     LQMPB          If Duplicate QM image - whether keep QM/MM force on
+C                    the MM images
+
+      LQMPB =(INDXA(COMLYN,COMLEN,'QMPB').GT.0)
+      LQMSHF=(INDXA(COMLYN,COMLEN,'QMSH').GT.0)
+      LQMSWT=(INDXA(COMLYN,COMLEN,'QMSW').GT.0)
+      LQMGRP=(INDXA(COMLYN,COMLEN,'QMGR').GT.0)
+C     -----------------------------------------------------
+C     QC: Newly added - if mulliken population is to be added
+
+      LMULIK=(INDXA(COMLYN,COMLEN,'MULL').GT.0)
+      IF (LMULIK) WRITE(OUTU,700)
+C     -----------------------------------------------------
+C     QC: SCC Replica, for convenience, perform replica scaling
+C     inside SCC
+      NSCCRP=GTRMI(COMLYN,COMLEN,'NRPL',1)
+      IF (NSCCRP.NE.1) LSCCRP=.TRUE.
+C     Set flag that says that the PSF has been modified
+      MUSTUP=.TRUE.
+
+      CALL MNDO99SEL(STACK(ISLCT))
+C
+C     QC: Construct QM interaction list - once again, to be refined
+C     right here, we need it to call because it sets # of MM atoms
+C     ... and this is in turn needed by CHQMNDO.
+      IF (LQMGRP) THEN
+        CALL MKMMGLST
+      ELSE
+        CALL MKMMLST
+      ENDIF
+      CALL CHMMNDO99
+C
+C     ----- conventional single structure run
+C     set things like list-of atoms etc without coords.
+C     needs to be done before MNDO99 is called.
+      CALL CHQMNDO99
+C
+C     This initializes MNDO99 data, no energy calculations.
+
+##IF PARALLEL
+      MYSCCID=MYNOD
+##ELSE
+      MYSCCID=0
+##ENDIF
+C *** SAVE NO. OF MM ATOMS (SINCE MNDO99 SETUP CALL WILL OVERRIDE)
+      MMATM=IN1(120)
+C *** ---- MNDO: first initialisation: get keyword string from file.---
+      NCGTOT=0
+      IF (M99IU.gt.0) then
+        CALL M99KEY(M99IU,OUTU)
+      ELSE
+        IMOPAC=-1
+        KTITLE=' '
+        KOMENT='[MNDO keywords from CHARMM command-line]'
+      ENDIF
+C *** ---- MNDO: restore/set some values for CHARMM -------------------
+      IN1(1)=400000
+      IN1(2)=IOP
+      IN1(3)=JOP
+      IN1(4)=1
+      IN1(41)=MPRINT
+      IN1(42)=JPRINT
+      IN1(72)=NPRINT
+      IN1(120)=MMATM
+C *** set IN(12)=MMINP=2 and IN1(121)=MMCOUP=2
+C *** if there are MM atoms (cf. START.f/INQMMM)
+      IF (MMATM.GT.0) THEN
+         IN1(12)=2
+         IN1(121)=2
+      ENDIF
+C *** overide some keywords directly (set in KEYDEF called from READMO)
+C     note that some default values there have changed already.
+      IN1(35)=ISCF
+      IN1(36)=ISCF
+      IN1(65)=KHARGE
+      IN1(71)=KITSCF
+C *** write SCF MOs to fort.12, try to read in SCF MOs from fort.12
+C *** to speed up SCF and to provide continuous non-adiabatics.
+      IN1(67)=12
+      IN1(69)=2
+C *** set ingeom=-1 and icharm=1 to prevent geometry read-in (help from icharm)
+c *** M99PAR > START.F > INPUT.F
+      IN1(54)=-1
+      IOPPRT=0
+      CALL M99PAR(M99IU,OUTU,IOPPRT)
+C *** Release memory for QM atom selection
+      CALL FRESTK(LSTUSD - OLDUSD)
+      RETURN
+C-----------------------------------------------------------------------
+650   FORMAT('REMOve: No QM/QM class. electrostatics in ELEC term')
+660   FORMAT('No REMOve: QM/QM class. electrostatics in ELEC term')
+670   FORMAT('EXGRoup: QM/MM Electrostatics for link host groups ',
+     &    'removed.')
+680   FORMAT('No EXGRoup: QM/MM Elec. for link atom host only ',
+     &    'is removed.')
+690   FORMAT('NOFIXGR: No QM/MM gradients at fixed MM atoms')
+700   FORMAT('QM Mulliken populations will be transfered to CHARMM')
+980   FORMAT('MASS: QM GRADIENTS WILL BE MASS-WEIGHTED')
+      END
+C
+C======================================================================
+      SUBROUTINE CHMMNDO99
+C-----------------------------------------------------------------------
+C     Define CHARMM atoms as point charges and copy them to MNDO99
+C     common block. CALLED BY MNDO99ENE (and in MNDO99INI)
+C
+C     Q. Cui, Xmas, 1998 -> P. Strodel, Apr, 2004
+C
+      USE LIMIT, ONLY: LM1, LM1M
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/exfunc.fcm'
+C
+##INCLUDE '~/charmm_fcm/coord.fcm'
+##INCLUDE '~/charmm_fcm/psf.fcm'
+##INCLUDE '~/charmm_fcm/stack.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/mndo99.fcm'
+##IF FLUCQ
+##INCLUDE '~/charmm_fcm/flucq.fcm'
+##ENDIF
+##IF CHEQ
+##INCLUDE '~/charmm_fcm/derivq.fcm'
+##INCLUDE '~/charmm_fcm/cheqdyn.fcm'
+##ENDIF
+C
+C     MNDO99 common blocks.
+C     NOTE THAT IN MNDO99, CG ARRAY IS GRADIENT.
+C     IN CHARMM IT IS CHARGES.
+      REAL*8 COORDM,CHARGM
+      INTEGER IN1,IN2,ISELCT
+      COMMON
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+     ./QMMM6 / ISELCT(LM1+LM1M)
+     ./INOPT1/ IN1(300)
+     ./INOPT2/ IN2(300)
+      INTEGER I
+      IN1(120) = NTOTMM
+      IN2(120) = NTOTMM
+C *** switch off QM/MM if there is no MM.
+      IF (NTOTMM.EQ.0) THEN
+        IF (IN2(12).GT.2) THEN
+          IN2(12)=1
+        ELSE
+          IN2(12)=0
+        ENDIF
+      ENDIF
+C *** MM atom overflow ? -> stop.
+      IF (IN2(120).GT.LM1M) THEN
+         WRITE(OUTU,700) NTOTMM, LM1M
+         CALL WRNDIE(-1,' CHMMNDO99>','Too many MM atoms.')
+      ENDIF
+      DO I = 1, IN2(120)
+           COORDM(1,I) = X (IMMLST(I))
+           COORDM(2,I) = Y (IMMLST(I))
+           COORDM(3,I) = Z (IMMLST(I))
+C          MOVE THE CHARGE STUFF OVER TO MKMMLST (PS: OK ??!)
+##IF FLUCQ CHEQ (flucqcheq)
+C *** CHARGES MIGHT ALTER EACH STEP, NOT JUST WHEN LISTS ARE DONE.
+           if (qfluc.or.qcgqm) CHARGM(I) = CG(IMMLST(I))
+##ENDIF (flucqcheq)
+C          *** WE ALSO NEED MASSES OF MM.
+           QMMMMS(NM99C+I) = AMASS(IMMLST(I))
+C          *** TAKE OVER LABELING OF FIXED MM ATOMS.
+CWT   'NOFIXGR' OFFICIAL CHARMM OPTION ??
+           IF (QNOMMF) THEN
+             ISELCT(NM99C+I)=IMOVE(IMMLST(I))
+           ELSE
+             ISELCT(NM99C+I)=0
+           ENDIF
+      ENDDO
+      RETURN
+700   FORMAT('CHMMNDO99> TOO MANY MM ATOMS FOR MNDO CODE',
+     1         /,' REQUESTED:',I10,', ALLOWED:',I10,/)
+      END
+C
+C=====================================================================
+      SUBROUTINE CHQMNDO99
+C----------------------------------------------------------------------
+C     Find the atoms defined as QM atoms and get them ready
+C     for MNDO99
+C
+C     Q. Cui, Xmas, 1998 ( & P. Strodel, Apr 04)
+C
+C     Code pursues PDBINP.f in mndo99int/99 dir partly.
+C     here, QM atomic masses (AMS) are transferred as
+C     well, cf. GETGEO, because some GUGACI ? properties
+C     depend on it.
+      USE LIMIT, ONLY: LM1, LM1M, LMG, LMR, LMS, LMV, LMZ
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/number.fcm'
+##INCLUDE '~/charmm_fcm/exfunc.fcm'
+C
+##INCLUDE '~/charmm_fcm/coord.fcm'
+##INCLUDE '~/charmm_fcm/param.fcm'
+##INCLUDE '~/charmm_fcm/psf.fcm'
+##INCLUDE '~/charmm_fcm/rtf.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##INCLUDE '~/charmm_fcm/mndo99.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+C
+C     MNDO99 common blocks
+      REAL*8 COORD,XX,A,RC1,RC2,RC,AMS,CMS,BMS
+      CHARACTER*2 ELEMNT
+      INTEGER NUMAT,NAT,NFIRST,NLAST,NVAR,NFRAGS,NCHRGS
+      INTEGER IN2,NC,NB,NA,NN,NATOMS,NSYM,LPAR,LNUM,LDEP
+      INTEGER LOC,LREACT,LTOTAL,LGRID1,LTOT1,LGRID2,LTOT2
+      INTEGER NV,ISELCT
+      COMMON
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./AMASS / AMS(LM1)
+     ./ATOMC / COORD(3,LM1)
+     ./DFP   / XX(LMV),NVAR
+     ./ELEMTS/ ELEMNT(107)
+     ./FRGMT1/ NFRAGS(LM1),NCHRGS(LM1)
+     ./INOPT2/ IN2(300)
+     ./ISTOPE/ CMS(LMZ),BMS(LMZ)
+     ./PARM1 / A(3,LM1),NC(LM1),NB(LM1),NA(LM1),NN(LM1),NATOMS
+     ./PARM2 / NSYM,LPAR(LMS),LNUM(LMS),LDEP(LMS)
+     ./PARM3 / LOC(LMV),NV
+     ./PARM4 / RC(LMR),LREACT,LTOTAL
+     ./PARM5 / RC1(LMG),RC2(LMG),LGRID1,LTOT1,LGRID2,LTOT2
+     ./QMMM6 / ISELCT(LM1+LM1M)
+
+C     QC: May, 2001: Increase AATOM,AZNUC for replica
+
+      CHARACTER*10 AATOM(LM1*3)
+      REAL*8 AZNUC(LM1*3)
+C
+      INTEGER I,J,N,NSLCT,NATMM,NATQM,NATLNK
+      CHARACTER*6 ELE
+      LOGICAL QPRT
+      INTEGER KSCCRP,MSCC
+C
+C     QC: no change for image.
+
+      QPRT=.TRUE.
+      N=0
+      DO I = 1,NATOM
+        IF ((IGMSEL(I) .EQ. 1).OR.(IGMSEL(I).EQ.2)) THEN
+          N = N + 1
+          AATOM(N)=TYPE(I)
+          IF(TYPE(I)(1:3).EQ.'QQH')AATOM(N)=' H'
+          CALL FINDEL(ATCT(IAC(I)),AMASS(I),I,ELE,AZNUC(N),QPRT)
+          nat(N)=AZNUC(N)
+          nn(N)=nat(N)
+C         MNDO99 MASS ARRAY
+          ams(N)=cms(AZNUC(N))
+C         QM/MM mass array.
+          QMMMMS(N)=AMS(N)
+          ISELCT(N)=0
+        ENDIF
+      ENDDO
+C
+      natoms=N
+      numat=N
+C
+      IF (natoms .LE. 0) CALL WRNDIE(0,'<CHQMNDO99>',
+     &             'No quantum mechanical atoms selected.')
+C     now (mainly) MNDO99 arrays marking QM degrees of freedom
+C     have to be set (cf. PDBINP.f); one could fix atoms here.
+      NSYM   = 0
+      LTOTAL = 0
+      LTOT1  = 0
+      LTOT2  = 0
+      NV     = 0
+      DO I=1,NUMAT
+        NA(I)  = 0
+        NB(I)  = 0
+        NC(I)  = 0
+        DO J=1,3
+          NV     = NV+1
+          LOC(NV)= 3*(I-1)+J
+C ***     NO QM COORDINATES HERE YET (MAKE QM LIST SUBSEQUENTLY)
+        ENDDO
+      ENDDO
+      NVAR   = NV
+C
+      IF (natoms .LE. 0) CALL WRNDIE(0,'CHQMNDO99>',
+     &             'No quantum mechanical atoms selected.')
+      NATMM = NATOM -N
+      NATQM = N
+      NM99C = N
+C
+      NSLCT = 0
+      DO I = 1,NATOM
+        IF (IGMSEL(I).EQ.2) NSLCT = NSLCT + 1
+      ENDDO
+      NATLNK = NSLCT
+C
+C     Write out atomic information
+C
+##IF PARALLEL
+      IF (MYSCCID.EQ.0) THEN
+##ENDIF
+      IF (PRNLEV.GT.2) THEN
+         WRITE (OUTU,650)
+         WRITE (OUTU,660),NATQM,NATMM,NATMM-IN2(120),NATLNK
+      ENDIF
+      WRITE (OUTU,670) IN2(65)
+##IF PARALLEL
+      ENDIF
+##ENDIF
+C     Deal with replication
+      IF (LSCCRP) THEN
+        NM99C=NM99C/NSCCRP
+
+##IF PARALLEL
+        IF (MYSCCID.EQ.0) THEN
+##ENDIF
+         WRITE(OUTU,680) NSCCRP
+         WRITE(OUTU,690) NM99C
+##IF PARALLEL
+        ENDIF
+##ENDIF
+      ENDIF
+
+C     QC: Make up a QM list
+      N=0
+      DO I = 1,NATOM
+         IF ((IGMSEL(I) .EQ. 1).OR.(IGMSEL(I).EQ.2)) THEN
+            N = N + 1
+            KSCCRP=INT((N-1)/natoms) + 1
+            MSCC  =N - (KSCCRP-1)*natoms
+            IQMLST(MSCC,KSCCRP) = I
+         ENDIF
+      ENDDO
+
+C     Update CMD XYZ
+
+##IF PARALLEL
+        IF (MYSCCID.EQ.0) THEN
+##ENDIF
+C         IF (LSCCRP.AND.LCNSCD) CALL UPCMDXYZ(X,Y,Z,PRNLEV,OUTU)
+##IF PARALLEL
+        ENDIF
+##ENDIF
+C     Provide QM coordinates here (MNDO needs them in INPUT.f etc)
+        NV=0
+        DO I=1,NUMAT
+          COORD(1,I)=X(IQMLST(I,1))
+          COORD(2,I)=Y(IQMLST(I,1))
+          COORD(3,I)=Z(IQMLST(I,1))
+          DO J=1,3
+            NV=NV+1
+            XX(NV)=COORD(J,I)
+            A(J,I)=COORD(J,I)
+          enddo
+        ENDDO
+      RETURN
+650   FORMAT('CHQMNDO99> Some atoms will be treated ',
+     &   'quantum mechanically.')
+660   FORMAT(4X,'The number of MNDO99         QM  atoms   = ',I6,
+     &   /,4X,' The number of all molecular mechanical atoms = ',I6,
+     &   /,4X,' The number of all atoms not seen by QM  = ',I6,
+     &   /,4X,' Number of QM/MM link atoms  = ',I6)
+670   FORMAT(/,4X,'CHARGE OF MNDO99 FRAGMENT',I6)
+680   FORMAT(/,4X,'MNDO99 replicated for ',I5,' times.')
+690   FORMAT(/,4X,'MNDO99 atoms in each replica: ',I5)
+      END
+C
+C======================================================================
+      SUBROUTINE MNDO99ENE(CTOT,X,Y,Z,DX,DY,DZ)
+C-----------------------------------------------------------------------
+C
+C     Get energies, forces from MNDO99
+C
+C     Q. Cui, Xmas, 1998 (& P. Strodel, Apr 2004)
+C
+      USE LIMIT, ONLY: LM1,LM1M,LEN,LMV
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/exfunc.fcm'
+C
+      REAL*8 CTOT,X(*),Y(*),Z(*),DX(*),DY(*),DZ(*)
+C
+##INCLUDE '~/charmm_fcm/mndo99.fcm'
+##INCLUDE '~/charmm_fcm/mndo99ex.fcm'
+##INCLUDE '~/charmm_fcm/consta.fcm'
+##INCLUDE '~/charmm_fcm/contrl.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/number.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##INCLUDE '~/charmm_fcm/heap.fcm'
+##INCLUDE '~/charmm_fcm/parallel.fcm'
+##INCLUDE '~/charmm_fcm/reawri.fcm'
+C     QC_UW04
+##INCLUDE '~/charmm_fcm/image.fcm'
+C     QC_UW04
+C
+C     QC: We make a pseudo-parallel MNDO99, i.e., only the main
+C     node calls MNDO99ENE - this is useful because when the
+C     number of MM atoms becomes large, the cost could overshadow
+C     the QM calculations (with PARALLEL).
+C     PARASCC option for the parallel version of path-integral
+C     or replica path
+
+C *** Watch variables:
+C     NATOM  (charmm/psf.fcm): Total no. of atoms
+C     NATOMS (mndo99/parm1): No. of QM atoms
+C     NUMAT  (mndo99/atoms): dito.
+C     NM99C  (mndo99.fcm): dito.
+C     NUMATM (mndo99/in1,2(120) : No. of MM atoms seen.
+C     NTOTMM (gamess.fcm): dito.
+C     NTOT   (mndo99.fcm): dito.
+C     NUMALL (set here): No. of QM plus MM seen by MNDO99
+##IF PARASCC
+      include 'mpif.h'
+      integer ierr
+      integer tag
+      integer recv_status(MPI_STATUS_SIZE)
+      integer iq,im,i3,ir,job
+##ENDIF
+      REAL*8 COORD,XX,A,GRRRR
+      REAL*8 EE,ENUCLR,EAT,ATHEAT,EMM
+      REAL*8 A0,AFACT,EV,XVCAL,PIX,W1,W2,BIGEXP,EEREF
+      REAL*8 ENERGY,EQMMM
+      REAL*8 SCFCRT,PLCRT,SCFCRS,PLCRS,QI,COORDM,CHARGM
+      REAL*8 CGFIN,GNORM,CNORM
+      CHARACTER*2 ELEMNT
+      INTEGER NUMAT,NAT,NFIRST,NLAST,NVAR,NFRAGS,NCHRGS,numatm
+      INTEGER NBF
+      INTEGER IN1,IN2,NC,NB,NA,NN,NATOMS,NSYM,LPAR,LNUM,LDEP
+      INTEGER MOL
+      INTEGER LM2,LM3,LM4,LM6,LM7,LM8,LM9
+      INTEGER LS1,LS2,LS3,LS4,LS5,LS6,LS7,LS8,LS9
+      INTEGER LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU8
+      INTEGER LCPAO,LSCFM1,LNATO,LSCFM2
+      REAL*8 VXYZ
+      COMMON /M99VEL/VXYZ(3,LM1+LM1M)
+      CHARACTER*80 KTITLE,KOMENT
+      COMMON
+     ./ATOMC / COORD(3,LM1)
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CHARGE/ QI(LM1)
+     ./CONSTF/ A0,AFACT,EV,XVCAL,PIX,W1,W2,BIGEXP
+     ./DFP   / XX(LMV),NVAR
+     ./ERG   / ENERGY,CGFIN(3,LM1+LM1M),GNORM,CNORM
+     ./ELEMTS/ ELEMNT(107)
+     ./ENERGT/ EE,ENUCLR,EAT,ATHEAT
+     ./ENERMM/ EQMMM
+     ./FLAG1 / KTITLE,KOMENT
+     ./FRGMT1/ NFRAGS(LM1),NCHRGS(LM1)
+     ./GUGA3 / EEREF
+     ./GUGA4 / LCPAO,LSCFM1,LNATO,LSCFM2
+     ./INOPT1/ IN1(300)
+     ./INOPT2/ IN2(300)
+     ./LIMITS/ LM2,LM3,LM4,LM6,LM7,LM8,LM9
+     ./LMSCF / LS1,LS2,LS3,LS4,LS5,LS6,LS7,LS8,LS9
+     ./LMUHF / LU1,LU2,LU3,LU4,LU5,LU6,LU7,LU8
+     ./MMCOM1/ EMM
+     ./NBFILE/ NBF(20)
+     ./PARMOL/ MOL
+     ./PARM1 / A(3,LM1),NC(LM1),NB(LM1),NA(LM1),NN(LM1),NATOMS
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+     ./SCRT  / SCFCRT,PLCRT,SCFCRS,PLCRS
+      COMMON GRRRR(LEN)
+      EXTERNAL SCFCAL
+      INTEGER NV,J,K,JOP,ICALL,LM5,ISCF,IG,IC,II
+      INTEGER ICROSS,KK,NUMALL
+      REAL*8 E,scal,GSCALE,WM
+      INTEGER IOPTV(3,LM1)
+C
+C     QC: Add dispersion here.
+
+      INTEGER I,N,NTOT,IROOT
+      INTEGER ITER
+      REAL*8  KSCPINT
+      REAL*8  GRFAC
+      PARAMETER (GRFAC=1.0D0)
+C
+      REAL*8 DNRM2
+      EXTERNAL DNRM2
+
+      scal=1.0d0
+
+      IF(numat.EQ.0) RETURN
+      KSCPINT=ONE /DBLE(NSCCRP)
+      if (prnlev.gt.6)
+     & WRITE(OUTU,600) KSCPINT
+      CTOT=ZERO
+      NTOT=in1(120)
+      IF ((.NOT.LQMPB).and.(qsccnb.eqv..false.)) NTOT=NPRIMM
+C     QC_UW04
+C     ====================== Iteration here for replica ===============
+      numatm=in1(120)
+      numall=numat+numatm
+      IROOT=IN2(139)
+      DO ITER =1,NSCCRP
+C       Update QM coordinates
+        nv=0
+        DO I=1,numat
+          coord(1,I)=X(IQMLST(I,ITER))
+          coord(2,I)=Y(IQMLST(I,ITER))
+          coord(3,I)=Z(IQMLST(I,ITER))
+          do j=1,3
+            nv=nv+1
+            xx(nv)=coord(j,I)
+            a(j,I)=coord(j,I)
+          enddo
+        ENDDO
+C       Update the MM part as well.
+        CALL CHMMNDO99
+C --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- -
+C *** Now comes the actual MNDO99 call; everything (incl. GUGACI) is
+C *** handled via SCF. Note that the valid QM gradients are returned in
+C *** the G array whereas the MM gradient is the upper part of the CG
+C *** array.
+CWT ? When icharm=1 is set as M99 keyword, then G is shifted into CG.
+        LM5=LEN
+C ***   ALWAYS GO FOR CALL OF SCFCAL (EVEN CI WILL BE DONE INSIDE)
+C ***   ACCESS VIA CALL SCF IN STANDARD CALCULATIONS
+C ***   ACCESS VIA CALL SCROSS IN MULTI-SURFACE CALCULATIONS
+        JOP=IN1(3)
+        IF (JOP.EQ.-1) ICALL=0
+        IF (JOP.EQ.-2) ICALL=1
+        ICROSS=IN2(160)
+C ***   SPECIAL DYNAMICS WHERE WE NEED VELOCITIES FROM CHARMM.
+        IF ((ICROSS.EQ.3).OR.(ICROSS.EQ.4)) THEN
+C ***     HEAP(...) IS INPUT; V GET INTO VXYZ(1:3,*) (mndo99.fcm)
+          CALL GTVXYZ(.TRUE.,.FALSE.,HEAP(IVX),HEAP(IVY),HEAP(IVZ),
+     &      1.0D0)
+        ENDIF
+C ***   Set THINGS LIKE ICURST, MDTASEP, VXYZ FOR CHARMM
+        WRITE(OUTU,800) IN2(12),IN2(121),IN2(122),NUMATM,
+     1            DNRM2(3*NUMATM,COORDM,1),DNRM2(3*NUMATM,CHARGM,1)
+        IF (ICROSS.LE.0) THEN
+           CALL SCF (GRRRR,LM5,ICALL,SCFCAL)
+        ELSE
+C ***      VXYZ FROM GTVXYZ CALL
+C ***      QMMMMS FOR QM: FROM CHQMMNDO99; MM ATOMS : CHMMMNDO99
+           CALL SCROSS (GRRRR,LM5,ICALL,SCFCAL,MDSTEP,DELTA,VXYZ,
+     1       QMMMMS,NUMAT+IN2(120))
+        ENDIF
+C       *** CHECK FOR CONVERGENCY PROBLEM AND LOWER CRTIERIA ONCE.
+        IF(ICALL.EQ.-1) THEN
+          SCFCRT = 10.0D0**(2-IN2(35))
+          PLCRT  = 10.0D0**(2-IN2(36))
+          WRITE(OUTU,690) SCFCRT,PLCRT
+          IF (JOP.EQ.-1) ICALL=0
+          IF (JOP.EQ.-2) ICALL=1
+          CALL SCF (GRRRR,LM5,ICALL,SCFCAL)
+          IF(ICALL.EQ.-1) CALL WRNDIE(ICALL,'MNDO99ENE>',
+     &     'FATAL MNDO99 (SCF ?) PROBLEM (LEVEL=ICALL).')
+          SCFCRT = 10.0D0**(-IN2(35))
+          PLCRT  = 10.0D0**(-IN2(36))
+        ENDIF
+C *** QM/MM ENERGY (CALCULATED IN CHARMM INTERFACE) -> EQMMMM
+        IF (NUMATM.GT.0) THEN
+          IF (ABS(IN2(77)).EQ.5) THEN
+            CALL QMMCHQ(GRRRR(LS3),GRRRR(LCPAO),GRRRR(LCPAO),
+     &         GRRRR(LS3+LM6),EQMMM,LM4,LM6)
+          ELSE
+            CALL QMMCHQ(GRRRR(LS3),GRRRR(LS8),GRRRR(LU8),
+     &         GRRRR(LS3+LM6),EQMMM,LM4,LM6)
+          ENDIF
+        ELSE
+          EQMMM=0.0D0
+        ENDIF
+        WRITE(OUTU,750) (EE+ENUCLR)*EVCAL,EQMMM*EVCAL
+750     FORMAT('MNDO999ENE> E(QM+QM/MM):',F14.5,' EQMMM:',F12.5)
+C *** RESULTS FROM SCF AND SCROSS ALWAYS RETURNED IN COMMON BLOCK ERG
+C     ENERGY = TARGET ENERGY, CGFIN = TARGET CARTESIAN GRADIENT.
+        E=ENERGY
+        CTOT=CTOT+E*KSCPINT
+C *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+C     -----------------------------------------------------------
+C     QC_UW04: Add muliken if asked, we transfer over to CG in
+C     energy.src after the nonbond terms are calculated.
+        IF (LMULIK) THEN
+          WRITE(OUTU,700)
+          DO I=1,natoms
+            QMULI2(I,ITER)=QI(I)
+          ENDDO
+        ENDIF
+C     -----------------------------------------------------------
+        DO I=1,natoms
+          IF (LWMASS) THEN
+            WM=1.0D0/DSQRT(QMMMMS(I))
+          ELSE
+            WM=1.0D0
+          ENDIF
+          DX(IQMLST(I,ITER))=DX(IQMLST(I,ITER))
+     &                    +GRFAC*scal*cgfin(1,I)*WM*KSCPINT
+          DY(IQMLST(I,ITER))=DY(IQMLST(I,ITER))
+     &                    +GRFAC*scal*cgfin(2,I)*WM*KSCPINT
+          DZ(IQMLST(I,ITER))=DZ(IQMLST(I,ITER))
+     &                    +GRFAC*scal*cgfin(3,I)*WM*KSCPINT
+        ENDDO
+C     MM atoms, without igmsel(i)=-1 !!
+C     QC: CHANGE TO ACCOUT FOR RCUT
+C     QC: YET WE SHOULD ZERO OUT THE QM/MM IMAGE FORCE ON THE IMAGE
+C     ATOM IF DOING INFINITELY DILUTE SYSTEM
+        DO I=1,NTOT
+        IF (LWMASS) THEN
+          WM=1.0D0/DSQRT(QMMMMS(I))
+        ELSE
+          WM=1.0D0
+        ENDIF
+        DX(IMMLST(I))=
+     &    DX(IMMLST(I))+GRFAC*scal*wm*cgfin(1,natoms+I)*KSCPINT
+        DY(IMMLST(I))=
+     &    DY(IMMLST(I))+GRFAC*scal*wm*cgfin(2,natoms+I)*KSCPINT
+        DZ(IMMLST(I))=
+     &    DZ(IMMLST(I))+GRFAC*scal*wm*cgfin(3,natoms+I)*KSCPINT
+        ENDDO
+      ENDDO
+      CLOSE(M99U)
+      RETURN
+600   FORMAT(1x,'MNDO99ENE> Scaling factor for QM/MM: ',F10.5)
+690   FORMAT('MNDO99ENE> SCF CONVERGENCY PROBLEM. LOWER CRITERIA',
+     &     ' TO ',G6.1,' / ',G6.1,' AT THIS POINT.')
+700   FORMAT('MNDO99ENE> SHIFTING MULLIKEN CHARGES TO CHARMM')
+800   FORMAT( 1X,'MNDO99ENE: MMINP,MMCOUP,MMPOT',3I4,
+     1       /1X,'NUMBER OF MM ATOMS',I6,
+     2       /1X,'MM COORDINATE NORM',E14.7,
+     3       /1X,'MM CHARGE NORM',E14.7)
+      END
+C----------------------------------------------------------------------
+      SUBROUTINE MNDO99SEL(ISLCT)
+C     Copies selection vector to common block
+C     so it may be used by GAMESS interface
+C     Call this routine only once and retain definition
+C     of QM, MM, and link atoms throughout the claculation.
+C     We call this from GAMINI which is called from charmm/charmm.src
+C
+C     IGMSEL(I) = 2  Link atom
+C     IGMSEL(I) = 1  QM atom
+C     IGMSEL(I) = 0  MM atom
+Cwas:     IGMSEL(I) = -1 MM atom to be excluded from QM/MM interaction
+C     IGMSEL(I) = 5 MM atom to be excluded from QM/MM interaction
+C
+C     MM atom in position close to link atom is excluded from interaction
+C     of external charges to QM region. Instead of this atom is already
+C     a link atom so no need for two atoms in one place!
+C
+C     QC: All possible replica are considered here.
+C
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/exfunc.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+C
+      INTEGER ISLCT(*)
+C
+##INCLUDE '~/charmm_fcm/coord.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##INCLUDE '~/charmm_fcm/psf.fcm'
+##INCLUDE '~/charmm_fcm/number.fcm'
+C
+      INTEGER I,J,I1,I2,N,LN,IS,IQ
+      CHARACTER*8 SID, RID, REN, AC
+      LOGICAL LNFLAG
+C
+      DO I=1, NATOM
+c        IGMSEL(I)=ISLCT(I)
+         IF (ISLCT(I).EQ.1) THEN
+           IGMSEL(I)=1
+           IF (TYPE(I)(1:2).EQ.'QQ') IGMSEL(I)=2
+         ENDIF
+      ENDDO
+C
+C     Check if link atom is connected to any of its neighbors. If
+C     yes then that atom will not be included in QM/MM interaction.
+C     This is sometimes necessary to prevent oposite charge collision,
+C     since QM cannot prevent this to happen.
+C
+C
+      DO I=1,NBOND
+         I1=IB(I)
+         I2=JB(I)
+         IF (IGMSEL(I1).EQ.2) THEN
+C           Don't change QM atoms
+            IF(QGMEXG) THEN
+C              remove the entire group
+               J=GETRES(I2,IGPBS,NGRP)
+               IS=IGPBS(J)+1
+               IQ=IGPBS(J+1)
+               DO J=IS,IQ
+                  IF(IGMSEL(J).EQ.0) IGMSEL(J)=5
+               ENDDO
+            ELSE
+C              remove the link host atom
+               IF(IGMSEL(I2).EQ.0) IGMSEL(I2)=5
+            ENDIF
+         ENDIF
+         IF (IGMSEL(I2).EQ.2) THEN
+            IF(QGMEXG) THEN
+C              remove the entire group
+               J=GETRES(I1,IGPBS,NGRP)
+               IS=IGPBS(J)+1
+               IQ=IGPBS(J+1)
+               DO J=IS,IQ
+                  IF(IGMSEL(J).EQ.0) IGMSEL(J)=5
+               ENDDO
+            ELSE
+C              remove the link host atom
+               IF(IGMSEL(I1).EQ.0) IGMSEL(I1)=5
+            ENDIF
+         ENDIF
+      ENDDO
+C
+      IF(PRNLEV.GE.2) THEN
+         WRITE(OUTU,118)
+         WRITE(OUTU,120)
+     $        'Classical atoms excluded from the QM calculation'
+      ENDIF
+ 118  FORMAT('------------------------------------------------')
+ 120  FORMAT('M99SEl> ',A,':')
+ 122  FORMAT(10X,I5,4(1X,A))
+ 124  FORMAT(10X,'NONE.')
+      N=0
+      DO I=1,NATOM
+         IF(IGMSEL(I).EQ.5) THEN
+            CALL ATOMID(I,SID,RID,REN,AC)
+            IF(PRNLEV.GE.2) WRITE(OUTU,122) I,
+     $           SID(1:idleng),RID(1:idleng),REN(1:idleng),AC(1:idleng)
+            N=N+1
+         ENDIF
+      ENDDO
+      IF(PRNLEV.GE.2) THEN
+         IF(N.EQ.0) WRITE(OUTU,124)
+         WRITE(OUTU,120) 'Quantum mechanical atoms'
+      ENDIF
+      N=0
+      DO I=1,NATOM
+         IF(IGMSEL(I).EQ.1) THEN
+            CALL ATOMID(I,SID,RID,REN,AC)
+            IF(PRNLEV.GE.2) WRITE(OUTU,122) I,
+     $           SID(1:idleng),RID(1:idleng),REN(1:idleng),AC(1:idleng)
+            N=N+1
+         ENDIF
+      ENDDO
+      IF(PRNLEV.GE.2) THEN
+         IF(N.EQ.0) WRITE(OUTU,124)
+         WRITE(OUTU,120) 'Quantum mechanical link atoms'
+      ENDIF
+      N=0
+      DO I=1,NATOM
+         IF(IGMSEL(I).EQ.2) THEN
+            CALL ATOMID(I,SID,RID,REN,AC)
+            IF(PRNLEV.GE.2) WRITE(OUTU,122) I,
+     $           SID(1:idleng),RID(1:idleng),REN(1:idleng),AC(1:idleng)
+            N=N+1
+         ENDIF
+      ENDDO
+      IF(PRNLEV.GE.2) THEN
+         IF(N.EQ.0) WRITE(OUTU,124)
+         WRITE(OUTU,118)
+      ENDIF
+C
+C     Alow for partial charges on any QM atom
+C
+      N=0
+      LN=0
+      DO I = 1,NATOM
+        IF ((IGMSEL(I) .EQ. 1).OR.(IGMSEL(I).EQ.2)) THEN
+           N = N + 1
+C
+C     Non integer charges for link atoms can be specified separately
+C     Also allow to change them subsequently with SCALar command
+C     using QINP keyword in GAMEss command.
+C
+           LNFLAG=.FALSE.
+           IF((TYPE(I)(1:2).EQ.'QQ').AND.(NQQCHG.NE.0)) THEN
+              LN=LN+1
+              IF(QQCHG(LN).GT.-NINE99) THEN
+                 FQQCHG(N) = QQCHG(LN)
+              ELSE
+                 FQQCHG(N) = -THOSND
+              ENDIF
+C
+C     Don't have any more link atoms, put NQQCHG to 0
+C     for possible subsequent changes with SCALar command
+C     or on restarts.
+C
+              IF(LN.EQ.NQQCHG) NQQCHG=0
+              LNFLAG=.TRUE.
+           ENDIF
+           FQQCHG(N)=-THOSND
+        ENDIF
+      ENDDO
+C
+C Zero charges on quantum atoms to remove from MM term.
+      IF(QGMREM) THEN
+         DO I=1, NATOM
+            IF((IGMSEL(I).GT.0).AND.(IGMSEL(I).LT.3)) CG(I)=ZERO
+         ENDDO
+      ENDIF
+C
+      RETURN
+      END
+
+C     QC: The following codes are not fully refined, not recommended
+C         to use.
+C     ============================================================
+      REAL*8 FUNCTION SCMMCG(LQMSHF,LQMSWT,RQMMM2,R2CUTQM)
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/number.fcm'
+
+C     function to return the scaling factor for MM charge
+C     At the moment we do not use switch
+C     so either group based truncation or atom based shift.
+C     QC: to be refined in the future
+
+      LOGICAL LQMSHF,LQMSWT
+      REAL*8 RQMMM2,R2CUTQM
+      IF (LQMSHF) THEN
+       SCMMCG=(ONE -RQMMM2/R2CUTQM)*(ONE -RQMMM2/R2CUTQM)
+      ELSE IF (LQMSWT) THEN
+       SCMMCG=ONE
+      ELSE
+       SCMMCG=ONE
+      ENDIF
+C     WRITE(*,*) "SCMMCG> ",LQMSHF,LQMSWT,RQMMM2,R2CUTQM,SCMMCG
+      RETURN
+      END
+C===================================================================
+      SUBROUTINE QMCENT(XCOG,YCOG,ZCOG,IGMSEL,NATOM,X,Y,Z)
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/number.fcm'
+      INTEGER NATOM
+      INTEGER IGMSEL(*)
+      REAL*8 XCOG,YCOG,ZCOG
+      REAL*8 X(*),Y(*),Z(*)
+
+      INTEGER N,I
+
+      XCOG=ZERO
+      YCOG=ZERO
+      ZCOG=ZERO
+      N=0
+      DO I=1,NATOM
+        IF (IGMSEL(I).GE.1) THEN
+          N=N+1
+          XCOG=XCOG + X(I)
+          YCOG=YCOG + Y(I)
+          ZCOG=ZCOG + Z(I)
+        ENDIF
+      ENDDO
+      XCOG=XCOG/DBLE(N)
+      YCOG=YCOG/DBLE(N)
+      ZCOG=ZCOG/DBLE(N)
+
+      RETURN
+      END
+C=============================================================
+      SUBROUTINE MMCENT(XCENT,YCENT,ZCENT,IRS,IGPBS,X,Y,Z)
+C
+C
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/number.fcm'
+
+        INTEGER IRS, IGPBS(*)
+        REAL*8  XCENT, YCENT, ZCENT
+        REAL*8  X(*), Y(*), Z(*)
+
+        INTEGER I, IS, IQ, NAT
+        REAL*8  DXI, DYI, DZI
+
+        IS=IGPBS(IRS)+1
+        IQ=IGPBS(IRS+1)
+        NAT=IQ-IS+1
+        XCENT=ZERO
+        YCENT=ZERO
+        ZCENT=ZERO
+
+        DO I = IS, IQ
+          XCENT=XCENT+X(I)
+          YCENT=YCENT+Y(I)
+          ZCENT=ZCENT+Z(I)
+        ENDDO
+
+        XCENT=XCENT/DBLE(NAT)
+        YCENT=YCENT/DBLE(NAT)
+        ZCENT=ZCENT/DBLE(NAT)
+
+        RETURN
+      END
+C====================================================================
+      SUBROUTINE MKMMGLST
+C     Make a qm/mm list to see who can see QM atoms
+C     Nothing fancy because we donot have to keep track of which QM
+C     interacts with which MM.
+C     Use group based stuff
+C     Should be called in the initial set-up procedure and also
+C     whenever image list gets updated.
+C     Potential switching or shift were implemented by scaling the MM
+C     charges to avoid complications with the QM integrals -- should be
+C     small anyhow.
+C
+C     Q. Cui, March 2000 (to be refined in the future)
+C
+      USE LIMIT, ONLY: LM1,LM1M
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/exfunc.fcm'
+C
+##INCLUDE '~/charmm_fcm/coord.fcm'
+##INCLUDE '~/charmm_fcm/psf.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/mndo99.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##IFN NOIMAGES
+##INCLUDE '~/charmm_fcm/image.fcm'
+##ENDIF
+      REAL*8 COORDM,CHARGM
+      INTEGER IN1,IN2
+      COMMON
+     ./INOPT1/ IN1(300)
+     ./INOPT2/ IN2(300)
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+C
+      INTEGER I,J,N
+      INTEGER IRS,IS,IQ,NPTC
+      REAL*8 RQMMM2,R2CUTQM
+      REAL*8 XCOG,YCOG,ZCOG
+      REAL*8 XCET,YCET,ZCET
+      REAL*8 SCLM2
+      REAL*8 SCMMCG,SUMCH,SUMCH2
+
+      WRITE(OUTU,'(1x,"MMGLST> Update QM/MM List with RCUT: ",F10.5)')
+     $   RCUTQM
+
+C     FIRST WE COMPUTE THE C.O.G of the QM region
+      CALL QMCENT(XCOG,YCOG,ZCOG,IGMSEL,NATOM,X,Y,Z)
+C     WRITE(*,*) "QM COG: ",XCOG,YCOG,ZCOG
+C     LOOP OVER MM GROUPS
+      NPTC=0
+      SUMCH=0.0D0
+      R2CUTQM=RCUTQM*RCUTQM
+      DO 100 IRS = 1,NGRP
+        IS=IGPBS(IRS)+1
+        IQ=IGPBS(IRS+1)
+        IF (IGMSEL(IS).GT.0) GOTO 100
+
+        CALL MMCENT(XCET,YCET,ZCET,IRS,IGPBS,X,Y,Z)
+C       WRITE(*,*) "MM COG: ",IRS,XCET,YCET,ZCET
+        RQMMM2 = (XCET-XCOG)*(XCET-XCOG) +
+     &           (YCET-YCOG)*(YCET-YCOG) +
+     &           (ZCET-ZCOG)*(ZCET-ZCOG)
+        IF (RQMMM2.GT.R2CUTQM) GOTO 100
+        SCLM2=SCMMCG(LQMSHF,LQMSWT,RQMMM2,R2CUTQM)
+
+C     QC: ASSIGN CRD AND CHARGE, WATCH OUT FOR LINKHOST ATOM!!
+        DO I=IS,IQ
+          IF(IGMSEL(I).EQ.0) THEN
+            NPTC = NPTC + 1
+            IMMLST(NPTC) = I
+            chargm(NPTC) = CG(I)*SCLM2
+            SUMCH=SUMCH+chargm(NPTC)
+          ENDIF
+        ENDDO
+
+ 100  ENDDO
+
+      WRITE(OUTU,850) NPTC,SUMCH
+850   FORMAT(4X,'MMGLST> PRIMARY MM: #= ',I6,' SUM=',F12.5)
+      NPRIMM = NPTC
+
+C     QC: ALSO ADD IN THE IMAGE ATOMS
+C     ALTHOUGH TO BE CONSISTENT IN THE CASE OF INFINITELY DILUTE
+C     SOLUTION, ONE SHOULD NOT ALLOW QM TO SEE the MM IMAGE!
+C     QC: TO BE REFINED IN THE FUTURE
+##IFN NOIMAGES
+C     IF (NATIM.EQ.0) GOTO 500
+C     QC_UW04: Skip packing image atoms if ewald is to be done
+      IF (NATIM.EQ.0) GOTO 500
+      WRITE(OUTU,*) " MMGLST> PACK IMAGE"
+      DO 200 IRS = NGRP+1,NIMGRP
+        IS=IGPBS(IRS)+1
+        IQ=IGPBS(IRS+1)
+        IF (IGMSEL(IS).GT.0) GOTO 200
+C     QC: ALSO GET THE C.O.G. of this group
+
+        CALL MMCENT(XCET,YCET,ZCET,IRS,IGPBS,X,Y,Z)
+C       WRITE(*,*) "MM COG: ",XCET,YCET,ZCET
+        RQMMM2 = (XCET-XCOG)*(XCET-XCOG) +
+     &           (YCET-YCOG)*(YCET-YCOG) +
+     &           (ZCET-ZCOG)*(ZCET-ZCOG)
+        IF (RQMMM2.GT.R2CUTQM) GOTO 200
+        SCLM2=SCMMCG(LQMSHF,LQMSWT,RQMMM2,R2CUTQM)
+
+C     QC: ASSIGN CRD AND CHARGE, WATCH OUT FOR LINKHOST ATOM!!
+        SUMCH2=0.0D0
+        DO I=IS,IQ
+          IF(IGMSEL(I).EQ.0) THEN
+            NPTC = NPTC + 1
+            IMMLST(NPTC) = I
+            chargm(NPTC) = CG(I)*SCLM2
+            SUMCH2=SUMCH2+chargm(NPTC)
+          ENDIF
+        ENDDO
+
+ 200  ENDDO
+
+      WRITE(OUTU,900) NPTC-NPRIMM,SUMCH2
+900   FORMAT(4X,'MMGLST> MM IMAGE ADDED:  #=',I6,' SUM=',F12.5)
+##ENDIF
+ 500  CONTINUE
+      NTOTMM = NPTC
+      in1(120)=NPTC
+      in2(120)=NPTC
+      RETURN
+      END
+C======================================================================
+      SUBROUTINE MKMMLST
+C-----------------------------------------------------------------------
+C     Make a qm/mm list to see who can see QM atoms
+C     Nothing fancy because we donot have to keep track of which QM
+C     interacts with which MM.
+C     Use Atom based stuff -- poor choice in most cases
+C     Should be called in the initial set-up procedure and also
+C     whenever image list gets updated.
+C     Potential switching or shift were implemented by scaling the MM
+C     charges to avoid complications with the QM integrals -- should be
+C     small anyhow.
+C
+C     Q. Cui, March 2000.
+C
+      USE LIMIT, ONLY: LM1,LM1M
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/exfunc.fcm'
+C
+##INCLUDE '~/charmm_fcm/coord.fcm'
+##INCLUDE '~/charmm_fcm/psf.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/mndo99.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##IFN NOIMAGES
+##INCLUDE '~/charmm_fcm/image.fcm'
+##ENDIF
+##INCLUDE '~/charmm_fcm/inbnd.fcm'
+      REAL*8 COORDM,CHARGM
+      INTEGER IN1,IN2
+      COMMON
+     ./INOPT1/ IN1(300)
+     ./INOPT2/ IN2(300)
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+      INTEGER I,J,N,NPTC
+      REAL*8 RQMMM2,R2CUTQM,SUMCH
+      REAL*8 SCMMCG
+
+      logical cshft,cshift
+
+      if(qsccnb) then
+         CSHIFT=      LCONS .AND.      LSHFT .AND.      LFSWT
+         CSHFT =      LCONS .AND.      LSHFT .AND. .NOT.LFSWT
+         rcutqm=cutnb
+         qsccs=cshft
+         qsccsh=cshift
+         sccfnb=ctofnb
+      endif
+
+C     WRITE(OUTU,'(1x,"M99MMLST> Update QM/MM List with RCUT: ",F10.5)')
+C    $   RCUTQM
+      NPTC=0
+      SUMCH=0.0d0
+      R2CUTQM=RCUTQM*RCUTQM
+      DO 100 J = 1,NATOM
+        IF(IGMSEL(J).EQ.0) THEN
+          DO 200 I = 1,NATOM
+             IF(IGMSEL(I).GE.1)THEN
+               RQMMM2 = (X(J) - X(I))*(X(J)-X(I))
+     $                + (Y(J) - Y(I))*(Y(J)-Y(I))
+     $                + (Z(J) - Z(I))*(Z(J)-Z(I))
+               IF (RQMMM2.LE.R2CUTQM) THEN
+                 NPTC = NPTC + 1
+                 IMMLST(NPTC) = J
+                 CHARGM(NPTC)=CG(J)
+                 SUMCH=SUMCH+CG(J)
+                 GOTO 210
+               ENDIF
+             ENDIF
+ 200      ENDDO
+ 210      CONTINUE
+        ENDIF
+ 100  ENDDO
+
+      WRITE(OUTU,6000) NPTC,SUMCH
+6000  format(' M99MMLST> No. of MM atoms:',i6,' Charge sum: ',f12.7)
+      NPRIMM = NPTC
+
+C     QC: ALSO ADD IN THE IMAGE ATOMS
+C     ALTHOUGH TO BE CONSISTENT IN THE CASE OF INFINITELY DILUTE
+C     SOLUTION, ONE SHOULD NOT ALLOW QM TO SEE the MM IMAGE!
+##IFN NOIMAGES
+C     QC_UW04: Skip packing image atoms if ewald is to be done
+C     IF (NATIM.EQ.0) GOTO 500
+      IF (NATIM.EQ.0) GOTO 500
+      WRITE(OUTU,*) " MMLST> PACK IMAGE"
+      DO 300 J = NATOM + 1, NATIM
+        IF(IGMSEL(J).EQ.0) THEN
+          DO 400 I = 1,NATOM
+             IF(IGMSEL(I).GE.1)THEN
+               RQMMM2 = (X(J) - X(I))*(X(J)-X(I))
+     $                + (Y(J) - Y(I))*(Y(J)-Y(I))
+     $                + (Z(J) - Z(I))*(Z(J)-Z(I))
+               IF (RQMMM2.LE.R2CUTQM) THEN
+                 NPTC = NPTC + 1
+                 IMMLST(NPTC) = J
+                 chargm(NPTC)=CG(J)
+                 GOTO 410
+               ENDIF
+             ENDIF
+ 400      ENDDO
+ 410      CONTINUE
+        ENDIF
+ 300  ENDDO
+      WRITE(OUTU,*) " MMLST> MM IMAGE ADDED:  NPTC= ",NPTC-NPRIMM
+##ENDIF
+ 500  CONTINUE
+      NTOTMM = NPTC
+      in1(120)=NPTC
+      in2(120)=NPTC
+      RETURN
+      END
+C ---------------------------------------------------------------------
+      SUBROUTINE QMMCHQ (H,PA,PB,Q,QMMENE,LM4,LM6)
+C     *
+C     CALCULATE THE ELECTROSTATIC POTENTIAL (ELPOT)
+C     GENERATED BY THE QM ATOMS AT THE EXTERNAL POINTS OF CHEQ
+C     RESP. FLUQQ (CF. ANALOGOUS ROUTINE FOR SCCDFTB)
+C     WILL USE CI-CORRECTED DENSITY MATRIX, IF GUGA WAS TURNED ON.
+C     >> BASICALLY, THIS IS ROUTINE QMMPOT IN 99 SUBDIR. <<
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT, S=SCRATCH.
+C     H(LM6)    ONE-CENTER ELEMENTS OF CORE HAMILTONIAN MATRIX (S).
+C     PA(LM4)   DENSITY MATRIX, ALPHA ELECTRONS (I).
+C     PB(LM4)   DENSITY MATRIX, BETA  ELECTRONS (I).
+C     Q(LM6)    PRECOMBINED ONE-CENTER DENSITY MATRIX ELEMENTS (S).
+C     QMMENE    QM/MM ENERGY, IN EV. (REGARDLESS OF CHEQ/FLUQQ, O)
+C     *
+C     UNITS.
+C     COORDM()  CARTESIAN COORDINATES OF EXTERNAL POINTS, IN ANGSTROM.
+C     ELPOT()   ELECTROSTATIC POTENTIAL, IN EV/E = V.
+C     *
+C     FOR ADDITIONAL DETAILS SEE COMMENTS IN SUBROUTINE QMINT.
+C     REF: D. BAKOWIES AND W. THIEL, J.COMPUT.CHEM. 17, 87 (1996).
+C     *
+      USE LIMIT, ONLY: LMI, LM1M
+C CHARMM COMMON BLOCKS.
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/stream.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/sccdftb.fcm'
+##INCLUDE '~/charmm_fcm/consta.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/heap.fcm'
+##IF FLUCQ
+##INCLUDE '~/charmm_fcm/flucq.fcm'
+##ENDIF
+##IF CHEQ
+##INCLUDE '~/charmm_fcm/derivq.fcm'
+##INCLUDE '~/charmm_fcm/cheqdyn.fcm'
+##ENDIF
+C MNDO99
+      INTEGER LM4,LM6
+      REAl*8 H(LM6),PA(LM4),PB(LM4),Q(LM6),QMMENE
+      REAL*8 ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+      REAL*8 A0,AFACT,EV,EVCAL,PIX,W1,W2,BIGEXP
+      REAL*8 COORDM,CHARGM
+      REAL*8 ELPOT,ESF,EADD
+      INTEGER IP,IP1,IP2,IN2,NBF
+      COMMON
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PIX,W1,W2,BIGEXP
+     ./FINDX1/ IP(LMI),IP1(LMI),IP2(LMI)
+     ./INOPT2/ IN2(300)
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+     ./QMMM4 / ELPOT(LM1M),ESF(3,LM1M)
+     ./NBFILE/ NBF(20)
+      INTEGER NPRINT,NUMATM,MMPOT,I,M,IMM
+      REAL*8 PTCHG,DDOT,ELECQM,ENUCQM
+      EXTERNAL DDOT
+C
+C *** INPUT OPTIONS.
+C     NPRINT = IN2(72)
+      NUMATM = IN2(120)
+      MMPOT  = IN2(122)
+C *** INITIALIZATION.
+      PTCHG  = ONE
+C *** COMPUTE ONE-CENTER DENSITY MATRIX ELEMENTS (Q).
+      DO 10 I=1,LM6
+      Q(I)  = (PA(IP(I))+PB(IP(I)))
+      IF(IP1(I).NE.IP2(I)) Q(I)=Q(I)*TWO
+   10 CONTINUE
+C *** LOOP OVER ALL EXTERNAL POINTS (M).
+      QMMENE=0.0D0
+      DO 30 M=1,NUMATM
+      DO 20 I=1,LM6
+        H(I)   = ZERO
+   20 CONTINUE
+C     INTEGRALS FOR ELECTROSTATIC POTENTIAL, SEE EQ.(2) IN REF.
+      IF(MMPOT.LE.2) THEN
+         CALL QMINTC (H,LM6,ENUCQM,COORDM(1,M),PTCHG,1,0)
+      ELSE
+         CALL QMINT  (H,LM6,ENUCQM,COORDM(1,M),PTCHG,1,0)
+      ENDIF
+C     ONE-ELECTRON CONTRIBUTION TO ELECTROSTATIC POTENTIAL.
+      ELECQM = DDOT(LM6,H,1,Q,1)
+C     ADD ELECTRONIC AND NUCLEAR CONTRIBUTIONS.
+      ELPOT(M) = ELECQM + ENUCQM
+      QMMENE=QMMENE+ELPOT(M)*CHARGM(M)
+   30 CONTINUE
+##IFN FLUCQ CHEQ (flucqcheq)
+C *** RETURN IF NO FLUCQ CHEQ COMPILED IN
+      RETURN
+##ELSE (flucqcheq)
+C      ... OR IF THEY HAVE BEEN TURNED OFF.
+      IF (.NOT.(QFLUC.OR.QCGQM)) RETURN
+C *** now transfer results. ELPOT is in Volts
+##IF FLUCQ
+      IF(QFLUC) THEN
+        DO M=1,NUMATM
+          imm=FQCFOR+immlst(M)-1
+          heap(imm)=heap(imm)+ELPOT(M)*EVCAL
+        ENDDO
+      ENDIF
+##ENDIF
+##IF CHEQ
+      IF (QCGQM) THEN
+        DO M=1,NUMATM
+          dch(immlst(M))=dch(immlst(M))+ELPOT(M)*EVCAL
+        ENDDO
+      ENDIF
+##ENDIF
+##ENDIF (flucqcheq)
+      RETURN
+      END
+C *********************************************************************
+
+      SUBROUTINE GTVXYZ(LQM,LMM,VCX,VCY,VCZ,SCALE)
+C *** GETS VELOCITIES OUT-OF CHARMM (VC...), JUST PUTS THEM INTO SPECIAL
+C     ARRAY. SOMEWHAT NON-CONFORMING TO REPLICA.
+C     VELOCITIES ARE IN AKMA UNITS, WHATEVER THIS MEANS.
+      USE LIMIT, ONLY: LM1,LM1M
+##INCLUDE '~/charmm_fcm/impnon.fcm'
+##INCLUDE '~/charmm_fcm/dimens.fcm'
+##INCLUDE '~/charmm_fcm/mndo99.fcm'
+##INCLUDE '~/charmm_fcm/mndo99ex.fcm'
+##INCLUDE '~/charmm_fcm/gamess.fcm'
+##INCLUDE '~/charmm_fcm/psf.fcm'
+      REAL*8 VCX(*),VCY(*),VCZ(*)
+      LOGICAL LQM,LMM
+      INTEGER I,IHP
+      REAL*8 SCALE
+      REAL*8 VXYZ
+      COMMON /M99VEL/VXYZ(3,LM1+LM1M)
+C *** FIRST QM ATOMS (CF. CHM99ENE)
+      IF (LQM) THEN
+        DO I=1,NM99C
+           IHP=IQMLST(I,1)
+           VXYZ(1,I) = SCALE*VCX(IHP)
+           VXYZ(2,I) = SCALE*VCY(IHP)
+           VXYZ(3,I) = SCALE*VCZ(IHP)
+        ENDDO
+      ENDIF
+C *** NOW MM ATOMS (CF. CHMMNDO99)
+      IF (LMM) THEN
+        DO I=1, NTOTMM
+          IHP=IMMLST(I)-1
+          VXYZ(1,NM99C+I) = SCALE*VCX(IHP)
+          VXYZ(2,NM99C+I) = SCALE*VCY(IHP)
+          VXYZ(3,NM99C+I) = SCALE*VCZ(IHP)
+        ENDDO
+      ENDIF
+      RETURN
+      END
+C *********************************************************************
+      SUBROUTINE M99KEY(M99IU,M99OU)
+C
+C     COPYRIGHT (1987-2001) BY WALTER THIEL,
+C     MAX-PLANCK-INSTITUT FUER KOHLENFORSCHUNG,
+C     KAISER-WILHELM-PLATZ 1, D-45470 MUELHEIM, GERMANY.
+C
+C     VERSION 6.1 OF 12 APRIL 2003.
+C     MASTER VERSION.
+C     *
+C     [MNDO99] SUBROUTINE FOR SEMIEMPIRICAL QUANTUM-CHEMICAL CALCULATION
+C     INITIALISATION
+C     *
+      USE LIMIT
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      EXTERNAL BLOCK0,BLOCK1,BLOCK2,BLOCK3,BLOCK4
+      LOGICAL PINC
+      LOGICAL R2CENT
+      LOGICAL UHF
+      CHARACTER*2   ELEMNT
+      CHARACTER*4   IRREP
+      CHARACTER*2400 KEYWRD
+      CHARACTER*30  KOMEXP
+      CHARACTER*80  KTITLE,KOMENT
+      CHARACTER*7   QMMETH
+      CHARACTER*3   NGROUP
+      CHARACTER*3   NPTGRP
+      CHARACTER*30  PROP1
+      CHARACTER*31  PROP2
+      CHARACTER*37  PROP3
+      CHARACTER*10  UNITS
+C     *
+C     THE FOLLOWING LIST CONTAINS ALL COMMON BLOCKS OF THE PROGRAM IN
+C     ALPHABETICAL ORDER, EXCEPT FOR THOSE COMMON BLOCKS WHICH APPEAR
+C     ONLY LOCALLY IN THE SECTIONS CALLED BY THE FOLLOWING ROUTINES.
+C     - PPECP : COMMON BLOCKS FOR ECP INTEGRALS.
+C     - PSDRV : COMMON BLOCKS FOR ANALYTICAL DERIVATIVES.
+C     - REPGAU: COMMON BLOCKS FOR GAUSSIAN TWO-ELECTRON INTEGRALS.
+C     *
+      COMMON
+     ./ABOND / ALPB(LMZ,LMZ),MALPB(LMZ)
+     ./AM1   / USSAM1(LMZ*18)
+     ./AM1D  / USSAMD(LMZ*21),IMAMD(LMZ)
+     ./AM1GAU/ GUESA1(LMZ*12),IAM1(LMZ)
+     ./AMDGAU/ GUESD1(LMZ*12),IM1D(LMZ)
+     ./AMPGAU/ GUESS1(LMZ*12),IMP(LMZ)
+     ./AMASS / AMS(LM1)
+     ./ATOMC / COORD(LMV)
+     ./ATOMS / NUMAT,NAT(LMV)
+     ./ATORB / IOS(LMZ*3)
+     ./ATSYM / IELSYM(21)
+     ./AUXVAR/ VAR1DQ(9),NGANGB
+     ./BESAFE/ TLIMIT
+      COMMON
+     ./CCIS  / KTHMO(4)
+     ./CGRAD / CG(LMV+3*LM1M)
+     ./CGRAD1/ ICG(LMV)
+     ./CHARGE/ QI(LM1)
+     ./CHARGP/ POP(3,LM1)
+     ./CIMOS / IMOCI(LMX)
+     ./CIMOSY/ JMOCI(LMX),MOCISY(LMX)
+     ./CIPRP/  CIPROP(LMPROP,LMSTAT),ICISYM(LMSTAT)
+     ./CIREFS/ ICIREF(LMACT,LMREF)
+     ./CIROOT/ IROOTA(8)
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./COSMO1/ EGAS,ESOLUT,ESOLV,EDISP,EDIE
+     ./COSMO2/ NCOSMO(5)
+     ./COSMO3/ FEPSI(3),SRAD(LM1)
+     ./COSMO4/ IATSP(LMNPS)
+     ./COSMO5/ ATOMAR(LM1+1),NPS1
+     ./COSMO6/ CAVITA(LMZ*6)
+     ./COSMO7/ JPC(LMI+LM1+1)
+     ./COSMO8/ COSURF(LMNPS*5)
+     ./COSMO9/ DIRVEC(3*NPPA+9*LM1),NAR(2*LMNPS)
+     ./CYCLES/ ICYC(2)
+      COMMON
+     ./DAWFCM/ DAWC(249),IDAW(80),DAWH
+     ./DELEMT/ NELMD(2)
+     ./DENERG/ DENER
+     ./DERFCM/ DERFC(246),IDERF(80),DERFH
+     ./DFP   / X(LMV),NVAR
+     ./DFPGO / GLAST(LMV*2)
+     ./DIPOL / DIP(7)
+     ./DIPOL1/ HYF(LMZ*2)
+     ./DNBND / INMB(LMZ*2)
+     ./DPARM / LORBS(LMZ)
+     ./DPARM1/ UDD(LMZ*3)
+     ./DPARM2/ ZSN(LMZ*3)
+     ./DPARM3/ F0DD(LMZ*9)
+     ./DPARM4/ REPD(52,LMZ)
+     ./DPARM5/ INTIJ(1215)
+     ./DPARM6/ R2CENT(2025)
+     ./DPARM7/ IF0SD(LMZ*4)
+     ./DPARM8/ JF0SD(LMZ*4)
+      COMMON
+     ./ECPCM / CLP(LMK,2),NLP(LMK),KFECP(LML,2),LFECP(LMZ,2)
+     ./ELEMTS/ ELEMNT(107)
+     ./ENERGT/ EE(4)
+     ./ERG   / ENERGY(LMV+3)
+     ./ERG1  / CNORM1
+     ./ERGREF/ HF298(4)
+     ./ERRFCM/ ERRFC(142),IERRF(40),ERRFH
+     ./EXPHAT/ EXHEAT(LMZ)
+     ./EXTRA / GLOCAL(22)
+     ./EXTRA1/ RICORE(2087)
+     ./EXTRA2/ SIJT(703)
+      COMMON
+     ./FIELD2/ FIFI(3)
+     ./FIELD3/ ALPHAD(6)
+     ./FINDX1/ IP(LMI,3)
+     ./FINDX2/ JP(LME,3),JX(LM1+1)
+     ./FLAG1 / KTITLE,KOMENT
+     ./FLAG2 / SECADD,TIME1
+     ./FLAG3 / KRESET,MPRINT,T2
+     ./FLAG4 / INTSUM
+     ./FLPOCM/ GP(LMV*2+2)
+     ./FMGTO / GAFMZ(38)
+     ./FMGTO1/ XLIMM(2)
+     ./FORCE3/ TMA(2)
+     ./FRGMT1/ NFRAGS(LM1),NCHRGS(LM1)
+      COMMON
+     ./GAUSS1/ KSTART(LMGS),KNG(LMGS),KTYPE(LMGS),NSHELL,NBASIS
+     ./GAUSS3/ EXX(LMGP),C1(LMGP),C2(LMGP),C3(LMGP)
+     ./GUGA1 / NCIO(2)
+     ./GUGA2 / LCI1(2)
+     ./GUGA3 / EEREF
+     ./HALFE / IODD(2)
+     ./HALFX / XIXJXK(3)
+     ./HBONDC/ IHBOND(2),RHXMIN(3)
+     ./IJWORK/ ISYM(LMX),IJKDUM(LMV)
+     ./INDEX / INDX(LMX)
+     ./INDEXW/ NW(LM1)
+     ./INFOB / PCPMPR(LMV+12)
+     ./INFOC / ITYPE(4)
+     ./INOPT1/ IN1(300)
+     ./INOPT2/ IN2(300)
+     ./INOPT3/ XN3(50)
+     ./INOPT4/ XN4(50)
+     ./ISTOPE/ CMS(LMZ*2)
+      COMMON
+     ./KEYWRD/ KEYWRD
+     ./LIMITS/ LM2,LM3,LM4,LM6,LM7,LM8,LM9
+     ./LMCSM1/ LCOSM1(4)
+     ./LMCSM2/ LCOSM2(7)
+     ./LMDIIS/ LDIIS1(9)
+     ./LMDMS / LD1(5)
+     ./LMFOR / LF1,LF2,LF3,LF4,LF5,LF6,LF7,LF8,LFC
+     ./LMGRAD/ LG1(8)
+     ./LMPERT/ LP1(5)
+     ./LMSCF / LS1,LS2,LS3,LS4,LS5,LS6,LS7,LS8,LS9
+     ./LMSPA4/ LM22(3)
+     ./LMUHF / LU1(8)
+      COMMON
+     ./MATRIX/ COFINT(6000)
+     ./MMCOM1/ EMM
+     ./MMCOM2/ NHCO(4,1+2*LM1/3),HTYPE
+     ./MNDOBL/ USSM(LMZ*18)
+     ./MNDOD / USSD(LMZ*21),IMMD(LMZ)
+     ./MNDOEL/ IMM(LMZ)
+     ./MOPAC / IMOPAC
+     ./MULTAB/ IPROD(64)
+     ./MULTIP/ DD(LMZ*15+15)
+     ./NBFILE/ NBF(20)
+      COMMON
+     ./OCCFL / IMOCC(22)
+     ./OCCNM / OCCA(LMX),OCCB(LMX)
+     ./OM1BL / USSOM1(LMZ,28),IMOM1(LMZ)
+     ./OM2BL / USSOM2(LMZ,34),IMOM2(LMZ)
+     ./OM3BL / USSOM3(LMZ,34),IMOM3(LMZ)
+     ./OM4BL / USSOM4(LMZ,30),IMOM4(LMZ)
+     ./OPCOM1/ XXGG(LMV*2+8)
+     ./OPCOM2/ IRTL(4)
+     ./OPTCRT/ NSUCC
+     ./OPTEF / OLDG(LMV*2+1)
+     ./OPTRST/ CCNADD(7)
+     ./OPTTOL/ TOLEND(9)
+     ./ORBENG/ EIGMO(LMX),NSYMO(LMX)
+     ./ORBITS/ NUMB(5)
+     ./OVERLY/ IOV,JOV,KOV,LOV
+      COMMON
+     ./PARMOL/ MOL
+     ./PAR4  / EXCIT(20),NEXCIT,IEXCIT(4,20)
+     ./PAR14 / EREF(LMM),EHF298(LMM),ED00(LMM),ITHERM(LMM)
+     ./PAR20 / XXPAR(LMP),NFPAR(LMP),NSPAR(LMP),NNPAR
+     ./PAR21 / ID1(7,LMF),LITEXP(LMF)
+     ./PAR22 / XEXP(LMF),ERREXP(LMF),WEXP(LMF)
+     ./PAR23 / KOMEXP(LMF)
+     ./PAR24 / NREF1(LMM),NREF2(LMM)
+     ./PAR25 / XCALC(LMF)
+     ./PAR26 / JOPREF(LMM),JCOSMO(LMM)
+     ./PAR41 / COORDA(3,LM1),LASTAT,NUMATA,NFRGSI,CALFRG
+     ./PAR43 / EHEATP,IPHEXP
+     ./PAR44 / NCOEFS(LMF),IMOL(LMMR,LMF),ICOEFS(LMMR,LMF)
+      COMMON
+     ./PARDER/ TORE(LMZ*3)
+     ./PARM1 / AA(LMV),NA(LM1,4),NATOMS
+     ./PARM2 / NSYM,LPAR(LMS,3)
+     ./PARM3 / LOC(LMV),NV
+     ./PARM4 / RC(LMR),LREACT(2)
+     ./PARM5 / RC1(LMG),RC2(LMG),LGRID1(4)
+     ./PARM6 / LPT(3)
+     ./PARM7 / DEPFAC
+     ./PARMIN/ F0(164)
+     ./PAROMM/ OMM(LMZ,16)
+     ./PAROPT/ USS(LMZ*7)
+     ./PDDGM / USSPDM(LMZ,18)
+     ./PDDGM1/ PAPDM(LMZ,4),IMPDM(LMZ)
+     ./PDDGP / USSPDP(LMZ,18)
+     ./PDDGP1/ GUPDP1(LMZ,10),IMPDP(LMZ)
+     ./PDDG1 / PAPDDG(LMZ,4)
+      COMMON
+     ./PGEOM / GPEP(216)
+     ./PGEOM1/ GPHHCC(558)
+     ./PGEOM2/ NHHCC(3)
+     ./PM3   / USSPM3(LMZ*18)
+     ./PM3GAU/ GUESP1(LMZ*6),IPM3(LMZ)
+     ./PSC   / FBIN(930)
+     ./PSDOPT/ RPSOPT(10),IPSOPT(28)
+     ./PSNICS/ COORDN(3,MXNICS),NNICS
+     ./PSNMRI/ PINC(LM1)
+     ./PSNMRR/ SHIFT(2,LM1+MXNICS),SIGMA(3,3,LM1+MXNICS)
+     ./PSNPRD/ XBETAN(LMZ*18+3),IDEFN(LMZ+1)
+      COMMON
+     ./QMMM1 / COORDM(3,LM1M),CHARGM(LM1M)
+     ./QMMM2 / LINK(LM1)
+     ./QMMM3 / DELTAM(LMZ),OMEGAM(LMZ)
+     ./QMMM4 / ELPOT(LM1M),ESF(3,LM1M)
+     ./QMMM5 / COORDV(3,LM1M)
+     ./QMMM6 / ISELCT(LM1+LM1M)
+     ./QMNAME/ QMMETH(-23:6)
+     ./REP   / GSS(LMZ*6)
+      COMMON
+     ./SCFPRT/ EBIND(6),ITSAVE
+     ./SCRT  / SCFCRT(4)
+     ./SKIPA / ISKPA
+     ./SKIPAF/ ISKPAF
+     ./STATCG/ NCGTOT(20)
+     ./SYMALL/ NPTGRP(59)
+     ./SYMLAB/ NGROUP(7),IRREP(26)
+     ./SYMLIM/ IRREPA(14)
+     ./TXPROP/ PROP1(LMPR),PROP2(LMPR),PROP3(LMPR),UNITS(LMPR)
+     ./UHF   / UHF
+     ./VIBRAT/ WAVEVB(LMV),NSYMVB(LMV)
+     ./XCI   / EVECCI(24)
+C *** NOTE THAT MOL IS ZEROED IN iniall.src
+C *** Private COMMON blocks for OpenMP
+C$OMP THREADPRIVATE (/AUXVAR/, /EXTRA /, /EXTRA1/, /EXTRA2/, /PGEOM /)
+      NBF(5)=M99IU
+      NBF(6)=M99OU
+C *** FILE NUMBERS.
+      NB6=NBF(6)
+C *** PARAMETER FLAGS AND COUNTERS.
+C *** MOL IS SET TO 0 IN iniall.src
+      NCGTOT = 0
+C *** CHECK TYPE OF INPUT FILE.
+      CALL KEYCHK (IMOPAC)
+C *** READ KEYWORD OR MOPAC-TYPE INPUT.
+      IF(IMOPAC.NE.0) THEN
+         CALL READMO (IMOPAC,KEYMOD,ICALL)
+      ENDIF
+      RETURN
+      END
+C -------------------------------------------------------------------
+      SUBROUTINE M99PAR(M99IU,M99OU,IOPPRT)
+C *** READ FIRST LINE OF STANDARD INPUT.
+      USE LIMIT, ONLY: LEN
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./INOPT2/IN2(300)
+     ./NBFILE/ NBF(20)
+     ./PARMOL/ MOL
+C
+      NBF(5)=M99IU
+      NBF(6)=M99OU
+      WRITE(NBF(6),500) MOL
+      CALL ZLIMIT (IOPPRT)
+      IOP    = IN2(2)
+      NEXMOL = IN2(6)
+      IPAROK = IN2(11)
+      IEXBAS = IN2(27)
+C *** INITIALIZATION OF PARAMETERS.
+      CALL PARDEF (IOP,IPAROK,IEXBAS,0)
+      IF(IOP.LE.-10 .OR. IEXBAS.GT.0) THEN
+        CALL BDATA4
+      ENDIF
+C *** READ SECOND LINE OF STANDARD INPUT.
+      CALL METHOD
+      MAXEND = IN2(32)
+      JPRINT = IN2(42)
+      INTDIR = IN2(55)
+      LINDMS = IN2(56)
+      INP24  = IN2(63)
+C *** INITIALIZATION AND INPUT FOR ANALYTICAL DERIVATIVES.
+      CALL INPANA (JPRINT)
+C *** INITIALIZATION AND INPUT FOR LINEAR SCALING AND DIRECT METHODS.
+      IF(INTDIR.NE.0 .OR. LINDMS.NE.0 .OR. INP24.NE.0) THEN
+         CALL INPDIR (JPRINT)
+      ENDIF
+C *** INITIALIZATION AND INPUT FOR INTEGRALS AND SCF TREATMENT.
+      CALL INPSCF (JPRINT)
+C *** INITIALIZATION FOR GAUSSIAN INTEGRALS.
+      IF(IOP.EQ.-5 .OR. IOP.EQ.-6 .OR. IOP.EQ.-8 .OR. IOP.EQ.-9) THEN
+         CALL GAMGEN
+         CALL GTPREP (0,IOPPRT)
+      ENDIF
+C *** DETERMINE THE STARTING TIME.
+      CALL CPUSEC(TIME1)
+      SECADD = ZERO
+C *** READ MOLECULAR DATA IN STANDARD INPUT.
+      ICALL  = 0
+      LM5    = LEN
+      LENGTH = LEN
+C *** note that START.f and subsequently INPUT.f have been modified
+C *** to avoid geometry read-in
+      CALL START (LM5,LENGTH,ICALL)
+C *** sorry to start at the end.
+500   FORMAT(/1X,'MNDO99> (',i6,')**********************************'
+     &       /1X,'*  6.1 (12 Apr 2003). COPYRIGHT BY WALTER THIEL, *',
+     &       /1X,'*  MAX-PLANCK-INSTITUT FUER KOHLENFORSCHUNG,     *',
+     &       /1X,'*  45470 MUELHEIM, GERMANY.                      *',
+     &       /1X,'**************************************************')
+##ENDIF (overallmndo)
+      RETURN
+      END
+

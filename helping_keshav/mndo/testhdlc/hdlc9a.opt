@@ -1,0 +1,6 @@
+DSC TS Me-flavine + p-oxy-benzoate + 2 Tyr + 1 Arg
+DSC 100 atoms, C38-N7-O9-H46, AM1 RHF, 6 fragments
+DSC HDLC, total connection for core, primitive internals for rest
+PRP hdlccyc=118
+PRP finalheat=-217.09989
+PRP cartgrdopt=1.38478

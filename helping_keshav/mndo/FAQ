@@ -1,0 +1,156 @@
+
+Frequently Asked Questions
+==========================
+
+This document contains frequently asked questions (FAQs) about mndo2020
+and provides some answers.
+
+
+Questions:
+---------
+
+1.	Installation
+1.1     What programs do I need for the installation?
+1.2	What about automake and autoconf? Do I need these?
+1.3     How do I install mndo2020?
+1.4	On my machine, 'make' crashes immediately. What is wrong?
+1.5	'make test' crashes in the MOPAC6 section with a strange
+        error message. Why?
+
+2.	Systems
+2.1	IBM AIX
+
+3.	Development
+3.1	How do I generate a new installation procedure ?
+3.2 	How do I add a new subdirectory with source code ?
+3.3	How do I add a new subdirectory to the CVS repository ?
+3.4     How do I patch the atlas lapack library with the routines
+        needed by MNDO?
+
+Answers:
+-------
+
+1.	Installation
+--------------------
+
+1.1     What programs do I need for the installation?
+
+Apart from a working /bin/sh and a f90 compiler you should not
+need additional software to install mndo2020. However, it is
+recommended to use gnu make as make, and you may want to
+install gnu awk (gawk) as your awk. The mndo2020 installation
+is known to fail on some systems with older make programs,
+and gawk may be necessary to run the test suite cleanly.
+
+1.2	What about automake and autoconf? Do I need these?
+
+No. If ./configure does not find automake and/or autoconf,
+it replaces them by stubs that will tell you that automake and/or
+autoconf weren't found.
+
+1.3     How do I install mndo2020?
+
+Unpack the archive, cd into it, and read the file INSTALL. 
+Follow the instructions given there.
+
+1.4	On my machine, 'make' crashes immediately. What is wrong?
+
+Use GNU make, available from ftp://prep.ai.mit.edu/gnu/make
+or (preferably) your nearest GNU mirror. Standard UNIX make
+programs sometimes cannot cope with automake/autoconf macros.
+
+1.5	'make test' crashes in the MOPAC6 section with a strange
+        error message. Why?
+
+Are you running SGI IRIX 6.5? The awk program distributed with
+some systems (most notably IRIX) has strict limitations on the
+number and length of parameters that can be passed to it. Use
+gnu awk instead, available from ftp://prep.ai.mit.edu/gnu/gawk
+or (preferably) your nearest GNU mirror. Compile and install it
+and make sure the command 'awk' points to it.
+
+
+2.	Systems
+---------------
+
+2.1	IBM AIX
+
+Support for this platform is in preparation.
+
+
+3.	Development
+-------------------
+
+This section assumes that the following tools are available:
+aclocal, autoconf, automake.
+
+3.1	How do I generate a new installation procedure ?
+
+You have to execute the following commands in the parent directory
+which is currently named mndo2020:
+
+automake --add-missing
+aclocal
+automake
+autoconf
+./configure
+
+These commands require input from the following files:
+./configure.ac
+./Makefile.am
+each_new_subdirectory/Makefile.am
+
+3.2 	How do I add a new subdirectory (NEW) with source code ?
+
+a) ./configure.in: Add new subdirectory name in definition of
+                   SUBLIBS and AC_OUTPUT.
+b) ./Makefile.am: Add new library name in definition of
+                  target mndo2020 (2x)
+c) NEW/Makefile.am: Generate this file in analogy to existing
+                    versions, e.g. 99/Makefile.am.
+
+3.3	How do I add a new subdirectory (NEW) to the CVS repository ?
+
+a) Go to the parent directory and issue the command:
+   cvs add NEW
+
+b) Go to the subdirectory and add all relevant files:
+   cd NEW
+   cvs add Makefile.am Makefile.in
+   cvs add *.f
+
+c) Commit additions by the command (issued from NEW):
+   cvs commit
+
+3.4     How do I patch the atlas lapack library with the routines
+        needed by MNDO?
+
+Remark: The current stable version of the atlas lapack library (3.4.1)
+        contains only a few optimized routines. The other ones have to
+        be added manually as described in the README file of the atlas
+        distribution. The following procedure has been tested on Linux
+        and Tru64.
+
+a) Configure and compile MNDO with standard options.
+
+b) Manually repeat the linking command omitting the lapack library.
+   This way the required lapack interface routines are reported.
+   Fetch these routines plus dependencies (but without the blas routines)
+   from http://www.netlib.org/lapack/double/. Using the sources in the
+   LAPACK directory of the MNDO distribution is not recommended because
+   these are of version 2.0. Usually there are several subroutines in each
+   source file so that a proper replacement by the optimized atlas routines
+   is not guaranteed.
+
+c) Compile these source files with the highest optimization options possible.
+   Reduce the optimization level only for those files in which the code
+   breaks. A likely candidate is dlamch.f.
+
+d) Unpack the library file liblapack.a from the atlas distribution
+   (from http://math-atlas.sourceforge.net/) over the object files
+   from c) using a command like 'ar xv liblapack.a'.
+
+e) Join the object files into an archive using the commands
+   'ar r liblamndo.a *.o' and 'ranlib liblamndo.a'. Be sure that
+   liblamndo.a does not exist before step e). Copy this file into
+   the directory with the other libraries from the atlas distribution.

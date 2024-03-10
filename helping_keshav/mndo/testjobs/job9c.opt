@@ -1,0 +1,27 @@
+DSC H2PO4- (C2), AM1/d-CB1
+DSC Single-point energy and gradient
+DSC using fast finite differences
+DSC H2PO4- (C2), AM1/d-CB1
+DSC Single-point energy and gradient
+DSC using analytic integral derivatives
+DSC H2PO4- (C2), AM1/d-CB1
+DSC Geometry optimization followed
+DSC by force constant analysis
+PRP heat=-341.62428:-341.62428
+PRP cartgrd=286.00498:286.00508
+PRP intgrd=388.07613:388.07623
+PRP finalheat=-378.27637
+PRP intgrdopt=0
+PRP cartgrdopt=0
+PRP zeroheat=-375.26371
+PRP zpe=23.29044
+PRP freq1=0
+PRP freq2=0
+PRP freq3=0
+PRP freq4=0
+PRP freq5=0
+PRP freq6=0
+PRP freq7=238.70147
+PRP freq8=286.13085
+PRP freq9=339.26534
+PRP freq10=382.41547

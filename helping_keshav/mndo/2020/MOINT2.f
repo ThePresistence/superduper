@@ -1,0 +1,195 @@
+      SUBROUTINE MOINT2 (C,CC,C12,G,GG,W,WW,IMOCI,IPROD,NSYM,LM2,LM3,
+     1                   LM6,LM7,LM8,LM9,LM10,NB2,NB3,IA,IB,JB,
+     2                   IEN2,IOUT2,NNTOT)
+C     *
+C     PARTIAL AO-MO TRANSFORMATION FOR TWO-ELECTRON INTEGRALS.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./NBFILE/ NBF(20)
+      DIMENSION C(LM2,LM3),CC(LM7),W(LM9)
+      DIMENSION IMOCI(LM3),IPROD(8,8),NSYM(LM3)
+      DIMENSION C12(LM6),WW(LM6)
+      DIMENSION G(LM8),GG(LM10,LM10)
+C *** INITIALIZATION.
+      REV    = ONE/EV
+      LMAX   = LM7/LM6
+      JMAX   = LM8/LM6
+      IF(JMAX.GT.JB) JMAX=JB
+      IF(IOUT2.GE.9) THEN
+         NB6 = NBF(6)
+         WRITE(NB6,600)
+      ENDIF
+C     *
+C     COMPUTE (IJ,KL) INTEGRALS.
+C     *
+      NN     = 0
+      NNTOT  = 0
+C     OUTER IJ-LOOP.
+      DO 130 I=IA,IB
+      II     = IMOCI(I)
+      IS     = NSYM(II)
+C     COMPUTE JMAX SETS OF (IJ,AB) INTEGRALS.
+      MM     = 1-LM6
+      DO 10 J=1,JMAX
+      IJ     = IMOCI(J)
+      MM     = MM+LM6
+      CALL CCPROD (C(1,II),C(1,IJ),C12,LM2,LM6)
+      CALL WWSTEP (C12,CC,G(MM),LM7,NB3,LM6,LMAX)
+   10 CONTINUE
+C     RESUME IJ-LOOP.
+      DO 120 J=1,JB
+      IJ     = IMOCI(J)
+      JS     = NSYM(IJ)
+      NSIJ   = IPROD(IS,JS)
+C     INNER KL-LOOP.
+      DO 110 K=IA,I
+      IK     = IMOCI(K)
+      KS     = NSYM(IK)
+      DO 100 L=1,J
+      IL     = IMOCI(L)
+      LS     = NSYM(IL)
+      NSKL   = IPROD(KS,LS)
+      IF(NSIJ.NE.NSKL) GO TO 100
+C     COMPUTE INTEGRAL (IJ,KL).
+      NN     = NN+1
+      IF(NN.GT.LM9) THEN
+         IF(NNTOT.EQ.0) REWIND NB2
+         WRITE(NB2) W
+         NNTOT = NNTOT+LM9
+         NN  = 1
+      ENDIF
+      IF(J.LE.JMAX) THEN
+         MM  = 1+LM6*(J-1)
+         CALL CCPROD (C(1,IK),C(1,IL),C12,LM2,LM6)
+         WNN = DDOT  (LM6,C12,1,G(MM),1)
+      ELSE
+         CALL CCPROD (C(1,II),C(1,IJ),C12,LM2,LM6)
+         CALL WWSTEP (C12,CC,WW,LM7,NB3,LM6,LMAX)
+         CALL CCPROD (C(1,IK),C(1,IL),C12,LM2,LM6)
+         WNN = DDOT  (LM6,C12,1,WW,1)
+      ENDIF
+      W(NN)  = WNN*REV
+      IF(IOUT2.GE.9) THEN
+         WRITE(NB6,610) NN,II,IJ,IK,IL,WNN
+      ENDIF
+      IF(I.EQ.K .OR. J.EQ.L) GO TO 100
+C     COMPUTE INTEGRAL (IL,KJ).
+      NN     = NN+1
+      IF(NN.GT.LM9) THEN
+         IF(NNTOT.EQ.0) REWIND NB2
+         WRITE(NB2) W
+         NNTOT = NNTOT+LM9
+         NN  = 1
+      ENDIF
+      IF(L.LE.JMAX) THEN
+         MM  = 1+LM6*(L-1)
+         CALL CCPROD (C(1,IK),C(1,IJ),C12,LM2,LM6)
+         WNN = DDOT  (LM6,C12,1,G(MM),1)
+      ELSE
+         CALL CCPROD (C(1,II),C(1,IL),C12,LM2,LM6)
+         CALL WWSTEP (C12,CC,WW,LM7,NB3,LM6,LMAX)
+         CALL CCPROD (C(1,IK),C(1,IJ),C12,LM2,LM6)
+         WNN = DDOT  (LM6,C12,1,WW,1)
+      ENDIF
+      W(NN)  = WNN*REV
+      IF(IOUT2.GE.9) THEN
+         WRITE(NB6,610) NN,II,IL,IK,IJ,WNN
+      ENDIF
+  100 CONTINUE
+  110 CONTINUE
+  120 CONTINUE
+  130 CONTINUE
+C     NUMBER OF NONZERO INTEGRALS.
+      NNTOT  = NNTOT+NN
+      IF(NNTOT.GT.LM9) WRITE(NB2) W
+      LREC   = 1+(NNTOT-1)/LM9
+      IF(IOUT2.GE.0) THEN
+         NB6 = NBF(6)
+         WRITE(NB6,500) NNTOT
+         IF(IOUT2.GE.5 .AND. LREC.GT.1) THEN
+            WRITE(NB6,510) NB2,LREC,LM9
+         ENDIF
+      ENDIF
+C     *
+C     COMPUTE COULOMB AND EXCHANGE INTEGRALS.
+C     *
+      DO 210 I=1,IB
+      DO 200 J=1,IB
+      GG(J,I)= ZERO
+  200 CONTINUE
+  210 CONTINUE
+      IF(IEN2.EQ.0) RETURN
+C     COULOMB INTEGRALS (II,JJ).
+      DO 310 I=1,IB
+      II     = IMOCI(I)
+      CALL CCPROD (C(1,II),C(1,II),C12,LM2,LM6)
+      CALL WWSTEP (C12,CC,WW,LM7,NB3,LM6,LMAX)
+      DO 300 J=1,I
+      IJ     = IMOCI(J)
+      CALL CCPROD (C(1,IJ),C(1,IJ),C12,LM2,LM6)
+      WNN    = DDOT  (LM6,C12,1,WW,1)
+      GG(I,J)= WNN*REV
+  300 CONTINUE
+  310 CONTINUE
+C     EXCHANGE INTEGRALS (IJ,IJ) NOT YET COMPUTED.
+      IF(IB.EQ.1) RETURN
+      DO 330 I=2,IB
+      II     = IMOCI(I)
+      IMINUS = I-1
+      DO 320 J=1,IMINUS
+      IF(I.GE.IA .AND. J.LE.JB) GO TO 320
+      IJ     = IMOCI(J)
+      CALL CCPROD (C(1,II),C(1,IJ),C12,LM2,LM6)
+      CALL WWSTEP (C12,CC,WW,LM7,NB3,LM6,LMAX)
+      WNN    = DDOT  (LM6,C12,1,WW,1)
+      GG(J,I)= WNN*REV
+  320 CONTINUE
+  330 CONTINUE
+C     EXCHANGE INTEGRALS (IJ,IJ) ALREADY COMPUTED.
+      IF(NNTOT.GT.LM9) THEN
+         REWIND NB2
+         READ(NB2) W
+      ENDIF
+      NN     = 0
+      DO 380 I=IA,IB
+      II     = IMOCI(I)
+      IS     = NSYM(II)
+      DO 370 J=1,JB
+      IJ     = IMOCI(J)
+      JS     = NSYM(IJ)
+      NSIJ   = IPROD(IS,JS)
+      DO 360 K=IA,I
+      IK     = IMOCI(K)
+      KS     = NSYM(IK)
+      DO 350 L=1,J
+      IL     = IMOCI(L)
+      LS     = NSYM(IL)
+      NSKL   = IPROD(KS,LS)
+      IF(NSIJ.NE.NSKL) GO TO 350
+      NN     = NN+1
+      IF(NN.GT.LM9) THEN
+         READ(NB2) W
+         NN  = 1
+      ENDIF
+      IF(I.EQ.K .AND. J.EQ.L) GG(J,I)=W(NN)
+      IF(I.EQ.K .OR.  J.EQ.L) GO TO 350
+      NN     = NN+1
+      IF(NN.GT.LM9) THEN
+         READ(NB2) W
+         NN  = 1
+      ENDIF
+  350 CONTINUE
+  360 CONTINUE
+  370 CONTINUE
+  380 CONTINUE
+      RETURN
+  500 FORMAT(/  1X,'THERE ARE',I7,' NONZERO MATRIX ELEMENTS.'/)
+  510 FORMAT(   1X,'THEY ARE STORED ON FILE',I3,' IN',I4,' RECORDS OF',
+     1            I5,' WORDS.'/)
+  600 FORMAT(///1X,'MOINT2: DEBUG PRINT OF TWO-ELECTRON MO INTEGRALS.'/,
+     1       // 1X,'      NN    I    J    K    L       WNN(EV)'/)
+  610 FORMAT(   1X,I8,4I5,G20.10)
+      END

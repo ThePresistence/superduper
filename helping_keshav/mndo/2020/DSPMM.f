@@ -1,0 +1,37 @@
+      SUBROUTINE DSPMM (A,B,C,LM4,N,IND,MODE)
+C     *
+C     EVALUATE THE COMMUTATOR  C = A*B - B*A  FOR SYMMETRIC MATRICES.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     A(LM4)    REAL SYMMETRIC MATRIX PACKED LINEARLY (I).
+C     B(LM4)    REAL SYMMETRIC MATRIX PACKED LINEARLY (I).
+C     C(LM4)    REAL SYMMETRIC MATRIX PACKED LINEARLY (I,O).
+C     LM4       DIMENSION OF A,B,C (I).
+C     N         ORDER OF A,B,C (I).
+C     IND(N)    INDEX ARRAY (I): IND(K)=(K*(K-1))/2.
+C     MODE      INITIALIZATION OF ARRAY C (I).
+C               = 0 INITIALIZE TO ZERO.
+C     *
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION A(LM4),B(LM4),C(LM4),IND(N)
+C *** INITIALIZATION.
+      IF(MODE.EQ.0) THEN
+         DO 10 I=1,LM4
+         C(I)   = 0.0D0
+   10    CONTINUE
+      ENDIF
+C *** TRIPLE LOOP OVER ALL INDICES.
+      DO 40 K=1,N
+      DO 30 I=2,N
+      IK     = IND(MAX(I,K))+MIN(I,K)
+      AIK    = A(IK)
+      BIK    = B(IK)
+      DO 20 J=1,I-1
+      IJ     = IND(I)+J
+      JK     = IND(MAX(J,K))+MIN(J,K)
+      C(IJ)  = C(IJ) + AIK*B(JK) - BIK*A(JK)
+   20 CONTINUE
+   30 CONTINUE
+   40 CONTINUE
+      RETURN
+      END

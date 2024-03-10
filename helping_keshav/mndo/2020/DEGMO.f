@@ -1,0 +1,148 @@
+      SUBROUTINE DEGMO (C,EIG,LM2,LM3,MSYM,IEL,ISYM,NUM,N,NPRINT)
+C     *
+C     SYMMETRIZATION OF DEGENERATE MOLECULAR ORBITALS.
+C     *
+C     NOTATION. I=INPUT, O=OUTPUT.
+C     C(LM2,*)  MO EIGENVECTORS (I,O).
+C     EIG(LM3)  ORBITAL ENERGIES (I).
+C     MSYM      NUMBER OF CHARACTERISTIC SYMMETRY ELEMENTS (I).
+C     IEL(3)    INTERNAL LABELS FOR THESE SYMMETRY ELEMENTS (I).
+C     ISYM(3,*) PERMUTED TABLE OF ATOM NUMBERS AFTER APPLYING
+C               THE CORRESPONDING SYMMETRY OPERATIONS (I).
+C     NUM       NUMBER OF ATOMS (I).
+C     N         NUMBER OF MOS (I).
+C     NPRINT    PRINTING FLAG (I).
+C     *
+      USE LIMIT, ONLY: LM1
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      CHARACTER*2 EL(7)
+      COMMON
+     ./AMASS / AMS(LM1)
+     ./ATOMC / COORD(3,LM1)
+     ./ATOMS / NUMAT,NAT(LM1),NFIRST(LM1),NLAST(LM1)
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+     ./NBFILE/ NBF(20)
+      DIMENSION C(LM2,LM3),EIG(LM3)
+      DIMENSION IEL(3),ISYM(3,NUM)
+      DATA EL/'YZ','XZ','XY','X ','Y ','Z ','I '/
+C     ELEMENTS OF EIGENVECTORS ARE CONSIDERED TO BE NONZERO
+C     IF THEY ARE GREATER THAN SMALLC, IN ABSOLUTE VALUE.
+      DATA SMALLC/1.0D-03/
+C     EIGENVALUES ARE CONSIDERED TO BE DEGENERATE IF THEY
+C     DIFFER BY LESS THAN SMALLE (EV).
+      DATA SMALLE/1.0D-04/
+C *** FILE NUMBERS.
+      NB6    = NBF(6)
+C     *
+C     CHECK TRIVIAL CASES.
+      IF(MSYM.EQ.0 .OR. N.LE.1) RETURN
+C     *
+C     ASSIGN TYPE OF MOLECULE AND HIGHEST-ORDER SYMMETRY AXIS.
+      CALL AXIS (AMS,COORD,IAX,ITYPE,NUMAT)
+      IF(ITYPE.EQ.4) RETURN
+      JAX    = 0
+      IF(IAX.GT.0) JAX=IAX+3
+C     *
+C     LOOP OVER EIGENVECTORS.
+      IDEG   = 0
+      NM1    = N-1
+      SQ2    = ONE/SQRT(TWO)
+      DO 100 L=1,NM1
+      LP     = L+1
+C     CHECK EIGENVALUE CRITERION.
+   10 IF((EIG(LP)-EIG(L)).GT.SMALLE) GO TO 100
+      IDEG   = IDEG+1
+      IF(IDEG.EQ.1 .AND. NPRINT.GT.0) WRITE(NB6,520)
+C     *
+C     LOOP OVER SYMMETRY ELEMENTS.
+      DO 70 M=1,MSYM
+      MEL    = IEL(M)
+      IF(MEL.EQ.IAX .OR. MEL.EQ.JAX .OR. MEL.EQ.7) GO TO 70
+C     *
+C     LOOP OVER ATOMS.
+      DO 40 I=1,NUMAT
+      KA     = NFIRST(I)
+      KB     = NLAST(I)
+      J      = ISYM(M,I)
+      IF(J.EQ.I) THEN
+C        CASE 1. ATOM I LIES IN THE SYMMETRY ELEMENT.
+         DO 20 K=KA,KB
+         C1  = C(K,L)
+         C2  = C(K,LP)
+         IF(ABS(C1).LT.SMALLC .AND. ABS(C2).LT.SMALLC) GO TO 20
+         IF(ABS(C1).LT.SMALLC .OR.  ABS(C2).LT.SMALLC) THEN
+            DO 15 KK=1,LM2
+            CKL     = C(KK,L)
+            CKLP    = C(KK,LP)
+            C(KK,L) = SQ2*(CKL+CKLP)
+            C(KK,LP)= SQ2*(CKL-CKLP)
+   15       CONTINUE
+            C1     = C(K,L)
+            C2     = C(K,LP)
+         ENDIF
+         DD  = SQRT(C1*C1+C2*C2)
+         T1  =-C1/DD
+         T2  = C2/DD
+         GO TO 50
+   20    CONTINUE
+      ELSE
+C        CASE 2. ATOM I IS RELATED TO ATOM J BY SYMMETRY.
+         IF(I.EQ.NUMAT) GO TO 70
+         KD  = NFIRST(J)-KA
+         DO 30 K=KA,KB
+         C1  = C(K,L)
+         C2  = C(K,LP)
+         D1  = C(K+KD,L)
+         D2  = C(K+KD,LP)
+         IF(ABS(C1).LT.SMALLC .AND. ABS(D1).LT.SMALLC .AND.
+     1      ABS(C2).LT.SMALLC .AND. ABS(D2).LT.SMALLC) GO TO 30
+         ADD1= C1+D1
+         DIF1= C1-D1
+         IF(ABS(ADD1).LT.SMALLC .OR. ABS(DIF1).LT.SMALLC) THEN
+            DO 25 KK=1,LM2
+            CKL     = C(KK,L)
+            CKLP    = C(KK,LP)
+            C(KK,L) = SQ2*(CKL+CKLP)
+            C(KK,LP)= SQ2*(CKL-CKLP)
+   25       CONTINUE
+            C1     = C(K,L)
+            C2     = C(K,LP)
+            D1     = C(K+KD,L)
+            D2     = C(K+KD,LP)
+            ADD1   = C1+D1
+            DIF1   = C1-D1
+            IF(ABS(ADD1).LT.SMALLC .OR. ABS(DIF1).LT.SMALLC) GO TO 30
+         ENDIF
+         DIF2= C2-D2
+         DD  = SQRT(DIF1*DIF1+DIF2*DIF2)
+         T1  = DIF2/DD
+         T2  = DIF1/DD
+         GO TO 50
+   30    CONTINUE
+      ENDIF
+   40 CONTINUE
+      GO TO 70
+C     *
+C     TRANSFORM THE EIGENVECTORS.
+   50 DO 60 K=1,LM2
+      C1     = C(K,L)
+      C2     = C(K,LP)
+      C(K,L) = T1*C1-T2*C2
+      C(K,LP)= T2*C1+T1*C2
+   60 CONTINUE
+      IF(NPRINT.GT.0) WRITE(NB6,500) L,LP,EL(MEL)
+      GO TO 90
+   70 CONTINUE
+      IF(NPRINT.GT.0) WRITE(NB6,510) L,LP
+C     CHECK FOR POSSIBLE TRIPLE DEGENERACIES WITH SYMMETRIC TOPS.
+   90 IF(ITYPE.EQ.2 .AND. LP.LT.N) THEN
+         LP  = LP+1
+         GO TO 10
+      ENDIF
+  100 CONTINUE
+      RETURN
+  500 FORMAT(   5X,'DEGENERATE PAIR',I3,' -',I3,' WAS SYMMETRIZED ',
+     1             'WITH RESPECT TO SYMMETRY ELEMENT ',A2)
+  510 FORMAT(   5X,'DEGENERATE PAIR',I3,' -',I3,' WAS NOT MODIFIED.')
+  520 FORMAT(//)
+      END

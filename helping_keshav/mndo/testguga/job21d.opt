@@ -1,0 +1,7 @@
+DSC BENZYL RADICAL, C2v, OM2 doublet CISDTQ with doublet reference
+DSC Active space: 4 MOs, 3 VOs - defined via pz population (movo=-3)
+DSC Single-point energy and gradient for state 3 using numerical
+DSC integral derivatives
+PRP ciheat=95.22633
+PRP cartgrd=138.21356
+PRP intgrd=161.71263

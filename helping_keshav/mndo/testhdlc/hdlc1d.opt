@@ -1,0 +1,6 @@
+DSC TS H2CO->HCOH, MNDO RHF
+DSC Cartesian coordinates, no fragments
+DSC Cartesian constraints for planarity
+PRP hdlccyc=19
+PRP finalheat=75.66444
+PRP cartgrdopt=0.00448

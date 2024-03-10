@@ -1,0 +1,28 @@
+      SUBROUTINE BANGLE (I,J,K,ANGLE)
+C     *
+C     CALCULATION OF BOND ANGLE BETWEEN ATOMS I,J,K (IN DEGREES).
+C     *
+      USE LIMIT, ONLY: LM1
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON
+     ./ATOMC / COORD(3,LM1)
+     ./CONSTF/ A0,AFACT,EV,EVCAL,PI,W1,W2,BIGEXP
+     ./CONSTN/ ZERO,ONE,TWO,THREE,FOUR,PT5,PT25
+C     CALCULATE DISTANCES.
+      A  = SQRT((COORD(1,I)-COORD(1,J))**2
+     1         +(COORD(2,I)-COORD(2,J))**2
+     2         +(COORD(3,I)-COORD(3,J))**2)
+      B  = SQRT((COORD(1,J)-COORD(1,K))**2
+     1         +(COORD(2,J)-COORD(2,K))**2
+     2         +(COORD(3,J)-COORD(3,K))**2)
+      C2 =      (COORD(1,I)-COORD(1,K))**2
+     1         +(COORD(2,I)-COORD(2,K))**2
+     2         +(COORD(3,I)-COORD(3,K))**2
+C     CALCULATE ANGLE.
+      XDIV   = (A**2+B**2-C2)/(TWO*A*B)
+      IF(XDIV.GT. ONE) XDIV= ONE
+      IF(XDIV.LT.-ONE) XDIV=-ONE
+      RADIAN = ACOS(XDIV)
+      ANGLE  = RADIAN*AFACT
+      RETURN
+      END

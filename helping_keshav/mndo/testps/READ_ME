@@ -1,0 +1,32 @@
+*******************************************************************
+*** testps/READ_ME ***
+*******************************************************************
+
+This subdirectory contains a suite of 14 test jobs with 36 test
+calculations to validate the analytic derivative code in MNDO97.
+If all of them are completed successfully, the third condition
+for the acceptance of a new program version is met.
+
+Note that these jobs require only little cpu time and are thus not 
+suitable for benchmarking and performance measurements.
+
+The test jobs and the validation procedure are described in the 
+documentation (see file mndo97.doc).
+
+-------------------------------------------------------------------
+
+READ_ME     This file.
+Makefile    Makefile to run the jobs and to evaluate the results.
+check.awk   File used by awk to check the results.
+*.inp       Input files for the test jobs.
+*.opt       Reference results for the test jobs.
+awk.out     Reference output by awk for correct results.
+
+-------------------------------------------------------------------
+
+The reference results were generated using MNDO97 on a Silicon
+Graphics workstation (R10000, IRIX(6.2)). The executable uses
+machine library routines for BLAS2 and dgemm.
+
+The test jobs combined require less than 210 seconds of cpu time
+with this setup.
