@@ -5,8 +5,8 @@
 
     ```bash
     # 1. run this 2 commands
-    gunzip <gzip-file-name>
-    tar -xf <tar-file-name>
+    gunzip mndo-master.tar
+    tar -xf mndo-master.tar 
     ```
 
     ```python
@@ -14,5 +14,5 @@
     pip intall -r requirements.txt 
     bash install_mndo.sh
     ```
-    
+
 * Now you can run the file.
