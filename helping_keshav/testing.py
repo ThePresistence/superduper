@@ -1,6 +1,7 @@
 import mlatom as ml
 
 # Get the initial guess for the molecules to optimize
+print(f"Started your fucking program 😀\n")
 initmol = ml.data.molecule.from_xyz_file('init.xyz')
 
 # Choose one of the predifined (automatically recognized) methods
