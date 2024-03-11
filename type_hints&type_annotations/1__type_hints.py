@@ -1,10 +1,9 @@
-## Simple types 
-### - These are types that you can use to annotate your code without importing anything special.
-### - Primitive types: int, float, bool, str, bytes, object 
+### - Simple tyeps: These are types that you can use to annotate your code without importing anything special.
+###     - Primitive types: int, float, bool, str, bytes, object  
 ### - Any type: If you can't find a good type for some value, you can fall back to Any type. It's not a builtin type 
 ### - Generic types (compelx types that are composed of simple types): list, tuple, dict, Iterable, Mapping, type 
  
-
+## 0. Simple types 
 
 def consume_many_types(
         num: int, 
@@ -64,6 +63,31 @@ from typing import Set, Iterable
 fruits: Set[str] = {"apple"}  # you can get the auto completion easily for the Set perspective. 
 fruits: Iterable[str] = {"apple"}  # you can get the auto completion easily for the Iterable perspective 
 
+## 3. Union (complex type)
+
+from typing import Union, Type 
+miscellaneous_values: List[Union[int, float, str, Type]]= [1, 1.0, "hi", object]
+
+## union means, whatever the value is going to be assummed by a variable of the union type, it allowed to be any of the types inside the Union list. 
+## If you specified Union[int, flaot, str], the value should contains any of the values from the list you have created inside the Union.
+x: Union[int, float, str, Type] = [2.0, "super"]
+
+## this is the example of complex type because it contias the composition of the types.
+## Recent version of the python contains fancier version of the Union types by denoting pipe symbol 
+x: List[int | float | str | Type] = [2.0, "super"]  # it is lot cleaner compare to union 
+
+
+## 4.Optional 
+## - Optional keyword is essentially syntax sugar, or in other words, an abbreviated way of writing the type union, some type like int and then more.
+
+from typing import Optional 
+x: Optional[int] = 1  # it might be int or None. 
+
+def greet(name: Optional[str]=None) -> str: # pretty redable way 
+    return name 
+
+## another way of representing a optional is pipe symbol 
+x: str | None = "bro"
 
 
 
@@ -73,7 +97,8 @@ fruits: Iterable[str] = {"apple"}  # you can get the auto completion easily for 
 
 
 
-def all_generic_types()
+
+
 
 
     

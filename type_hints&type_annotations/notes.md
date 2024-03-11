@@ -33,4 +33,7 @@
 
 ## 3. Basic typing
 
-* 
+* Type inference is the idea that youc can guess the type of a variable by watching what values or what types of values the variable has taken on over the course of a program in various in your code.
+* You can have two different type declaration for a variable and that can be **implicit type** and **explicit type**. 
+* Explicit type: ```nums: List[int] = [2, 1]```. 
+* Inferred type: ```nums: [2, 1]```, if we remove the explicit type, that is implicit types.
