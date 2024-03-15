@@ -1,3 +1,6 @@
+def new_feature() -> None: 
+  print("new feature")
+
 def main():
   print('Git is awesome!')
 
