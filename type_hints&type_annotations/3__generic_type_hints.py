@@ -26,13 +26,26 @@ def add(a:st, b:st):
 ## Typevar: what if we could make an alias that was a stand in for a type and gave us the ability to do this restriction.It makes sure the the data type are same :) 
 
 from typing import TypeVar 
-st_var = TypeVar("st_var")  ## give the variable name inside 
+st_var = TypeVar("st_var", int, float, str, list, tuple)  ## (give the variable name inside, and second parameter is all the possible set of types)
 
-def adds(a:st_var, b:st_var) -> List[st_var]: 
-    return [a, b]  ## now we are making sure both the types are same type 
+def adds(a:st_var, b:st_var) -> st_var:  ## this st_var is called as "Generic types"
+    return a + b  ## now we are making sure both the types are same type 
 
 
 adds(a="bro", b="super")
+
+## You can also use this for the excpetion 
+TException = TypeVar("TException", bound=Exception)
+
+def raise_exception(err: TException):
+    raise err 
+
+raise_exception(ValueError("This is not a good deal :)"))  ## LIke this we can do that 
+
+
+
+## You can also create a your own generic types. default the list contains ( hash type that supports all types), similarly you can create your own generic types 
+## -- using the generic class inpython 
 
 
 
