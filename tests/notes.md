@@ -1,3 +1,37 @@
 # pytest
 
 Whenever you're writing a test case, create a folder called "test". It's a recommendable way to do that.
+
+## Testing theory
+
+The test should not tide the implementation of the function, they should only test the behaviour of the function and not just function too. This kind of testing is called **black box testing**. The idea of the black box test is you cannot see the internals.
+
+The **opposite** of the **black box** is **glass box tests**, it does exposes the internals of the function. We want our **test** can should be **black box tests** the reason should be we just need to test the input and output of the function not the internals.
+
+By the way, the word people use the describe the tests that depends on implementation details is **brittle**, developers don't want the test case to be **brittle**.
+
+**Test case universe**, it means the set of all possible test cases or all possible inputs that we could run through this function. Adding more test cases will prove that the written code is super robust. The trade of off increasing the number of test in **test case universe** is that the **more the test you have the slower the code**.
+
+## Parameterized test cases
+
+Often times you can divide the test case universe into different categories or sections. Let's say you have a function to add, instead of having the test case like infinte numbers you can divide the test cases like this positive numbers, negative numbers and zero. IF the function is working for this numbers, it means it's working good. Here we're are dividing the test case into some sections.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
