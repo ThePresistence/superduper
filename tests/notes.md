@@ -42,7 +42,7 @@ After that it will save the test coverage results in htmlcov folder. To host the
 python -m http.server -d ./htmlcov
 ```
 
-
+> Some of the best socumentation you can find the code is the test for the documentation, because the tests show you exactly how the code is meant to be used, because the test use the code, and unit test in particular should be very short and should show you exactly how each unt, meaning each function or each class in the code is meant to be used ideally with the simplest possible examples. So written documentation is fantasitc and can give you a sense of how all the pieces of a codebase fit together.
 
 
 
