@@ -28,3 +28,8 @@ def test__bro_minus():
 ## pytest -m "not slow"
 ## If you want to only run the tests are slow, you the bellow command 
 ## pytest -m "slow"
+
+@pytest.mark.fast 
+def test___bro_super_duper(): 
+    assert minus_bro(7, 8) == 1 
+
