@@ -14,13 +14,13 @@
 
 ## 2. Python style guides
 
-* Python has something called [**PEP8**](https://peps.python.org/pep-0008/) style guide. Basically python language is maintained by community and the community has a group called **steering council**. You can go to pep8 org for checking the python sytle guides and the proposals. 
+* Python has something called [**PEP8**](https://peps.python.org/pep-0008/) style guide. Basically python language is maintained by community and the community has a group called **steering council**. You can go to pep8 org for checking the python sytle guides and the proposals.
 * Again Python has some other styling guide by google called [**Google python style guide**](https://google.github.io/styleguide/pyguide.html). It's has become super popular. (most recommandable way!!)
 
 ## 3. Refractoring the code
 
 * which is basically means incremental changes to make code more redable than it was when you first started.
-* Refractoring is a skill it needs repeated practice to master. 
+* Refractoring is a skill it needs repeated practice to master.
 * Please read this [😌<-click](https://testdriven.io/blog/clean-code-python/) for how to write a clean python code.
 
 ## 3 Auto Formatters
@@ -32,12 +32,12 @@
 
 * Black is a CLI code used to format the code using cli.
 * Black modifies the files in place until unless you're specifically telling to the black.
-* This is one of the best tool to use in the teams for formatting a code for production use case. It contains lot of functionalities for formatting the code, best tool for pythonic way of formatting. 
+* This is one of the best tool to use in the teams for formatting a code for production use case. It contains lot of functionalities for formatting the code, best tool for pythonic way of formatting.
 
 ### 3.2 VS code Format document
 
 * You can type "ctrl+shift+p" and type "Format Document" to do the formatting. If you're doing first time you need to set up your formatter.
-* You can install you're favourite formatter like black and type "ctrl+shift+p" and type "format document". now it will work. 
+* You can install you're favourite formatter like black and type "ctrl+shift+p" and type "format document". now it will work.
 
 ### 3.3 yapf
 
