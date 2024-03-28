@@ -12,5 +12,10 @@ Let's see the approach of integerating all the tools we have seen before. There 
 
 Writing a bash script and calling that in CI. It's the simplest and easiest way to do it. Please check the file `check-code-quality.sh`
 
+## Approach 2
+
+One problem you will face, if you're using the previous approach, the problem is all contributors should run this test before giving a PR. By making this operationalization takes lot of time. To make this automated **Git Hoooks** comes into the picture. **Git hooks** basically scripts that are run whenever you do certain git cli commands. Let's say we have a `git commit` command, after user writing this command, we can trigger a file that checks all the test, Isn't cool!
+
+
 
 
