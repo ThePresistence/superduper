@@ -16,6 +16,8 @@ Writing a bash script and calling that in CI. It's the simplest and easiest way 
 
 One problem you will face, if you're using the previous approach, the problem is all contributors should run this test before giving a PR. By making this operationalization takes lot of time. To make this automated **Git Hoooks** comes into the picture. **Git hooks** basically scripts that are run whenever you do certain git cli commands. Let's say we have a `git commit` command, after user writing this command, we can trigger a file that checks all the test, Isn't cool!
 
+To do this go to `cd .git/hooks` and open `pre-commit.sample` file and change the file name to `pre-commit`. Now we activated the pre-commit hook. Check the sample `pre-commit` file in current directory.
+
 
 
 
