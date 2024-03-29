@@ -18,6 +18,8 @@ One problem you will face, if you're using the previous approach, the problem is
 
 To do this go to `cd .git/hooks` and open `pre-commit.sample` file and change the file name to `pre-commit`. Now we activated the pre-commit hook. Check the sample `pre-commit` file in current directory.
 
+## Approach 3
 
+The last two approaches are basic approaches, we have a much fancier options to do the continous integeration ( intergrate all the tools we have seen before), the fancier way of doing by having a or using a  [**pre-commit-framework**](https://pre-commit.com/).
 
-
+**Pre-commit** is a CLI tool for managing the various linter tools in python.Anything that does static analysis of your code could definetly be executed by the pre-commit. It's just a kind of framework on top of the git hooks. This is created by the author of **Flake8**. To install this `pip install pre-commit`. After installing to configure all of your linting tools we should need a yaml file. So to create yaml file use this `pre-commit sample-config >.pre-commit-config.yaml` and add your repos and the configuration. Once you done you have to install `pre-commit install`, it will modify the changes in the pre-commit file inside the .git. If you want to run manually you can use this `pre-commit run --all-files`.
