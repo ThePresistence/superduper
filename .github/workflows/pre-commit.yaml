@@ -18,5 +18,4 @@ jobs:
     - name: Analysing the code with pre_commit_framework
       working-directory: ./pre_commit_framework
       run: |
-        cd ./pre_commit_framework
         pre-commit run
