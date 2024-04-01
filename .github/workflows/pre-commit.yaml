@@ -14,7 +14,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint
-    - name: Analysing the code with pylint
+        pip install pre-commit
+    - name: changing the directroy
       run: |
-        pylint $(git ls-files '*.py')
+        cd pre_commit_framework
+    - name: Analysing the code with pre_commit_framework
+      run: |
+        pre-commit run --all-files
