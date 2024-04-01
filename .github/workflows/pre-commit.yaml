@@ -19,4 +19,4 @@ jobs:
       working-directory: ./pre_commit_framework
       run: |
         cd pre_commit_framework
-        pre-commit run --all-files
+        pre-commit run
